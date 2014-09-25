@@ -1,0 +1,46 @@
+# python
+*.pyc
+*.pyo
+_trial_temp
+__pycache__
+
+# osx
+*.DS_Store*
+
+# vim
+.*.swp
+
+# sphinx build folder
+_build
+
+*.py[co]
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+include
+lib
+local
+share
+var
+sdist
+develop-eggs
+.installed.cfg
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+
+# Translations
+*.mo
+
+# Ropemacs
+.ropeproject

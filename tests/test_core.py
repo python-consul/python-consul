@@ -9,6 +9,8 @@ import os
 import pytest
 import py
 
+import consul
+
 
 def get_free_ports(num, host=None):
     if not host:
@@ -26,7 +28,7 @@ def get_free_ports(num, host=None):
 
 
 @pytest.yield_fixture(scope="module")
-def consul():
+def consul_port():
     ports = dict(zip(
         ['http', 'rpc', 'serf_lan', 'serf_wan', 'server', 'dns'],
         get_free_ports(5) + [-1]))
@@ -44,18 +46,16 @@ def consul():
     p = subprocess.Popen(
         command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    time.sleep(0.5)
+    time.sleep(2)
     yield ports['http']
     p.terminate()
 
 
-def test_core(consul):
+def test_core(consul_port):
     print
     print
-    print consul
+    c = consul.connect(port=consul_port)
 
-
-def test_foo(consul):
-    print
-    print
-    print consul
+    print c.kv.get('foo')
+    print c.kv.put('foo', 'bar')
+    print c.kv.get('foo')

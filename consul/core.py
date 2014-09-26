@@ -70,7 +70,6 @@ class v1_callbacks(object):
         return response
 
 
-
 Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
 
 

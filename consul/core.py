@@ -1,8 +1,10 @@
 import collections
 import urllib
-import types
 
 import requests
+
+
+__version__ = '0.1'
 
 
 Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
@@ -62,7 +64,8 @@ def command(method, *args, **kwargs):
         code = "def " + name + "("
         if args:
             code += ', '.join(args)
-            if params: code += ', '
+            if params:
+                code += ', '
         if params:
             code += ', '.join(['%s=None' % x for x in params])
         code += '):'
@@ -83,7 +86,6 @@ def command(method, *args, **kwargs):
         exec code in ns
         return ns[name]
     return make
-
 
 
 commands = {

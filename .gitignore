@@ -22,7 +22,6 @@ dist
 build
 eggs
 parts
-bin
 include
 lib
 local

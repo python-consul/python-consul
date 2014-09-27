@@ -45,13 +45,26 @@ def consul_instance():
     p = subprocess.Popen(
         command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+    # wait for consul instance to bootstrap
+    base_uri = 'http://127.0.0.1:%s/v1/' % ports['http']
+
     while True:
-        # wait for consul instance to bootstrap
-        time.sleep(4.0)
-        response = requests.get(
-            'http://127.0.0.1:%s/v1/status/leader' % ports['http'])
+        time.sleep(0.1)
+        response = requests.get(base_uri + 'status/leader')
         if response.text.strip() != '""':
             break
+
+    requests.put(base_uri + 'agent/service/register', data='{"name": "foo"}')
+
+    while True:
+        # wait for consul instance to bootstrap
+        time.sleep(0.1)
+        response = requests.get(base_uri + 'health/service/foo')
+        if response.text.strip() != '[]':
+            break
+
+    requests.get(base_uri + 'agent/service/deregister/foo')
+    # phew
 
     yield ports['http']
     p.terminate()

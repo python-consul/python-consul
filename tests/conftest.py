@@ -50,7 +50,10 @@ def consul_instance():
 
     while True:
         time.sleep(0.1)
-        response = requests.get(base_uri + 'status/leader')
+        try:
+            response = requests.get(base_uri + 'status/leader')
+        except requests.ConnectionError:
+            continue
         if response.text.strip() != '""':
             break
 

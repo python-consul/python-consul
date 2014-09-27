@@ -22,7 +22,7 @@
     >>> data['Value']
     'bar'
     >>> index, data = c.kv.get('foo', index=index)
-    # this will block until there's an update and a timeout
+    # this will block until there's an update or a timeout
 ```
 
 ### Tornado

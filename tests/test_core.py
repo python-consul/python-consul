@@ -54,9 +54,9 @@ def consul_port():
     p.terminate()
 
 
-class TestAPI(object):
-    def test_api(self):
-        api = consul.core.API()
+class TestBuild(object):
+    def test_build(self):
+        api = consul.core.build_v1(None)
 
         get = api.kv.get
         assert get.__name__ == 'get'
@@ -87,8 +87,7 @@ class TestAPI(object):
             def get(self, callback, path, params=None, data=None):
                 return callback, path, params, data
 
-        api = consul.core.API()
-        api.set_http(HTTPClient())
+        api = consul.core.build_v1(HTTPClient())
 
         callback, path, params, _ = api.kv.get('foo', recurse=True)
         assert callback == consul.core.v1_callbacks.kv_get
@@ -100,8 +99,7 @@ class TestAPI(object):
             def get(self, callback, path, params=None, data=None):
                 return callback, path, params, data
 
-        api = consul.core.API()
-        api.set_http(HTTPClient())
+        api = consul.core.build_v1(HTTPClient())
         _, path, _, _ = api.agent.self()
         assert path == '/v1/agent/self'
 

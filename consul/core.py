@@ -12,7 +12,7 @@ __all__ = ['__version__', 'connect']
 
 
 def command(last, method, *args, **kwargs):
-    def make(shared, path, name, callback):
+    def make(http, path, name, callback):
         if last is not None:
             path = path + '/' + last
 
@@ -29,13 +29,13 @@ def command(last, method, *args, **kwargs):
 
         # body
         code += """
-            return execute(shared, method, path, callback, args, locals())
+            return execute(http, method, path, callback, args, locals())
         """
 
         # generate code
         ns = {
             'execute': execute,
-            'shared': shared,
+            'http': http,
             'method': method,
             'path': path,
             'name': name,
@@ -132,7 +132,7 @@ def prepare_params(values):
     return ret
 
 
-def execute(shared, method, path, callback, args, local):
+def execute(http, method, path, callback, args, local):
     if method == 'put':
         data = local[args[-1]]
         args = args[:-1]
@@ -141,7 +141,7 @@ def execute(shared, method, path, callback, args, local):
 
     params = prepare_params(local)
     paths = '/'.join([path] + [local[x] for x in args])
-    return getattr(shared.http, method)(callback, paths, params, data)
+    return getattr(http, method)(callback, paths, params, data)
 
 
 class EndPoint(object):
@@ -152,12 +152,12 @@ class EndPoint(object):
         return 'EndPoint("%s")' % self.path
 
 
-def build(shared, commands, path):
+def build(http, commands, path):
     endpoint = EndPoint(path)
     for key, command in commands.iteritems():
         if isinstance(command, dict):
             setattr(
-                endpoint, key, build(shared, command, path+'/'+key))
+                endpoint, key, build(http, command, path+'/'+key))
         else:
             # lookup v1_callbacks for this methods response callback
             parts = (path + '/' + key)[1:].split('/')
@@ -167,25 +167,14 @@ def build(shared, commands, path):
             callback = getattr(
                 globals()['%s_callbacks' % version], callback, lambda p, x: x)
 
-            setattr(endpoint, key, command(shared, path, key, callback))
+            setattr(endpoint, key, command(http, path, key, callback))
     return endpoint
 
 
-def API():
-    class C(object):
-        pass
-    shared = C()
-
-    def _(http):
-        shared.http = http
-
-    api = build(shared, commands['v1'], '/v1')
-    api.set_http = _
-    return api
+def build_v1(http):
+    return build(http, commands['v1'], '/v1')
 
 
 def connect(host='127.0.0.1', port=8500):
     http = HTTPClient(host, port)
-    api = API()
-    api.set_http(http)
-    return api
+    return build_v1(http)

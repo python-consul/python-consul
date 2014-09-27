@@ -7,7 +7,7 @@ from setuptools import find_packages
 
 
 metadata = dict(
-    re.findall("__([a-z]+)__ = '([^']+)'", open('consul/core.py').read()))
+    re.findall("__([a-z]+)__ = '([^']+)'", open('consul/__init__.py').read()))
 
 
 requirements = [

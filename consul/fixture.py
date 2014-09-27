@@ -38,7 +38,7 @@ def consul_instance():
 
     bin = os.path.join(os.path.dirname(__file__), '../tests/consul')
     command = """
-        {tests} agent -server -bootstrap -config-dir=. -data-dir=./data
+        {bin} agent -server -bootstrap -config-dir=. -data-dir=./data
     """.format(bin=bin).strip()
     command = shlex.split(command)
 

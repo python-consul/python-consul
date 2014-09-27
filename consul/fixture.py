@@ -44,8 +44,11 @@ def consul_instance():
 
     print
     print command
-    p = subprocess.Popen(command)
-    # , stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print os.listdir(os.path.join(os.path.dirname(__file__), '../bin'))
+    print os.listdir(os.path.join(os.path.dirname(__file__), '../'))
+
+    p = subprocess.Popen(
+        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # wait for consul instance to bootstrap
     base_uri = 'http://127.0.0.1:%s/v1/' % ports['http']

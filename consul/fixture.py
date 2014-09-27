@@ -44,8 +44,8 @@ def consul_instance():
 
     print
     print command
-    print os.listdir(os.path.join(os.path.dirname(__file__), '../tests'))
     print os.listdir(os.path.join(os.path.dirname(__file__), '../'))
+    # print os.listdir(os.path.join(os.path.dirname(__file__), '../tests'))
 
     p = subprocess.Popen(
         command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

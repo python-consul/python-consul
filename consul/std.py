@@ -5,6 +5,9 @@ import requests
 from consul import base
 
 
+__all__ = ['Consul']
+
+
 class HTTPClient(object):
     def __init__(self, host='127.0.0.1', port=8500):
         self.host = host

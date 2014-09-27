@@ -12,7 +12,7 @@ __all__ = ['__version__', 'connect']
 
 
 def command(last, method, *args, **kwargs):
-    def make(self, path, name, callback):
+    def make(shared, path, name, callback):
         if last is not None:
             path = path + '/' + last
 
@@ -29,13 +29,13 @@ def command(last, method, *args, **kwargs):
 
         # body
         code += """
-            return execute(self, method, path, callback, args, locals())
+            return execute(shared, method, path, callback, args, locals())
         """
 
         # generate code
         ns = {
             'execute': execute,
-            'self': self,
+            'shared': shared,
             'method': method,
             'path': path,
             'name': name,
@@ -79,6 +79,10 @@ class v1_callbacks(object):
     def kv_put(params, response):
         return json.loads(response.body)
 
+    @staticmethod
+    def agent_self(params, response):
+        return json.loads(response.body)
+
 
 Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
 
@@ -94,19 +98,19 @@ class HTTPClient(object):
         fh.close()
         return ret
 
-    def uri(self, paths, params=None):
-        uri = self.base_uri + '/'.join(paths)
+    def uri(self, path, params=None):
+        uri = self.base_uri + path
         if not params:
             return uri
         return '%s?%s' % (uri, urllib.urlencode(params))
 
-    def get(self, callback, paths, params=None, data=None):
-        uri = self.uri(paths, params)
+    def get(self, callback, path, params=None, data=None):
+        uri = self.uri(path, params)
         response = self.response(urllib.urlopen(uri))
         return callback(params, response)
 
-    def put(self, callback, paths, params=None, data=None):
-        uri = self.uri(paths, params)
+    def put(self, callback, path, params=None, data=None):
+        uri = self.uri(path, params)
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         request = urllib2.Request(uri, data=data)
         # request.add_header('Content-Type', 'your/contenttype')
@@ -128,7 +132,7 @@ def prepare_params(values):
     return ret
 
 
-def execute(self, method, path, callback, args, local):
+def execute(shared, method, path, callback, args, local):
     if method == 'put':
         data = local[args[-1]]
         args = args[:-1]
@@ -136,8 +140,8 @@ def execute(self, method, path, callback, args, local):
         data = None
 
     params = prepare_params(local)
-    paths = [path] + [local[x] for x in args]
-    return getattr(self.http, method)(callback, paths, params, data)
+    paths = '/'.join([path] + [local[x] for x in args])
+    return getattr(shared.http, method)(callback, paths, params, data)
 
 
 class EndPoint(object):
@@ -148,12 +152,12 @@ class EndPoint(object):
         return 'EndPoint("%s")' % self.path
 
 
-def build(self, commands, path):
+def build(shared, commands, path):
     endpoint = EndPoint(path)
     for key, command in commands.iteritems():
         if isinstance(command, dict):
             setattr(
-                endpoint, key, build(self, command, path+'/'+key))
+                endpoint, key, build(shared, command, path+'/'+key))
         else:
             # lookup v1_callbacks for this methods response callback
             parts = (path + '/' + key)[1:].split('/')
@@ -163,19 +167,19 @@ def build(self, commands, path):
             callback = getattr(
                 globals()['%s_callbacks' % version], callback, lambda p, x: x)
 
-            setattr(endpoint, key, command(self, path, key, callback))
+            setattr(endpoint, key, command(shared, path, key, callback))
     return endpoint
 
 
 def API():
     class C(object):
         pass
-    common = C()
+    shared = C()
 
     def _(http):
-        common.http = http
+        shared.http = http
 
-    api = build(common, commands['v1'], '/v1')
+    api = build(shared, commands['v1'], '/v1')
     api.set_http = _
     return api
 

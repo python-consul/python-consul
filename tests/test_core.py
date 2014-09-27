@@ -74,18 +74,36 @@ class TestAPI(object):
         assert spec.varargs is None
         assert spec.keywords is None
 
-    def test_set_http(self):
-        class HTTPClient(consul.core.HTTPClient):
-            def get(self, callback, paths, params=None, data=None):
-                uri = self.uri(paths, params)
-                assert callback == consul.core.v1_callbacks.kv_get
-                assert uri == 'http://127.0.0.1:8500/v1/kv/foo?recurse=1'
-                return 23
+        self = api.agent.self
+        assert self.__name__ == 'self'
+        spec = inspect.getargspec(self)
+        assert spec.args == []
+        assert spec.defaults is None
+        assert spec.varargs is None
+        assert spec.keywords is None
 
-        http = HTTPClient('127.0.0.1', 8500)
+    def test_kv(self):
+        class HTTPClient(object):
+            def get(self, callback, path, params=None, data=None):
+                return callback, path, params, data
+
         api = consul.core.API()
-        api.set_http(http)
-        assert api.kv.get('foo', recurse=True) == 23
+        api.set_http(HTTPClient())
+
+        callback, path, params, _ = api.kv.get('foo', recurse=True)
+        assert callback == consul.core.v1_callbacks.kv_get
+        assert path == '/v1/kv/foo'
+        assert params == {'recurse': '1'}
+
+    def test_agent_self(self):
+        class HTTPClient(object):
+            def get(self, callback, path, params=None, data=None):
+                return callback, path, params, data
+
+        api = consul.core.API()
+        api.set_http(HTTPClient())
+        _, path, _, _ = api.agent.self()
+        assert path == '/v1/agent/self'
 
 
 class TestCore(object):
@@ -97,3 +115,7 @@ class TestCore(object):
         assert c.kv.put(key, 'bar') is True
         index, data = c.kv.get(key)
         assert data['Value'] == 'bar'
+
+    def test_agent_self(self, consul_port):
+        c = consul.connect(port=consul_port)
+        assert c.agent.self().keys() == ['Member', 'Config']

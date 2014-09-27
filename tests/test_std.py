@@ -23,7 +23,7 @@ class TestConsul(object):
 
     def test_agent_self(self, consul_port):
         c = consul.Consul(port=consul_port)
-        assert c.agent.self().keys() == ['Member', 'Config']
+        assert set(c.agent.self().keys()) == set(['Member', 'Config'])
 
     def test_agent_services(self, consul_port):
         c = consul.Consul(port=consul_port)

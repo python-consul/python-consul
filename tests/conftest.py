@@ -65,12 +65,6 @@ def consul_instance():
             break
         time.sleep(0.1)
 
-    while True:
-        response = requests.get(base_uri + 'agent/self')
-        if len(json.loads(response.text).keys()) == 2:
-            break
-        time.sleep(0.1)
-
     requests.get(base_uri + 'agent/service/deregister/foo')
     # phew
 

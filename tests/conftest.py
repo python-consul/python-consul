@@ -75,3 +75,7 @@ def consul_instance():
 @pytest.yield_fixture
 def consul_port(consul_instance):
     yield consul_instance
+
+    # remove all data from the instance, to have a clean start
+    base_uri = 'http://127.0.0.1:%s/v1/' % consul_instance
+    requests.delete(base_uri + 'kv/?recurse=1')

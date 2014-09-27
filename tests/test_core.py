@@ -4,6 +4,7 @@ import inspect
 import socket
 import shlex
 import time
+import uuid
 import json
 import os
 
@@ -75,23 +76,24 @@ class TestAPI(object):
 
     def test_set_http(self):
         class HTTPClient(consul.core.HTTPClient):
-            def get(self, callback, uri, params=None, data=None):
+            def get(self, callback, paths, params=None, data=None):
+                uri = self.uri(paths, params)
                 assert callback == consul.core.v1_callbacks.kv_get
-                assert uri == 'http://127.0.0.1:8500/v1/kv/foo'
+                assert uri == 'http://127.0.0.1:8500/v1/kv/foo?recurse=1'
                 return 23
 
         http = HTTPClient('127.0.0.1', 8500)
         api = consul.core.API()
         api.set_http(http)
-        assert api.kv.get('foo') == 23
+        assert api.kv.get('foo', recurse=True) == 23
 
 
 class TestCore(object):
     def test_kv(self, consul_port):
-        print
-        print
         c = consul.connect(port=consul_port)
-
-        print c.kv.get('foo')
-        print c.kv.put('foo', 'bar')
-        print c.kv.get('foo')
+        key = uuid.uuid4().hex
+        index, data = c.kv.get(key)
+        assert data is None
+        assert c.kv.put(key, 'bar') is True
+        index, data = c.kv.get(key)
+        assert data['Value'] == 'bar'

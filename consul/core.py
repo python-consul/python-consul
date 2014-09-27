@@ -1,6 +1,8 @@
 import collections
 import urllib2
 import urllib
+import base64
+import json
 
 
 __version__ = '0.1'
@@ -15,7 +17,7 @@ def command(last, method, *args, **kwargs):
             path = path + '/' + last
 
         # generate signature
-        params = kwargs.pop('params', None)
+        params = kwargs.get('params', None)
         code = "def " + name + "("
         if args:
             code += ', '.join(args)
@@ -62,12 +64,20 @@ commands = {
 
 class v1_callbacks(object):
     @staticmethod
-    def kv_get(response):
-        return response
+    def kv_get(params, response):
+        if response.code == 404:
+            data = None
+        else:
+            data = json.loads(response.body)
+            for item in data:
+                item['Value'] = base64.b64decode(item['Value'])
+            if 'recurse' not in params:
+                data = data[0]
+        return response.headers['x-consul-index'], data
 
     @staticmethod
-    def kv_put(response):
-        return response
+    def kv_put(params, response):
+        return json.loads(response.body)
 
 
 Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
@@ -90,15 +100,13 @@ class HTTPClient(object):
             return uri
         return '%s?%s' % (uri, urllib.urlencode(params))
 
-    def get(self, callback, uri, params=None, data=None):
-        print
-        print uri
+    def get(self, callback, paths, params=None, data=None):
+        uri = self.uri(paths, params)
         response = self.response(urllib.urlopen(uri))
-        return callback(response)
+        return callback(params, response)
 
-    def put(self, callback, uri, params=None, data=None):
-        print
-        print uri
+    def put(self, callback, paths, params=None, data=None):
+        uri = self.uri(paths, params)
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         request = urllib2.Request(uri, data=data)
         # request.add_header('Content-Type', 'your/contenttype')
@@ -108,7 +116,7 @@ class HTTPClient(object):
         except urllib2.HTTPError, response:
             pass
         response = self.response(response)
-        return callback(response)
+        return callback(params, response)
 
 
 def prepare_params(values):
@@ -127,10 +135,9 @@ def execute(self, method, path, callback, args, local):
     else:
         data = None
 
-    uri = self.http.uri(
-        [path] + [local[x] for x in args], params=prepare_params(local))
-
-    return getattr(self.http, method)(callback, uri, data)
+    params = prepare_params(local)
+    paths = [path] + [local[x] for x in args]
+    return getattr(self.http, method)(callback, paths, params, data)
 
 
 class EndPoint(object):
@@ -154,7 +161,7 @@ def build(self, commands, path):
             callback = '_'.join(callback)
             # TODO: remove default
             callback = getattr(
-                globals()['%s_callbacks' % version], callback, lambda x: x)
+                globals()['%s_callbacks' % version], callback, lambda p, x: x)
 
             setattr(endpoint, key, command(self, path, key, callback))
     return endpoint

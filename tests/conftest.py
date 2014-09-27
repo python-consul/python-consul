@@ -60,11 +60,16 @@ def consul_instance():
     requests.put(base_uri + 'agent/service/register', data='{"name": "foo"}')
 
     while True:
-        # wait for consul instance to bootstrap
-        time.sleep(0.1)
         response = requests.get(base_uri + 'health/service/foo')
         if response.text.strip() != '[]':
             break
+        time.sleep(0.1)
+
+    while True:
+        response = requests.get(base_uri + 'agent/self')
+        if len(json.loads(response.text).keys()) == 2:
+            break
+        time.sleep(0.1)
 
     requests.get(base_uri + 'agent/service/deregister/foo')
     # phew

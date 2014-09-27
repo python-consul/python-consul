@@ -118,4 +118,4 @@ class TestCore(object):
 
     def test_agent_self(self, consul_port):
         c = consul.connect(port=consul_port)
-        assert c.agent.self().keys() == ['Member', 'Config']
+        assert set(c.agent.self().keys()) == set(['Member', 'Config'])

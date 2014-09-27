@@ -37,7 +37,7 @@ setup(
     author_email='andy@thecablelounge.com',
     install_requires=requirements,
     packages=find_packages(),
-    url='http://pypi.python.org/pypi/python-consul/',
+    url='https://github.com/cablehead/python-consul',
     license='MIT',
     description=description,
     long_description=open('README.md').read(),

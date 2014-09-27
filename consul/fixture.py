@@ -36,15 +36,15 @@ def consul_instance():
     tmpdir.join('ports.json').write(json.dumps({'ports': ports}))
     tmpdir.chdir()
 
-    bin = os.path.join(os.path.dirname(__file__), '../bin/consul')
+    bin = os.path.join(os.path.dirname(__file__), '../tests/consul')
     command = """
-        {bin} agent -server -bootstrap -config-dir=. -data-dir=./data
+        {tests} agent -server -bootstrap -config-dir=. -data-dir=./data
     """.format(bin=bin).strip()
     command = shlex.split(command)
 
     print
     print command
-    print os.listdir(os.path.join(os.path.dirname(__file__), '../bin'))
+    print os.listdir(os.path.join(os.path.dirname(__file__), '../tests'))
     print os.listdir(os.path.join(os.path.dirname(__file__), '../'))
 
     p = subprocess.Popen(

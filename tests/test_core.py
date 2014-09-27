@@ -106,7 +106,7 @@ class TestBuild(object):
 
 class TestCore(object):
     def test_kv(self, consul_port):
-        c = consul.connect(port=consul_port)
+        c = consul.Consul(port=consul_port)
         key = uuid.uuid4().hex
         index, data = c.kv.get(key)
         assert data is None
@@ -115,5 +115,5 @@ class TestCore(object):
         assert data['Value'] == 'bar'
 
     def test_agent_self(self, consul_port):
-        c = consul.connect(port=consul_port)
+        c = consul.Consul(port=consul_port)
         assert set(c.agent.self().keys()) == set(['Member', 'Config'])

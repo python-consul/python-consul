@@ -8,7 +8,7 @@ import json
 __version__ = '0.1'
 
 
-__all__ = ['__version__', 'connect']
+__all__ = ['__version__', 'Consul']
 
 
 def command(last, method, *args, **kwargs):
@@ -175,6 +175,6 @@ def build_v1(http):
     return build(http, commands['v1'], '/v1')
 
 
-def connect(host='127.0.0.1', port=8500):
+def Consul(host='127.0.0.1', port=8500):
     http = HTTPClient(host, port)
     return build_v1(http)

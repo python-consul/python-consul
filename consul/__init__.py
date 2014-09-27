@@ -1,1 +1,1 @@
-from consul.core import connect
+from consul.core import Consul

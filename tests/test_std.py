@@ -1,10 +1,5 @@
 import time
 
-from consul.fixture import consul_instance
-from consul.fixture import consul_port
-
-assert consul_instance and consul_port, "keep flake8 happy"
-
 import consul
 import consul.std
 

@@ -8,7 +8,7 @@ Install
 
 ::
 
-        pip install python-consul
+    pip install python-consul
 
 Usage
 -----
@@ -18,15 +18,15 @@ Standard
 
 .. code:: python
 
-        >>> import consul
-        >>> c = consul.Consul()
-        >>> c.kv.put('foo', 'bar')
-        True
-        >>> index, data = c.kv.get('foo')
-        >>> data['Value']
-        'bar'
-        >>> index, data = c.kv.get('foo', index=index)
-        # this will block until there's an update or a timeout
+    >>> import consul
+    >>> c = consul.Consul()
+    >>> c.kv.put('foo', 'bar')
+    True
+    >>> index, data = c.kv.get('foo')
+    >>> data['Value']
+    'bar'
+    >>> index, data = c.kv.get('foo', index=index)
+    # this will block until there's an update or a timeout
 
 Tornado
 ~~~~~~~
@@ -35,18 +35,18 @@ Poll a key for updates
 
 .. code:: python
 
-        import consul.tornado
+    import consul.tornado
 
-        c = consul.tornado.Consul()
+    c = consul.tornado.Consul()
 
-        @tornado.gen.coroutine
-        def watch():
-            index = None
-            while True:
-                index, data = yield c.kv.get('foo', index=index)
-                print data['Value']
+    @tornado.gen.coroutine
+    def watch():
+        index = None
+        while True:
+            index, data = yield c.kv.get('foo', index=index)
+            print data['Value']
 
-        loop.add_callback(watch)
+    loop.add_callback(watch)
 
 .. |Build Status| image:: https://travis-ci.org/cablehead/python-consul.svg?branch=master
    :target: https://travis-ci.org/cablehead/python-consul

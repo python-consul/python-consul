@@ -46,11 +46,10 @@ object.
         @tornado.gen.coroutine
         def watch(self):
             c = consul.tornado.Consul()
-            def watch():
-                index = None
-                while True:
-                    index, data = yield c.kv.get('foo', index=index)
-                    self.foo = data['Value']
+            index = None
+            while True:
+                index, data = yield c.kv.get('foo', index=index)
+                self.foo = data['Value']
 
 .. |Build Status| image:: https://travis-ci.org/cablehead/python-consul.svg?branch=master
    :target: https://travis-ci.org/cablehead/python-consul

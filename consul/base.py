@@ -18,10 +18,37 @@ class Consul(object):
         self.health = Consul.Health(self)
 
     class KV(object):
+        """
+        The KV endpoint is used to expose a simple key/value store. This can be
+        used to store service configurations or other meta data in a simple
+        way.
+        """
         def __init__(self, agent):
             self.agent = agent
 
         def get(self, key, index=None, recurse=False):
+            """
+            Returns a tuple of (*index*, *value[s]*)
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was run.
+
+            The *value* returned is for the specified key, or if *recurse* is
+            True a list of *values* for all keys with the given prefix is
+            returned.
+
+            Each *value* looks like this::
+
+                {
+                    "CreateIndex": 100,
+                    "ModifyIndex": 200,
+                    "LockIndex": 200,
+                    "Key": "zip",
+                    "Flags": 0,
+                    "Value": "dGVzdA==",
+                    "Session": "adf4238a-882b-9ddc-4a9d-5b6758e4159e"
+                }
+            """
             assert not key.startswith('/')
             params = {}
             if index:
@@ -44,6 +71,12 @@ class Consul(object):
                 callback, '/v1/kv/%s' % key, params=params)
 
         def put(self, key, value):
+            """
+            Sets *key* to the given *value*.
+
+            The return value is simply either True or False. If False is
+            returned, then the update has not taken place.
+            """
             assert not key.startswith('/')
 
             def callback(response):

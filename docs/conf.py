@@ -101,17 +101,23 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ----------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-html_theme = 'default'
 
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-#html_theme_options = {}
+import alabaster
 
-# Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+html_theme_path = [alabaster.get_path()]
+extensions = ['alabaster']
+html_theme = 'alabaster'
+html_sidebars = {
+   '**': [
+       'about.html', 'navigation.html',
+       # 'searchbox.html', 'donate.html',
+   ]
+}
+
+html_theme_options = {
+    'github_user': 'cablehead',
+    'github_repo': 'python-consul',
+}
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".

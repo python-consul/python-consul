@@ -1,11 +1,4 @@
-Welcome to python-consul's documentation!
-=========================================
-
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-
+.. include:: ../README.rst
 
 API Documentation
 -----------------
@@ -16,5 +9,17 @@ consul.kv
 ~~~~~~~~~
 
 .. autoclass:: consul.base::Consul.KV()
+   :members:
+   :undoc-members:
+
+consul.agent
+~~~~~~~~~~~~
+
+.. autoclass:: consul.base::Consul.Agent()
+   :members:
+   :undoc-members:
+   :exclude-members: Service
+
+.. autoclass:: consul.base::Consul.Agent.Service()
    :members:
    :undoc-members:

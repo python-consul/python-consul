@@ -1,10 +1,25 @@
-Python client for Consul (http://www.consul.io/)
-================================================
+Python client for `Consul.io <http://www.consul.io/>`_
+======================================================
+
+Example
+-------
+
+.. code:: python
+
+    >>> import consul
+    >>> c = consul.Consul()
+    >>> c.kv.put('foo', 'bar')
+    >>> index, data = c.kv.get('foo')
+    >>> data['Value']
+    >>> 'bar'
+
+Status
+------
 
 |Build Status|\ |Coverage Status|
 
-Install
--------
+Installation
+------------
 
 ::
 

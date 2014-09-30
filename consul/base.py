@@ -70,9 +70,16 @@ class Consul(object):
             return self.agent.http.get(
                 callback, '/v1/kv/%s' % key, params=params)
 
-        def put(self, key, value, flags=None):
+        def put(self, key, value, cas=None, flags=None):
             """
             Sets *key* to the given *value*.
+
+            The optional *cas* parameter is used to turn the PUT into a
+            Check-And-Set operation. This is very useful as it allows clients
+            to build more complex syncronization primitives on top. If the
+            index is 0, then Consul will only put the key if it does not
+            already exist. If the index is non-zero, then the key is only set
+            if the index matches the ModifyIndex of that key.
 
             An optional *flags* can be set. This can be used to specify an
             unsigned value between 0 and 2^64-1.
@@ -82,6 +89,8 @@ class Consul(object):
             """
             assert not key.startswith('/')
             params = {}
+            if cas is not None:
+                params['cas'] = cas
             if flags is not None:
                 params['flags'] = flags
 

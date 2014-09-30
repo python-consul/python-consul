@@ -29,6 +29,21 @@ class TestConsul(object):
             loop.stop()
         loop.run_sync(main)
 
+    def test_kv_put_flags(self, loop, consul_port):
+        @gen.coroutine
+        def main():
+            c = consul.tornado.Consul(port=consul_port)
+            yield c.kv.put('foo', 'bar')
+            index, data = yield c.kv.get('foo')
+            assert data['Flags'] == 0
+
+            response = yield c.kv.put('foo', 'bar', flags=50)
+            assert response is True
+            index, data = yield c.kv.get('foo')
+            assert data['Flags'] == 50
+            loop.stop()
+        loop.run_sync(main)
+
     def test_kv_delete(self, loop, consul_port):
         @gen.coroutine
         def main():

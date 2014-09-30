@@ -70,19 +70,26 @@ class Consul(object):
             return self.agent.http.get(
                 callback, '/v1/kv/%s' % key, params=params)
 
-        def put(self, key, value):
+        def put(self, key, value, flags=None):
             """
             Sets *key* to the given *value*.
+
+            An optional *flags* can be set. This can be used to specify an
+            unsigned value between 0 and 2^64-1.
 
             The return value is simply either True or False. If False is
             returned, then the update has not taken place.
             """
             assert not key.startswith('/')
+            params = {}
+            if flags is not None:
+                params['flags'] = flags
 
             def callback(response):
                 return json.loads(response.body)
 
-            return self.agent.http.put(callback, '/v1/kv/%s' % key, data=value)
+            return self.agent.http.put(
+                callback, '/v1/kv/%s' % key, params=params, data=value)
 
         def delete(self, key, recurse=None):
             """

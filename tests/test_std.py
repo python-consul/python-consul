@@ -21,6 +21,16 @@ class TestConsul(object):
         index, data = c.kv.get('foo')
         assert data['Value'] == 'bar'
 
+    def test_kv_put_flags(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        c.kv.put('foo', 'bar')
+        index, data = c.kv.get('foo')
+        assert data['Flags'] == 0
+
+        assert c.kv.put('foo', 'bar', flags=50) is True
+        index, data = c.kv.get('foo')
+        assert data['Flags'] == 50
+
     def test_kv_delete(self, consul_port):
         c = consul.Consul(port=consul_port)
         c.kv.put('foo1', '1')

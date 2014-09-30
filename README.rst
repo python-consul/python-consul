@@ -30,8 +30,8 @@ Installation
 
     pip install python-consul
 
-Usage
------
+Clients
+-------
 
 Standard
 ~~~~~~~~

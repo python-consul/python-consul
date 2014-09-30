@@ -23,7 +23,7 @@ Example
     # poll a key for updates
     index = None
     while True:
-        index, data = c.kv.get('foo')
+        index, data = c.kv.get('foo', index=index)
         print data['Value']
 
     # in another process

@@ -18,6 +18,11 @@ Status
 
 |Build Status|\ |Coverage Status|
 
+Documentation
+-------------
+
+Full documentation is available at: http://python-consul.readthedocs.org/
+
 Installation
 ------------
 

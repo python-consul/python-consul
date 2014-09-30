@@ -118,6 +118,8 @@ html_sidebars = {
 html_theme_options = {
     'github_user': 'cablehead',
     'github_repo': 'python-consul',
+    'logo': 'logo.png',
+    'logo_name': True,
 }
 
 # The name for this set of Sphinx documents.  If None, it defaults to

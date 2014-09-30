@@ -31,7 +31,7 @@ class Consul(object):
             Returns a tuple of (*index*, *value[s]*)
 
             *index* is the current Consul index, suitable for making subsequent
-            calls to wait for changes since this query was run.
+            calls to wait for changes since this query was last run.
 
             The *value* returned is for the specified key, or if *recurse* is
             True a list of *values* for all keys with the given prefix is
@@ -96,10 +96,23 @@ class Consul(object):
             self.service = Consul.Agent.Service(agent)
 
         def self(self):
+            """
+            Returns configuration of the local agent and member information.
+            """
             return self.agent.http.get(
                 lambda x: json.loads(x.body), '/v1/agent/self')
 
         def services(self):
+            """
+            Returns all the services that are registered with the local agent.
+            These services were either provided through configuration files, or
+            added dynamically using the HTTP API. It is important to note that
+            the services known by the agent may be different than those
+            reported by the Catalog. This is usually due to changes being made
+            while there is no leader elected. The agent performs active
+            anti-entropy, so in most situations everything will be in sync
+            within a few seconds.
+            """
             return self.agent.http.get(
                 lambda x: json.loads(x.body), '/v1/agent/services')
 
@@ -110,6 +123,14 @@ class Consul(object):
             def register(
                 self, name, service_id=None, port=None,
                     tags=None, check=None, interval=None, ttl=None):
+                """
+                Add a new service to the local agent. There is more
+                documentation on services
+                `here <http://www.consul.io/docs/agent/services.html>`_.
+                Services may also provide a health check. The agent is
+                responsible for managing the status of the check and keeping
+                the Catalog in sync.
+                """
 
                 payload = {
                     'id': service_id,
@@ -127,6 +148,11 @@ class Consul(object):
                     data=json.dumps(payload))
 
             def deregister(self, service_id):
+                """
+                Used to remove a service from the local agent. The agent will
+                take care of deregistering the service with the Catalog. If
+                there is an associated check, that is also deregistered.
+                """
                 return self.agent.http.get(
                     lambda x: x.code == 200,
                     '/v1/agent/service/deregister/%s' % service_id)
@@ -137,6 +163,17 @@ class Consul(object):
             self.check = Consul.Health.Check(agent)
 
         def service(self, service, index=None, passing=None):
+            """
+            Returns a tuple of (*index*, *nodes*)
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *nodes* are the nodes providing the given service.
+
+            Calling with *passing* set to True will filter results to only
+            those nodes whose checks are currently passing.
+            """
             params = {}
             if index:
                 params['index'] = index
@@ -156,6 +193,9 @@ class Consul(object):
                 self.agent = agent
 
             def ttl_pass(self, check_id):
+                """
+                Mark a local TTL check as passing.
+                """
                 return self.agent.http.get(
                     lambda x: x.code == 200,
                     '/v1/agent/check/pass/%s' % check_id)

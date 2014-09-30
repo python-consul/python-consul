@@ -94,12 +94,10 @@ consul.agent
 
 .. autoclass:: consul.base::Consul.Agent()
    :members:
-   :undoc-members:
    :exclude-members: Service
 
 .. autoclass:: consul.base::Consul.Agent.Service()
    :members:
-   :undoc-members:
 
 consul.health
 ~~~~~~~~~~~~~

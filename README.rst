@@ -16,13 +16,18 @@ Example
 
 .. code:: python
 
-    >>> import consul
-    >>> c = consul.Consul()
-    >>> c.kv.put('foo', 'bar')
-    >>> index, data = c.kv.get('foo')
-    >>> data['Value']
-    >>> 'bar'
+    import consul
 
+    c = consul.Consul()
+
+    # poll a key for updates
+    index = None
+    while True:
+        index, data = c.kv.get('foo')
+        print data['Value']
+
+    # in another process
+    c.kv.put('foo', 'bar')
 
 Installation
 ------------

@@ -101,6 +101,18 @@ consul.agent
    :members:
    :undoc-members:
 
+consul.health
+~~~~~~~~~~~~~
+
+.. autoclass:: consul.base::Consul.Health()
+   :members:
+   :undoc-members:
+   :exclude-members: Check
+
+.. autoclass:: consul.base::Consul.Health.Check()
+   :members:
+   :undoc-members:
+
 
 .. _requests: http://python-requests.org
 .. _Vanilla: https://github.com/cablehead/vanilla

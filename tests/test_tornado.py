@@ -29,6 +29,27 @@ class TestConsul(object):
             loop.stop()
         loop.run_sync(main)
 
+    def test_kv_delete(self, loop, consul_port):
+        @gen.coroutine
+        def main():
+            c = consul.tornado.Consul(port=consul_port)
+            yield c.kv.put('foo1', '1')
+            yield c.kv.put('foo2', '2')
+            yield c.kv.put('foo3', '3')
+            index, data = yield c.kv.get('foo', recurse=True)
+            assert [x['Key'] for x in data] == ['foo1', 'foo2', 'foo3']
+
+            response = yield c.kv.delete('foo2')
+            assert response is True
+            index, data = yield c.kv.get('foo', recurse=True)
+            assert [x['Key'] for x in data] == ['foo1', 'foo3']
+            response = yield c.kv.delete('foo', recurse=True)
+            assert response is True
+            index, data = yield c.kv.get('foo', recurse=True)
+            assert data is None
+            loop.stop()
+        loop.run_sync(main)
+
     def test_kv_subscribe(self, loop, consul_port):
         c = consul.tornado.Consul(port=consul_port)
 

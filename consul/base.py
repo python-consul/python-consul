@@ -84,6 +84,18 @@ class Consul(object):
 
             return self.agent.http.put(callback, '/v1/kv/%s' % key, data=value)
 
+        def delete(self, key, recurse=None):
+            """
+            Deletes a single key or if *recurse* is True, all keys sharing a
+            prefix.
+            """
+            assert not key.startswith('/')
+            params = {}
+            if recurse:
+                params['recurse'] = '1'
+            return self.agent.http.delete(
+                lambda x: x.code == 200, '/v1/kv/%s' % key, params=params)
+
     class Agent(object):
         """
         The Agent endpoints are used to interact with a local Consul agent.

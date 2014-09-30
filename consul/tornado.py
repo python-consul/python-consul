@@ -46,6 +46,11 @@ class HTTPClient(object):
         request = httpclient.HTTPRequest(uri, method='PUT', body=data)
         return self._request(callback, request)
 
+    def delete(self, callback, path, params=None):
+        uri = self.uri(path, params)
+        request = httpclient.HTTPRequest(uri, method='DELETE')
+        return self._request(callback, request)
+
 
 class Consul(base.Consul):
     def connect(self, host, port):

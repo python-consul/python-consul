@@ -35,7 +35,7 @@ class Consul(object):
         def __init__(self, agent):
             self.agent = agent
 
-        def get(self, key, index=None, recurse=False):
+        def get(self, key, index=None, recurse=False, token=None):
             """
             Returns a tuple of (*index*, *value[s]*)
 
@@ -64,6 +64,8 @@ class Consul(object):
                 params['index'] = index
             if recurse:
                 params['recurse'] = '1'
+            if token:
+                params['token'] = token
 
             def callback(response):
                 if response.code == 404:
@@ -79,7 +81,7 @@ class Consul(object):
             return self.agent.http.get(
                 callback, '/v1/kv/%s' % key, params=params)
 
-        def put(self, key, value, cas=None, flags=None):
+        def put(self, key, value, cas=None, flags=None, token=None):
             """
             Sets *key* to the given *value*.
 
@@ -102,24 +104,37 @@ class Consul(object):
                 params['cas'] = cas
             if flags is not None:
                 params['flags'] = flags
+            if token:
+                params['token'] = token
 
             def callback(response):
+                if response.code == 403:
+                    raise ACLPermissionDenied(response.body)
                 return json.loads(response.body)
 
             return self.agent.http.put(
                 callback, '/v1/kv/%s' % key, params=params, data=value)
 
-        def delete(self, key, recurse=None):
+        def delete(self, key, recurse=None, token=None):
             """
             Deletes a single key or if *recurse* is True, all keys sharing a
             prefix.
             """
             assert not key.startswith('/')
+
             params = {}
             if recurse:
                 params['recurse'] = '1'
+            if token:
+                params['token'] = token
+
+            def callback(response):
+                if response.code == 403:
+                    raise ACLPermissionDenied(response.body)
+                return response.code == 200
+
             return self.agent.http.delete(
-                lambda x: x.code == 200, '/v1/kv/%s' % key, params=params)
+                callback, '/v1/kv/%s' % key, params=params)
 
     class Agent(object):
         """

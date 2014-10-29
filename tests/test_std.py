@@ -162,6 +162,9 @@ class TestConsul(object):
             key "" {
                 policy = "read"
             }
+            key "private/" {
+                policy = "deny"
+            }
         """
 
         token = c.acl.create(rules=rules, token=master_token)
@@ -170,8 +173,26 @@ class TestConsul(object):
         token2 = c.acl.clone(token, token=master_token)
         assert c.acl.info(token2)['Rules'] == rules
 
-        assert c.acl.update(token, name='Foo', token=master_token) == token
-        assert c.acl.info(token)['Name'] == 'Foo'
+        assert c.acl.update(token2, name='Foo', token=master_token) == token2
+        assert c.acl.info(token2)['Name'] == 'Foo'
 
         assert c.acl.destroy(token2, token=master_token) is True
         assert c.acl.info(token2) is None
+
+        c.kv.put('foo', 'bar')
+        c.kv.put('private/foo', 'bar')
+
+        assert c.kv.get('foo', token=token)[1]['Value'] == 'bar'
+        pytest.raises(
+            consul.ACLPermissionDenied, c.kv.put, 'foo', 'bar2', token=token)
+        pytest.raises(
+            consul.ACLPermissionDenied, c.kv.delete, 'foo', token=token)
+
+        assert c.kv.get('private/foo')[1]['Value'] == 'bar'
+        assert c.kv.get('private/foo', token=token)[1] is None
+        pytest.raises(
+            consul.ACLPermissionDenied,
+            c.kv.put, 'private/foo', 'bar2', token=token)
+        pytest.raises(
+            consul.ACLPermissionDenied,
+            c.kv.delete, 'private/foo', token=token)

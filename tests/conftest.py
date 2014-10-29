@@ -1,5 +1,6 @@
 import collections
 import subprocess
+import platform
 import tempfile
 import socket
 import shlex
@@ -50,7 +51,13 @@ def start_consul_instance(acl_master_token=None):
     tmpdir.join('config.json').write(json.dumps(config))
     tmpdir.chdir()
 
-    bin = os.path.join(os.path.dirname(__file__), 'consul')
+    (system, node, release, version, machine, processor) = platform.uname()
+    if system == 'Darwin':
+        postfix = 'osx'
+    else:
+        postfix = 'linux64'
+
+    bin = os.path.join(os.path.dirname(__file__), 'consul.'+postfix)
     command = """
         {bin} agent -server -bootstrap -config-dir=. -data-dir=./data
     """.format(bin=bin).strip()

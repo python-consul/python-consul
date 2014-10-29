@@ -225,7 +225,6 @@ class TestConsul(object):
                 policy = "deny"
             }
         """
-
         token = c.acl.create(rules=rules)
         assert c.acl.info(token)['Rules'] == rules
 

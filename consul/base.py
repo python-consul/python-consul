@@ -205,7 +205,7 @@ class Consul(object):
 
                 If the optional *service_id* is not provided it is set to
                 *name*. You cannot have duplicate *service_id* entries per
-                agent, so it may be necessary to provide an one.
+                agent, so it may be necessary to provide one.
 
                 An optional health check can be created for this service. The
                 health check is only one of *script* and *interval* OR *ttl*.

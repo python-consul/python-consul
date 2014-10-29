@@ -20,6 +20,12 @@ Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
 
 class Consul(object):
     def __init__(self, host='127.0.0.1', port=8500, token=None):
+        """
+        *token* is an optional `ACL token`_. If supplied it will be used by
+        default for all requests made with this client session. It's still
+        possible to override this token by passing a token explicitly for a
+        request.
+        """
         self.http = self.connect(host, port)
         self.token = token
 

@@ -196,3 +196,78 @@ class TestConsul(object):
         pytest.raises(
             consul.ACLPermissionDenied,
             c.kv.delete, 'private/foo', token=token)
+
+        # clean up
+        c.acl.destroy(token, token=master_token)
+        acls = c.acl.list(token=master_token)
+        acls.sort()
+        assert [x['ID'] for x in acls] == ['anonymous', master_token]
+
+    def test_acl_implicit_token_use(self, acl_consul):
+        # configure client to use the master token by default
+        c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
+        master_token = acl_consul.token
+
+        acls = c.acl.list()
+        acls.sort()
+        assert [x['ID'] for x in acls] == ['anonymous', master_token]
+
+        assert c.acl.info('foo') is None
+        compare = [c.acl.info(master_token), c.acl.info('anonymous')]
+        compare.sort()
+        assert acls == compare
+
+        rules = """
+            key "" {
+                policy = "read"
+            }
+            key "private/" {
+                policy = "deny"
+            }
+        """
+
+        token = c.acl.create(rules=rules)
+        assert c.acl.info(token)['Rules'] == rules
+
+        token2 = c.acl.clone(token)
+        assert c.acl.info(token2)['Rules'] == rules
+
+        assert c.acl.update(token2, name='Foo') == token2
+        assert c.acl.info(token2)['Name'] == 'Foo'
+
+        assert c.acl.destroy(token2) is True
+        assert c.acl.info(token2) is None
+
+        c.kv.put('foo', 'bar')
+        c.kv.put('private/foo', 'bar')
+
+        c_limited = consul.Consul(port=acl_consul.port, token=token)
+        assert c_limited.kv.get('foo')[1]['Value'] == 'bar'
+        pytest.raises(
+            consul.ACLPermissionDenied, c_limited.kv.put, 'foo', 'bar2')
+        pytest.raises(
+            consul.ACLPermissionDenied, c_limited.kv.delete, 'foo')
+
+        assert c.kv.get('private/foo')[1]['Value'] == 'bar'
+        assert c_limited.kv.get('private/foo')[1] is None
+        pytest.raises(
+            consul.ACLPermissionDenied,
+            c_limited.kv.put, 'private/foo', 'bar2')
+        pytest.raises(
+            consul.ACLPermissionDenied,
+            c_limited.kv.delete, 'private/foo')
+
+        # check we can override the client's default token
+        assert c.kv.get('private/foo', token=token)[1] is None
+        pytest.raises(
+            consul.ACLPermissionDenied,
+            c.kv.put, 'private/foo', 'bar2', token=token)
+        pytest.raises(
+            consul.ACLPermissionDenied,
+            c.kv.delete, 'private/foo', token=token)
+
+        # clean up
+        c.acl.destroy(token)
+        acls = c.acl.list()
+        acls.sort()
+        assert [x['ID'] for x in acls] == ['anonymous', master_token]

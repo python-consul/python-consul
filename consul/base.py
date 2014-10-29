@@ -19,8 +19,10 @@ Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
 
 
 class Consul(object):
-    def __init__(self, host='127.0.0.1', port=8500):
+    def __init__(self, host='127.0.0.1', port=8500, token=None):
         self.http = self.connect(host, port)
+        self.token = token
+
         self.kv = Consul.KV(self)
         self.agent = Consul.Agent(self)
         self.health = Consul.Health(self)
@@ -66,6 +68,7 @@ class Consul(object):
                 params['index'] = index
             if recurse:
                 params['recurse'] = '1'
+            token = token or self.agent.token
             if token:
                 params['token'] = token
 
@@ -110,6 +113,7 @@ class Consul(object):
                 params['cas'] = cas
             if flags is not None:
                 params['flags'] = flags
+            token = token or self.agent.token
             if token:
                 params['token'] = token
 
@@ -135,6 +139,7 @@ class Consul(object):
             params = {}
             if recurse:
                 params['recurse'] = '1'
+            token = token or self.agent.token
             if token:
                 params['token'] = token
 
@@ -268,6 +273,7 @@ class Consul(object):
 
         def list(self, token=None):
             params = {}
+            token = token or self.agent.token
             if token:
                 params['token'] = token
 
@@ -282,6 +288,7 @@ class Consul(object):
 
         def info(self, acl_id, token=None):
             params = {}
+            token = token or self.agent.token
             if token:
                 params['token'] = token
 
@@ -297,6 +304,7 @@ class Consul(object):
 
         def create(self, name=None, typ=None, rules=None, token=None):
             params = {}
+            token = token or self.agent.token
             if token:
                 params['token'] = token
 
@@ -328,6 +336,7 @@ class Consul(object):
 
         def update(self, acl_id, name=None, typ=None, rules=None, token=None):
             params = {}
+            token = token or self.agent.token
             if token:
                 params['token'] = token
 
@@ -356,6 +365,7 @@ class Consul(object):
 
         def clone(self, acl_id, token=None):
             params = {}
+            token = token or self.agent.token
             if token:
                 params['token'] = token
 
@@ -371,6 +381,7 @@ class Consul(object):
 
         def destroy(self, acl_id, token=None):
             params = {}
+            token = token or self.agent.token
             if token:
                 params['token'] = token
 

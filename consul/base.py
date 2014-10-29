@@ -195,25 +195,34 @@ class Consul(object):
 
             def register(
                 self, name, service_id=None, port=None,
-                    tags=None, check=None, interval=None, ttl=None):
+                    tags=None, script=None, interval=None, ttl=None):
                 """
                 Add a new service to the local agent. There is more
                 documentation on services
                 `here <http://www.consul.io/docs/agent/services.html>`_.
-                Services may also provide a health check. The agent is
-                responsible for managing the status of the check and keeping
-                the Catalog in sync.
-                """
 
-                payload = {
-                    'id': service_id,
-                    'name': name,
-                    'port': port,
-                    'tags': tags,
-                    'check': {
-                        'script': check,
-                        'interval': interval,
-                        'ttl': ttl, }}
+                *name* is the name of the service.
+
+                If the optional *service_id* is not provided it is set to
+                *name*. You cannot have duplicate *service_id* entries per
+                agent, so it may be necessary to provide an one.
+
+                An optional health check can be created for this service. The
+                health check is only one of *script* and *interval* OR *ttl*.
+                """
+                payload = {'name': name}
+                if service_id:
+                    payload['id'] = service_id
+                if port:
+                    payload['port'] = port
+                if tags:
+                    payload['tags'] = tags
+                if script:
+                    assert interval and not ttl
+                    payload['check'] = {'script': script, 'interval': interval}
+                if ttl:
+                    assert not (interval or script)
+                    payload['check'] = {'ttl': ttl}
 
                 return self.agent.http.put(
                     lambda x: x.code == 200,

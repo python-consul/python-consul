@@ -261,9 +261,57 @@ class Consul(object):
                 params['token'] = token
 
             def callback(response):
+                if response.code == 401:
+                    raise ACLDisabled(response.body)
                 response = json.loads(response.body)
                 if response:
                     return response[0]
 
             return self.agent.http.get(
                 callback, '/v1/acl/info/%s' % acl_id, params=params)
+
+        def create(self, name=None, typ=None, rules=None, token=None):
+            params = {}
+            if token:
+                params['token'] = token
+
+            payload = {}
+            if name:
+                payload['Name'] = name
+            if typ:
+                assert typ == 'client' or typ == 'management'
+                payload['Type'] = typ
+            if rules:
+                assert isinstance(rules, str), \
+                    'Only HCL encoded strings supported for the moment'
+                payload['Rules'] = rules
+
+            if payload:
+                data = json.dumps(payload)
+            else:
+                data = ''
+
+            def callback(response):
+                if response.code == 401:
+                    raise ACLDisabled(response.body)
+                if response.code == 403:
+                    raise ACLPermissionDenied(response.body)
+                return json.loads(response.body)['ID']
+
+            return self.agent.http.put(
+                callback, '/v1/acl/create', params=params, data=data)
+
+        def clone(self, acl_id, token=None):
+            params = {}
+            if token:
+                params['token'] = token
+
+            def callback(response):
+                if response.code == 401:
+                    raise ACLDisabled(response.body)
+                if response.code == 403:
+                    raise ACLPermissionDenied(response.body)
+                return json.loads(response.body)['ID']
+
+            return self.agent.http.put(
+                callback, '/v1/acl/clone/%s' % acl_id, params=params)

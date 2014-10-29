@@ -131,19 +131,37 @@ class TestConsul(object):
     def test_acl_disabled(self, consul_port):
         c = consul.Consul(port=consul_port)
         pytest.raises(consul.ACLDisabled, c.acl.list)
+        pytest.raises(consul.ACLDisabled, c.acl.info, 'foo')
+        pytest.raises(consul.ACLDisabled, c.acl.create)
+        pytest.raises(consul.ACLDisabled, c.acl.clone, 'foo')
 
     def test_acl_permission_denied(self, acl_consul):
         c = consul.Consul(port=acl_consul.port)
         pytest.raises(consul.ACLPermissionDenied, c.acl.list)
+        pytest.raises(consul.ACLPermissionDenied, c.acl.create)
+        pytest.raises(consul.ACLPermissionDenied, c.acl.clone, 'anonymous')
 
-    def test_acl(self, acl_consul):
+    def test_acl_explict_token_use(self, acl_consul):
         c = consul.Consul(port=acl_consul.port)
+        master_token = acl_consul.token
 
-        acls = c.acl.list(token=acl_consul.token)
+        acls = c.acl.list(token=master_token)
         acls.sort()
-        assert [x['ID'] for x in acls] == ['anonymous', acl_consul.token]
+        assert [x['ID'] for x in acls] == ['anonymous', master_token]
 
         assert c.acl.info('foo') is None
-        compare = [c.acl.info(acl_consul.token), c.acl.info('anonymous')]
+        compare = [c.acl.info(master_token), c.acl.info('anonymous')]
         compare.sort()
         assert acls == compare
+
+        rules = """
+            key "" {
+                policy = "read"
+            }
+        """
+
+        token = c.acl.create(rules=rules, token=master_token)
+        assert c.acl.info(token)['Rules'] == rules
+
+        token2 = c.acl.clone(token, token=master_token)
+        assert c.acl.info(token2)['Rules'] == rules

@@ -133,13 +133,17 @@ class TestConsul(object):
         pytest.raises(consul.ACLDisabled, c.acl.list)
         pytest.raises(consul.ACLDisabled, c.acl.info, 'foo')
         pytest.raises(consul.ACLDisabled, c.acl.create)
+        pytest.raises(consul.ACLDisabled, c.acl.update, 'foo')
         pytest.raises(consul.ACLDisabled, c.acl.clone, 'foo')
+        pytest.raises(consul.ACLDisabled, c.acl.destroy, 'foo')
 
     def test_acl_permission_denied(self, acl_consul):
         c = consul.Consul(port=acl_consul.port)
         pytest.raises(consul.ACLPermissionDenied, c.acl.list)
         pytest.raises(consul.ACLPermissionDenied, c.acl.create)
+        pytest.raises(consul.ACLPermissionDenied, c.acl.update, 'anonymous')
         pytest.raises(consul.ACLPermissionDenied, c.acl.clone, 'anonymous')
+        pytest.raises(consul.ACLPermissionDenied, c.acl.destroy, 'anonymous')
 
     def test_acl_explict_token_use(self, acl_consul):
         c = consul.Consul(port=acl_consul.port)
@@ -165,3 +169,9 @@ class TestConsul(object):
 
         token2 = c.acl.clone(token, token=master_token)
         assert c.acl.info(token2)['Rules'] == rules
+
+        assert c.acl.update(token, name='Foo', token=master_token) == token
+        assert c.acl.info(token)['Name'] == 'Foo'
+
+        assert c.acl.destroy(token2, token=master_token) is True
+        assert c.acl.info(token2) is None

@@ -66,7 +66,7 @@ class TestConsul(object):
         c = consul.Consul(port=consul_port)
         assert c.agent.services().keys() == ['consul']
         assert c.agent.service.register('foo') is True
-        assert c.agent.services().keys() == ['consul', 'foo']
+        assert set(c.agent.services().keys()) == set(['consul', 'foo'])
         assert c.agent.service.deregister('foo') is True
         assert c.agent.services().keys() == ['consul']
 

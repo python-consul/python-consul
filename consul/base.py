@@ -42,6 +42,8 @@ class Consul(object):
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
 
+            *token* is an optional `ACL token`_ to apply to this request.
+
             The *value* returned is for the specified key, or if *recurse* is
             True a list of *values* for all keys with the given prefix is
             returned.
@@ -95,6 +97,10 @@ class Consul(object):
             An optional *flags* can be set. This can be used to specify an
             unsigned value between 0 and 2^64-1.
 
+            *token* is an optional `ACL token`_ to apply to this request. If
+            the token's policy is not allowed to write to this key an
+            *ACLPermissionDenied* exception will be raised.
+
             The return value is simply either True or False. If False is
             returned, then the update has not taken place.
             """
@@ -119,6 +125,10 @@ class Consul(object):
             """
             Deletes a single key or if *recurse* is True, all keys sharing a
             prefix.
+
+            *token* is an optional `ACL token`_ to apply to this request. If
+            the token's policy is not allowed to delete to this key an
+            *ACLPermissionDenied* exception will be raised.
             """
             assert not key.startswith('/')
 

@@ -40,7 +40,8 @@ setup(
     url='https://github.com/cablehead/python-consul',
     license='MIT',
     description=description,
-    long_description=open('README.rst').read(),
+    long_description=open('README.rst').read() + '\n\n' +
+        open('CHANGELOG.rst').read(),
     tests_require=['pytest'],
     cmdclass={'test': PyTest},
 )

@@ -278,6 +278,12 @@ class Consul(object):
             self.agent = agent
 
         def list(self, token=None):
+            """
+            Lists all the active ACL tokens. This is a privileged endpoint, and
+            requires a management token. *token* will override this client's
+            default token.  An *ACLPermissionDenied* exception will be raised
+            if a management token is not used.
+            """
             params = {}
             token = token or self.agent.token
             if token:
@@ -293,6 +299,9 @@ class Consul(object):
             return self.agent.http.get(callback, '/v1/acl/list', params=params)
 
         def info(self, acl_id, token=None):
+            """
+            Returns the token information for *acl_id*.
+            """
             params = {}
             token = token or self.agent.token
             if token:
@@ -308,7 +317,39 @@ class Consul(object):
             return self.agent.http.get(
                 callback, '/v1/acl/info/%s' % acl_id, params=params)
 
-        def create(self, name=None, typ=None, rules=None, token=None):
+        def create(self, name=None, type='client', rules=None, token=None):
+            """
+            Creates a new ACL token. This is a privileged endpoint, and
+            requires a management token. *token* will override this client's
+            default token.  An *ACLPermissionDenied* exception will be raised
+            if a management token is not used.
+
+            *name* is an optional name for this token.
+
+            *type* is either 'management' or 'client'. A management token is
+            effectively like a root user, and has the ability to perform any
+            action including creating, modifying, and deleting ACLs. A client
+            token can only perform actions as permitted by *rules*.
+
+            *rules* is an optional `HCL`_ string for this `ACL Token`_ Rule
+            Specification.
+
+            Rules look like this::
+
+                # Default all keys to read-only
+                key "" {
+                  policy = "read"
+                }
+                key "foo/" {
+                  policy = "write"
+                }
+                key "foo/private/" {
+                  # Deny access to the private dir
+                  policy = "deny"
+                }
+
+            Returns the string *acl_id* for the new token.
+            """
             params = {}
             token = token or self.agent.token
             if token:
@@ -317,9 +358,9 @@ class Consul(object):
             payload = {}
             if name:
                 payload['Name'] = name
-            if typ:
-                assert typ == 'client' or typ == 'management'
-                payload['Type'] = typ
+            if type:
+                assert type == 'client' or type == 'management'
+                payload['Type'] = type
             if rules:
                 assert isinstance(rules, str), \
                     'Only HCL encoded strings supported for the moment'
@@ -340,7 +381,25 @@ class Consul(object):
             return self.agent.http.put(
                 callback, '/v1/acl/create', params=params, data=data)
 
-        def update(self, acl_id, name=None, typ=None, rules=None, token=None):
+        def update(self, acl_id, name=None, type=None, rules=None, token=None):
+            """
+            Updates the ACL token *acl_id*. This is a privileged endpoint, and
+            requires a management token. *token* will override this client's
+            default token. An *ACLPermissionDenied* exception will be raised if
+            a management token is not used.
+
+            *name* is an optional name for this token.
+
+            *type* is either 'management' or 'client'. A management token is
+            effectively like a root user, and has the ability to perform any
+            action including creating, modifying, and deleting ACLs. A client
+            token can only perform actions as permitted by *rules*.
+
+            *rules* is an optional `HCL`_ string for this `ACL Token`_ Rule
+            Specification.
+
+            Returns the string *acl_id* of this token on success.
+            """
             params = {}
             token = token or self.agent.token
             if token:
@@ -349,9 +408,9 @@ class Consul(object):
             payload = {'ID': acl_id}
             if name:
                 payload['Name'] = name
-            if typ:
-                assert typ == 'client' or typ == 'management'
-                payload['Type'] = typ
+            if type:
+                assert type == 'client' or type == 'management'
+                payload['Type'] = type
             if rules:
                 assert isinstance(rules, str), \
                     'Only HCL encoded strings supported for the moment'
@@ -370,6 +429,14 @@ class Consul(object):
                 callback, '/v1/acl/update', params=params, data=data)
 
         def clone(self, acl_id, token=None):
+            """
+            Clones the ACL token *acl_id*. This is a privileged endpoint, and
+            requires a management token. *token* will override this client's
+            default token. An *ACLPermissionDenied* exception will be raised if
+            a management token is not used.
+
+            Returns the string of the newly created *acl_id*.
+            """
             params = {}
             token = token or self.agent.token
             if token:
@@ -386,6 +453,14 @@ class Consul(object):
                 callback, '/v1/acl/clone/%s' % acl_id, params=params)
 
         def destroy(self, acl_id, token=None):
+            """
+            Destroys the ACL token *acl_id*. This is a privileged endpoint, and
+            requires a management token. *token* will override this client's
+            default token. An *ACLPermissionDenied* exception will be raised if
+            a management token is not used.
+
+            Returns *True* on success.
+            """
             params = {}
             token = token or self.agent.token
             if token:

@@ -119,6 +119,7 @@ consul.acl
    :undoc-members:
 
 .. _ACL Token: http://www.consul.io/docs/internals/acl.html
+.. _HCL: https://github.com/hashicorp/hcl/
 .. _requests: http://python-requests.org
 .. _Vanilla: https://github.com/cablehead/vanilla
 .. _gevent: http://www.gevent.org

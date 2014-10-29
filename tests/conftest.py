@@ -1,7 +1,9 @@
+import collections
 import subprocess
 import tempfile
 import socket
 import shlex
+import uuid
 import time
 import json
 import os
@@ -94,4 +96,22 @@ def consul_port(consul_instance):
     yield consul_instance
     # remove all data from the instance, to have a clean start
     base_uri = 'http://127.0.0.1:%s/v1/' % consul_instance
+    requests.delete(base_uri + 'kv/?recurse=1')
+
+
+@pytest.yield_fixture(scope="session")
+def acl_consul_instance():
+    acl_master_token = uuid.uuid4().hex
+    p, port = start_consul_instance(acl_master_token=acl_master_token)
+    yield port, acl_master_token
+    p.terminate()
+
+
+@pytest.yield_fixture
+def acl_consul(acl_consul_instance):
+    ACLConsul = collections.namedtuple('ACLConsul', ['port', 'token'])
+    port, token = acl_consul_instance
+    yield ACLConsul(port, token)
+    # remove all data from the instance, to have a clean start
+    base_uri = 'http://127.0.0.1:%s/v1/' % port
     requests.delete(base_uri + 'kv/?recurse=1')

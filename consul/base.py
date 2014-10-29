@@ -7,6 +7,10 @@ class ACLDisabled(Exception):
     pass
 
 
+class ACLPermissionDenied(Exception):
+    pass
+
+
 class Timeout(Exception):
     pass
 
@@ -237,9 +241,16 @@ class Consul(object):
         def __init__(self, agent):
             self.agent = agent
 
-        def list(self):
+        def list(self, token=None):
+            params = {}
+            if token:
+                params['token'] = token
+
             def callback(response):
                 if response.code == 401:
                     raise ACLDisabled(response.body)
-                return response
-            return self.agent.http.get(callback, '/v1/acl/list')
+                if response.code == 403:
+                    raise ACLPermissionDenied(response.body)
+                return json.loads(response.body)
+
+            return self.agent.http.get(callback, '/v1/acl/list', params=params)

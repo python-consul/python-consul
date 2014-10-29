@@ -128,6 +128,16 @@ class TestConsul(object):
         index, nodes = c.health.service('foo')
         assert nodes == []
 
-    def test_acl_list(self, consul_port):
+    def test_acl_disabled(self, consul_port):
         c = consul.Consul(port=consul_port)
         pytest.raises(consul.ACLDisabled, c.acl.list)
+
+    def test_acl_permission_denied(self, acl_consul):
+        c = consul.Consul(port=acl_consul.port)
+        pytest.raises(consul.ACLPermissionDenied, c.acl.list)
+
+    def test_acl_list(self, acl_consul):
+        c = consul.Consul(port=acl_consul.port)
+        acls = c.acl.list(token=acl_consul.token)
+        assert set([x['ID'] for x in acls]) == \
+            set(['anonymous', acl_consul.token])

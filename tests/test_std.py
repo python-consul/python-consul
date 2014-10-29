@@ -136,8 +136,14 @@ class TestConsul(object):
         c = consul.Consul(port=acl_consul.port)
         pytest.raises(consul.ACLPermissionDenied, c.acl.list)
 
-    def test_acl_list(self, acl_consul):
+    def test_acl(self, acl_consul):
         c = consul.Consul(port=acl_consul.port)
+
         acls = c.acl.list(token=acl_consul.token)
-        assert set([x['ID'] for x in acls]) == \
-            set(['anonymous', acl_consul.token])
+        acls.sort()
+        assert [x['ID'] for x in acls] == ['anonymous', acl_consul.token]
+
+        assert c.acl.info('foo') is None
+        compare = [c.acl.info(acl_consul.token), c.acl.info('anonymous')]
+        compare.sort()
+        assert acls == compare

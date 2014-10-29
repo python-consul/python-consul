@@ -254,3 +254,16 @@ class Consul(object):
                 return json.loads(response.body)
 
             return self.agent.http.get(callback, '/v1/acl/list', params=params)
+
+        def info(self, acl_id, token=None):
+            params = {}
+            if token:
+                params['token'] = token
+
+            def callback(response):
+                response = json.loads(response.body)
+                if response:
+                    return response[0]
+
+            return self.agent.http.get(
+                callback, '/v1/acl/info/%s' % acl_id, params=params)

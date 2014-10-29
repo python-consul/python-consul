@@ -111,6 +111,12 @@ consul.health
    :members:
    :undoc-members:
 
+consul.acl
+~~~~~~~~~~
+
+.. autoclass:: consul.base::Consul.ACL()
+   :members:
+   :undoc-members:
 
 .. _requests: http://python-requests.org
 .. _Vanilla: https://github.com/cablehead/vanilla

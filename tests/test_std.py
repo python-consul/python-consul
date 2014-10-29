@@ -64,12 +64,11 @@ class TestConsul(object):
 
     def test_agent_services(self, consul_port):
         c = consul.Consul(port=consul_port)
-        assert c.agent.services() == {}
+        assert c.agent.services().keys() == ['consul']
         assert c.agent.service.register('foo') is True
-        assert c.agent.services() == {
-            'foo': {'Port': 0, 'ID': 'foo', 'Service': 'foo', 'Tags': None}}
+        assert c.agent.services().keys() == ['consul', 'foo']
         assert c.agent.service.deregister('foo') is True
-        assert c.agent.services() == {}
+        assert c.agent.services().keys() == ['consul']
 
     def test_health_service(self, consul_port):
         c = consul.Consul(port=consul_port)

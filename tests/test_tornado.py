@@ -89,16 +89,19 @@ class TestConsul(object):
         def main():
             c = consul.tornado.Consul(port=consul_port)
             services = yield c.agent.services()
+            del services['consul']
             assert services == {}
             response = yield c.agent.service.register('foo')
             assert response is True
             services = yield c.agent.services()
+            del services['consul']
             assert services == {
                 'foo': {
                     'Port': 0, 'ID': 'foo', 'Service': 'foo', 'Tags': None}}
             response = yield c.agent.service.deregister('foo')
             assert response is True
             services = yield c.agent.services()
+            del services['consul']
             assert services == {}
             loop.stop()
         loop.run_sync(main)

@@ -26,14 +26,26 @@ def get_free_ports(num, host=None):
     return ret
 
 
-@pytest.yield_fixture(scope="session")
-def consul_instance():
+def start_consul_instance(acl_master_token=None):
+    """
+    starts a consul instance. if acl_master_token is None, acl will be disabled
+    for this server, otherwise it will be enabled and the master token will be
+    set to the supplied token
+
+    returns: a tuple of the instances process object and the http port the
+             instance is listening on
+    """
     ports = dict(zip(
         ['http', 'rpc', 'serf_lan', 'serf_wan', 'server', 'dns'],
         get_free_ports(5) + [-1]))
 
+    config = {'ports': ports}
+    if acl_master_token:
+        config['acl_datacenter'] = 'dc1'
+        config['acl_master_token'] = acl_master_token
+
     tmpdir = py.path.local(tempfile.mkdtemp())
-    tmpdir.join('ports.json').write(json.dumps({'ports': ports}))
+    tmpdir.join('config.json').write(json.dumps(config))
     tmpdir.chdir()
 
     bin = os.path.join(os.path.dirname(__file__), 'consul')
@@ -67,15 +79,19 @@ def consul_instance():
 
     requests.get(base_uri + 'agent/service/deregister/foo')
     # phew
+    return p, ports['http']
 
-    yield ports['http']
+
+@pytest.yield_fixture(scope="session")
+def consul_instance():
+    p, port = start_consul_instance()
+    yield port
     p.terminate()
 
 
 @pytest.yield_fixture
 def consul_port(consul_instance):
     yield consul_instance
-
     # remove all data from the instance, to have a clean start
     base_uri = 'http://127.0.0.1:%s/v1/' % consul_instance
     requests.delete(base_uri + 'kv/?recurse=1')

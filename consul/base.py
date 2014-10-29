@@ -3,6 +3,10 @@ import base64
 import json
 
 
+class ACLDisabled(Exception):
+    pass
+
+
 class Timeout(Exception):
     pass
 
@@ -16,6 +20,7 @@ class Consul(object):
         self.kv = Consul.KV(self)
         self.agent = Consul.Agent(self)
         self.health = Consul.Health(self)
+        self.acl = Consul.ACL(self)
 
     class KV(object):
         """
@@ -227,3 +232,14 @@ class Consul(object):
                 return self.agent.http.get(
                     lambda x: x.code == 200,
                     '/v1/agent/check/pass/%s' % check_id)
+
+    class ACL(object):
+        def __init__(self, agent):
+            self.agent = agent
+
+        def list(self):
+            def callback(response):
+                if response.code == 401:
+                    raise ACLDisabled(response.body)
+                return response
+            return self.agent.http.get(callback, '/v1/acl/list')

@@ -1,5 +1,7 @@
 import time
 
+import pytest
+
 import consul
 import consul.std
 
@@ -125,3 +127,7 @@ class TestConsul(object):
 
         index, nodes = c.health.service('foo')
         assert nodes == []
+
+    def test_acl_list(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        pytest.raises(consul.ACLDisabled, c.acl.list)

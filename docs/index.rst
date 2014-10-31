@@ -88,6 +88,42 @@ Handy tools built on python-consul.
 automatically register new services through consul API and manage TTL health
 checks.
 
+Example Uses
+------------
+
+ACLs
+~~~~
+
+.. code:: python
+
+    import consul
+
+    # master_token is a *management* token, for example the *acl_master_token*
+    # you started the Consul server with
+    master = consul.Consul(token=master_token)
+
+    master.kv.put('foo', 'bar')
+    master.kv.put('private/foo', 'bar')
+
+    rules = """
+        key "" {
+            policy = "read"
+        }
+        key "private/" {
+            policy = "deny"
+        }
+    """
+    token = master.acl.create(rules=rules)
+
+    client = consul.Consule(token=token)
+
+    client.kv.get('foo')          # OK
+    client.kv.put('foo', 'bar2')  # raises ACLPermissionDenied
+
+    client.kv.get('private/foo')  # returns None, as though the key doesn't
+                                  # exist - slightly unintuitive
+    client.kv.put('private/foo', 'bar2')  # raises ACLPermissionDenied
+
 API Documentation
 -----------------
 

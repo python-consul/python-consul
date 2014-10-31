@@ -76,6 +76,17 @@ Wanted
 
 Adaptors for `asyncio`_, `Twisted`_ and a `thread pool`_ based adaptor.
 
+Tools
+-----
+
+Handy tools built on python-consul.
+
+`ianitor`_
+~~~~~~~~~~
+
+`ianitor`_ is a doorkeeper for your services discovered using consul. It can
+automatically register new services through consul API and manage TTL health
+checks.
 
 API Documentation
 -----------------
@@ -129,3 +140,5 @@ consul.acl
 .. _asyncio: https://docs.python.org/3/library/asyncio.html
 .. _Twisted: https://twistedmatrix.com/trac/
 .. _thread pool: https://docs.python.org/2/library/threading.html
+
+.. _ianitor: https://github.com/ClearcodeHQ/ianitor

@@ -43,3 +43,10 @@ Installation
    image:: https://coveralls.io/repos/cablehead/python-consul/badge.png?branch=master
    :target: https://coveralls.io/r/cablehead/python-consul?branch=master
 .. _Read the Docs: http://python-consul.readthedocs.org/
+
+Status
+------
+
+There's a few API endpoints still to go to expose all features available in
+Consul v0.4.1. If you need an endpoint that's not in the documentation, just
+open an issue and I'll try and add it straight away.

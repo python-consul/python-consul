@@ -3,6 +3,10 @@ import base64
 import json
 
 
+class ConsulException(Exception):
+    pass
+
+
 class ACLDisabled(Exception):
     pass
 
@@ -26,11 +30,14 @@ class Consul(object):
         possible to override this token by passing a token explicitly for a
         request.
         """
+        # TODO: allow configuring a default consistency mode to use
+        # TODO: Session, Event, Status
         self.http = self.connect(host, port)
         self.token = token
 
         self.kv = Consul.KV(self)
         self.agent = Consul.Agent(self)
+        self.catalog = Consul.Catalog(self)
         self.health = Consul.Health(self)
         self.acl = Consul.ACL(self)
 
@@ -68,6 +75,7 @@ class Consul(object):
                     "Session": "adf4238a-882b-9ddc-4a9d-5b6758e4159e"
                 }
             """
+            # TODO: supports consistency modes
             assert not key.startswith('/')
             params = {}
             if index:
@@ -164,6 +172,8 @@ class Consul(object):
         takes on the burden of registering with the Catalog and performing
         anti-entropy to recover from outages.
         """
+        # TODO: checks, members, join, force-leave
+        # TODO: Check. register, deregister, pass (move), warn, fail
         def __init__(self, agent):
             self.agent = agent
             self.service = Consul.Agent.Service(agent)
@@ -239,7 +249,61 @@ class Consul(object):
                     lambda x: x.code == 200,
                     '/v1/agent/service/deregister/%s' % service_id)
 
+    class Catalog(object):
+        def __init__(self, agent):
+            self.agent = agent
+
+        def register(self, node, address, dc=None, service=None, check=None):
+            pass
+
+        def deregister(self, node, dc=None, service_id=None, check_id=None):
+            pass
+
+        def datacenters(self):
+            """
+            Returns all the datacenters that are known by the Consul server.
+            """
+            return self.agent.http.get(
+                lambda x: json.loads(x.body), '/v1/catalog/datacenters')
+
+        def nodes(self, dc=None):
+            """
+            Returns the nodes known about in the *dc* datacenter. *dc* defaults
+            to the current datacenter of this agent.
+            """
+            # TODO: supports blocking queries and all consistency modes
+            params = {}
+            if dc:
+                params['dc'] = dc
+
+            def callback(response):
+                if response.code == 500:
+                    raise ConsulException(response.body)
+                return json.loads(response.body)
+
+            return self.agent.http.get(
+                callback, '/v1/catalog/nodes', params=params)
+
+        def services(self, dc=None):
+            """
+            Returns the services known about in the *dc* datacenter. *dc*
+            defaults to the current datacenter of this agent.
+            """
+            # TODO: supports blocking queries and all consistency modes
+
+        def node(self, node, dc=None):
+            # TODO: supports blocking queries and all consistency modes
+            pass
+
+        def service(self, service, dc=None, tag=None):
+            # TODO: supports blocking queries and all consistency modes
+            pass
+
     class Health(object):
+        # TODO: All of the health endpoints support blocking queries and all
+        # consistency modes
+        # TODO: Check ttl_pass belongs under Agent
+        # TODO: still need to add node, checks and state endpoints
         def __init__(self, agent):
             self.agent = agent
             self.check = Consul.Health.Check(agent)

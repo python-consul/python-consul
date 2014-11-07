@@ -128,6 +128,15 @@ class TestConsul(object):
         index, nodes = c.health.service('foo')
         assert nodes == []
 
+    def test_catalog_datacenters(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        assert c.catalog.datacenters() == ['dc1']
+
+    def test_catalog_nodes(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        assert len(c.catalog.nodes()) == 1
+        pytest.raises(consul.ConsulException, c.catalog.nodes, dc='dc2')
+
     def test_acl_disabled(self, consul_port):
         c = consul.Consul(port=consul_port)
         pytest.raises(consul.ACLDisabled, c.acl.list)

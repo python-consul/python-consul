@@ -78,7 +78,8 @@ class TestConsul(object):
 
     def test_catalog_nodes(self, consul_port):
         c = consul.Consul(port=consul_port)
-        assert len(c.catalog.nodes()) == 1
+        _, nodes = c.catalog.nodes()
+        assert len(nodes) == 1
         pytest.raises(consul.ConsulException, c.catalog.nodes, dc='dc2')
 
     def test_health_service(self, consul_port):

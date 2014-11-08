@@ -375,7 +375,9 @@ class Consul(object):
             def callback(response):
                 if response.code == 500:
                     raise ConsulException(response.body)
-                return json.loads(response.body)
+                return (
+                    response.headers['X-Consul-Index'],
+                    json.loads(response.body))
 
             return self.agent.http.get(
                 callback, '/v1/catalog/nodes', params=params)

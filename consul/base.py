@@ -45,6 +45,7 @@ class Consul(object):
 
         self.http = self.connect(host, port)
         self.token = token
+        assert consistency in ('default', 'consistent', 'stale')
         self.consistency = consistency
 
         self.kv = Consul.KV(self)

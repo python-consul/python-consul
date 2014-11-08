@@ -356,19 +356,16 @@ class Consul(object):
 
             The response looks like this::
 
-                (
-                    index,
-                    [
-                        {
-                            "Node": "baz",
-                            "Address": "10.1.10.11"
-                        },
-                        {
-                            "Node": "foobar",
-                            "Address": "10.1.10.12"
-                        }
-                    ]
-                )
+                (index, [
+                    {
+                        "Node": "baz",
+                        "Address": "10.1.10.11"
+                    },
+                    {
+                        "Node": "foobar",
+                        "Address": "10.1.10.12"
+                    }
+                ])
             """
             params = {}
             if dc:
@@ -397,17 +394,14 @@ class Consul(object):
 
             The response looks like this::
 
-                (
-                    index,
-                    {
-                        "consul": [],
-                        "redis": [],
-                        "postgresql": [
-                            "master",
-                            "slave"
-                        ]
-                    }
-                )
+                (index, {
+                    "consul": [],
+                    "redis": [],
+                    "postgresql": [
+                        "master",
+                        "slave"
+                    ]
+                })
 
             The main keys are the service names and the list provides all the
             known tags for a given service.
@@ -430,31 +424,28 @@ class Consul(object):
 
             The response looks like this::
 
-                (
-                    index,
-                    {
-                        "Node": {
-                            "Node": "foobar",
-                            "Address": "10.1.10.12"
+                (index, {
+                    "Node": {
+                        "Node": "foobar",
+                        "Address": "10.1.10.12"
+                    },
+                    "Services": {
+                        "consul": {
+                            "ID": "consul",
+                            "Service": "consul",
+                            "Tags": null,
+                            "Port": 8300
                         },
-                        "Services": {
-                            "consul": {
-                                "ID": "consul",
-                                "Service": "consul",
-                                "Tags": null,
-                                "Port": 8300
-                            },
-                            "redis": {
-                                "ID": "redis",
-                                "Service": "redis",
-                                "Tags": [
-                                    "v1"
-                                ],
-                                "Port": 8000
-                            }
+                        "redis": {
+                            "ID": "redis",
+                            "Service": "redis",
+                            "Tags": [
+                                "v1"
+                            ],
+                            "Port": 8000
                         }
                     }
-                )
+                })
             """
 
         def service(
@@ -481,19 +472,16 @@ class Consul(object):
 
             The response looks like this::
 
-                (
-                    index,
-                    [
-                        {
-                            "Node": "foobar",
-                            "Address": "10.1.10.12",
-                            "ServiceID": "redis",
-                            "ServiceName": "redis",
-                            "ServiceTags": null,
-                            "ServicePort": 8000
-                        }
-                    ]
-                )
+                (index, [
+                    {
+                        "Node": "foobar",
+                        "Address": "10.1.10.12",
+                        "ServiceID": "redis",
+                        "ServiceName": "redis",
+                        "ServiceTags": null,
+                        "ServicePort": 8000
+                    }
+                ])
             """
 
     class Health(object):

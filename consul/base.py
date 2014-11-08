@@ -78,7 +78,13 @@ class Consul(object):
         def __init__(self, agent):
             self.agent = agent
 
-        def get(self, key, index=None, recurse=False, token=None):
+        def get(
+                self,
+                key,
+                index=None,
+                recurse=False,
+                token=None,
+                consistency=None):
             """
             Returns a tuple of (*index*, *value[s]*)
 
@@ -103,7 +109,6 @@ class Consul(object):
                     "Session": "adf4238a-882b-9ddc-4a9d-5b6758e4159e"
                 }
             """
-            # TODO: supports consistency modes
             assert not key.startswith('/')
             params = {}
             if index:
@@ -113,6 +118,9 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 params['token'] = token
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params[consistency] = '1'
 
             def callback(response):
                 if response.code == 404:
@@ -408,6 +416,8 @@ class Consul(object):
             params = {}
             if dc:
                 params['dc'] = dc
+            if index:
+                params['index'] = index
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -444,6 +454,8 @@ class Consul(object):
             params = {}
             if dc:
                 params['dc'] = dc
+            if index:
+                params['index'] = index
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -494,6 +506,8 @@ class Consul(object):
             params = {}
             if dc:
                 params['dc'] = dc
+            if index:
+                params['index'] = index
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -541,6 +555,8 @@ class Consul(object):
                 params['dc'] = dc
             if tag:
                 params['tag'] = tag
+            if index:
+                params['index'] = index
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'

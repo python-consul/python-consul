@@ -26,20 +26,33 @@ class Consul(consul.base.Consul):
         return HTTPClient(host, port)
 
 
+def _should_support(c):
+    return (
+        lambda **kw: c.kv.get('foo', **kw),
+        c.catalog.nodes,
+        c.catalog.services,
+        lambda **kw: c.catalog.node('foo', **kw),
+        lambda **kw: c.catalog.service('foo', **kw),)
+
+
+class TestIndex(object):
+    """
+    Tests read requests that should support blocking on an index
+    """
+    def test_index(self):
+        c = Consul()
+        for r in _should_support(c):
+            assert r().params == {}
+            assert r(index='5').params == {'index': '5'}
+
+
 class TestConsistency(object):
     """
     Tests read requests that should support consistency modes
     """
-    def _should_support(self, c):
-        return (
-            c.catalog.nodes,
-            c.catalog.services,
-            lambda **kw: c.catalog.node('foo', **kw),
-            lambda **kw: c.catalog.service('foo', **kw),)
-
     def test_explict(self):
         c = Consul()
-        for r in self._should_support(c):
+        for r in _should_support(c):
             assert r().params == {}
             assert r(consistency='default').params == {}
             assert r(consistency='consistent').params == {'consistent': '1'}
@@ -47,7 +60,7 @@ class TestConsistency(object):
 
     def test_implicit(self):
         c = Consul(consistency='consistent')
-        for r in self._should_support(c):
+        for r in _should_support(c):
             assert r().params == {'consistent': '1'}
             assert r(consistency='default').params == {}
             assert r(consistency='consistent').params == {'consistent': '1'}

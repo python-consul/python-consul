@@ -158,6 +158,13 @@ consul.health
    :members:
    :undoc-members:
 
+consul.catalog
+~~~~~~~~~~~~~~
+
+.. autoclass:: consul.base::Consul.Catalog()
+   :members:
+   :undoc-members:
+
 consul.acl
 ~~~~~~~~~~
 

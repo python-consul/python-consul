@@ -254,10 +254,73 @@ class Consul(object):
             self.agent = agent
 
         def register(self, node, address, dc=None, service=None, check=None):
-            pass
+            """
+            A low level mechanism for directly registering or updating entries
+            in the catalog. It is usually recommended to use
+            agent.service.register and agent.check.register, as they are
+            simpler and perform anti-entropy.
 
-        def deregister(self, node, dc=None, service_id=None, check_id=None):
-            pass
+            *node* is the name of the node to register.
+
+            *address* is the ip of the node.
+
+            *dc* is the datacenter of the node and defaults to this agents
+            datacenter.
+
+            *service* is an optional service to register. if supplied this is a
+            dict::
+
+                {
+                    "Service": "redis",
+                    "ID": "redis1",
+                    "Tags": [
+                        "master",
+                        "v1"
+                    ],
+                    "Port": 8000
+                }
+
+            where
+
+                *Service* is required and is the name of the service
+
+                *ID* is optional, and will be set to *Service* if not provided.
+                Note *ID* must be unique for the given *node*.
+
+                *Tags* and *Port* are optional.
+
+            *check* is an optional check to register. if supplied this is a
+            dict::
+
+                {
+                    "Node": "foobar",
+                    "CheckID": "service:redis1",
+                    "Name": "Redis health check",
+                    "Notes": "Script based health check",
+                    "Status": "passing",
+                    "ServiceID": "redis1"
+                }
+
+            This manipulates the health check entry, but does not setup a
+            script or TTL to actually update the status. The full documentation
+            is `here <https://consul.io/docs/agent/http.html#catalog>`_.
+
+            Returns *True* on success.
+            """
+
+        def deregister(self, node, dc, service_id=None, check_id=None):
+            """
+            A low level mechanism for direclty removing entries in the catalog.
+            It is usually recommended to use the agent APIs, as they are
+            simpler and perform anti-entropy.
+
+            *node* and *dc* specify which node on which datacenter to remove.
+            If *service_id* and *check_id* are not provided, all associated
+            services and checks are deleted. Otherwise only one of *service_id*
+            and *check_id* should be provided and only that service or check
+            will be removed.
+            """
+            assert not (service_id and check_id)
 
         def datacenters(self):
             """
@@ -270,6 +333,19 @@ class Consul(object):
             """
             Returns the nodes known about in the *dc* datacenter. *dc* defaults
             to the current datacenter of this agent.
+
+            The response looks like this::
+
+                [
+                    {
+                        "Node": "baz",
+                        "Address": "10.1.10.11"
+                    },
+                    {
+                        "Node": "foobar",
+                        "Address": "10.1.10.12"
+                    }
+                ]
             """
             # TODO: supports blocking queries and all consistency modes
             params = {}
@@ -288,14 +364,79 @@ class Consul(object):
             """
             Returns the services known about in the *dc* datacenter. *dc*
             defaults to the current datacenter of this agent.
+
+            The response looks like this::
+
+                {
+                    "consul": [],
+                    "redis": [],
+                    "postgresql": [
+                        "master",
+                        "slave"
+                    ]
+                }
+
+            The main keys are the service names, and the list provides all the
+            known tags for a given service.
             """
             # TODO: supports blocking queries and all consistency modes
 
         def node(self, node, dc=None):
+            """
+            Returns the services provided by *node*.
+
+            *dc* is the datacenter of the node and defaults to this agents
+            datacenter.
+
+            The response looks like this::
+
+                {
+                    "Node": {
+                        "Node": "foobar",
+                        "Address": "10.1.10.12"
+                    },
+                    "Services": {
+                        "consul": {
+                            "ID": "consul",
+                            "Service": "consul",
+                            "Tags": null,
+                            "Port": 8300
+                        },
+                        "redis": {
+                            "ID": "redis",
+                            "Service": "redis",
+                            "Tags": [
+                                "v1"
+                            ],
+                            "Port": 8000
+                        }
+                    }
+                }
+            """
             # TODO: supports blocking queries and all consistency modes
             pass
 
         def service(self, service, dc=None, tag=None):
+            """
+            Returns the nodes providing *service* in the *dc* datacenter. *dc*
+            defaults to the current datacenter of this agent.
+
+            If *tag* is provided, the list of nodes returned will be filtered
+            by that tag.
+
+            The response looks like this::
+
+                [
+                    {
+                        "Node": "foobar",
+                        "Address": "10.1.10.12",
+                        "ServiceID": "redis",
+                        "ServiceName": "redis",
+                        "ServiceTags": null,
+                        "ServicePort": 8000
+                    }
+                ]
+            """
             # TODO: supports blocking queries and all consistency modes
             pass
 

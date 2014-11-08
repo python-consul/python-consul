@@ -310,7 +310,7 @@ class Consul(object):
 
         def deregister(self, node, dc, service_id=None, check_id=None):
             """
-            A low level mechanism for direclty removing entries in the catalog.
+            A low level mechanism for directly removing entries in the catalog.
             It is usually recommended to use the agent APIs, as they are
             simpler and perform anti-entropy.
 

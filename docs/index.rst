@@ -146,6 +146,13 @@ consul.agent
 .. autoclass:: consul.base::Consul.Agent.Service()
    :members:
 
+consul.catalog
+~~~~~~~~~~~~~~
+
+.. autoclass:: consul.base::Consul.Catalog()
+   :members:
+   :undoc-members:
+
 consul.health
 ~~~~~~~~~~~~~
 
@@ -155,13 +162,6 @@ consul.health
    :exclude-members: Check
 
 .. autoclass:: consul.base::Consul.Health.Check()
-   :members:
-   :undoc-members:
-
-consul.catalog
-~~~~~~~~~~~~~~
-
-.. autoclass:: consul.base::Consul.Catalog()
    :members:
    :undoc-members:
 

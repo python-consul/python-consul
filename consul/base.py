@@ -408,6 +408,9 @@ class Consul(object):
             params = {}
             if dc:
                 params['dc'] = dc
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params[consistency] = '1'
             return self.agent.http.get(
                 callback(is_indexed=True), '/v1/catalog/nodes', params=params)
 
@@ -441,6 +444,9 @@ class Consul(object):
             params = {}
             if dc:
                 params['dc'] = dc
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params[consistency] = '1'
             return self.agent.http.get(
                 callback(is_indexed=True),
                 '/v1/catalog/services', params=params)
@@ -488,6 +494,9 @@ class Consul(object):
             params = {}
             if dc:
                 params['dc'] = dc
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params[consistency] = '1'
             return self.agent.http.get(
                 callback(is_indexed=True),
                 '/v1/catalog/node/%s' % node, params=params)
@@ -532,6 +541,9 @@ class Consul(object):
                 params['dc'] = dc
             if tag:
                 params['tag'] = tag
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params[consistency] = '1'
             return self.agent.http.get(
                 callback(is_indexed=True),
                 '/v1/catalog/service/%s' % service, params=params)

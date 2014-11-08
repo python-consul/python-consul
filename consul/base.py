@@ -23,17 +23,29 @@ Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
 
 
 class Consul(object):
-    def __init__(self, host='127.0.0.1', port=8500, token=None):
+    def __init__(
+            self,
+            host='127.0.0.1',
+            port=8500,
+            token=None,
+            consistency='default'):
         """
         *token* is an optional `ACL token`_. If supplied it will be used by
         default for all requests made with this client session. It's still
         possible to override this token by passing a token explicitly for a
         request.
+
+        *consistency* sets the consistency mode to use by default for all reads
+        that support the consistency option. It's still possible to override
+        this by passing explicitly for a given request. *consistency* can be
+        either 'default', 'consistent' or 'stale'.
         """
-        # TODO: allow configuring a default consistency mode to use
+
         # TODO: Session, Event, Status
+
         self.http = self.connect(host, port)
         self.token = token
+        self.consistency = consistency
 
         self.kv = Consul.KV(self)
         self.agent = Consul.Agent(self)
@@ -329,25 +341,35 @@ class Consul(object):
             return self.agent.http.get(
                 lambda x: json.loads(x.body), '/v1/catalog/datacenters')
 
-        def nodes(self, dc=None):
+        def nodes(self, dc=None, index=None, consistency=None):
             """
-            Returns the nodes known about in the *dc* datacenter. *dc* defaults
-            to the current datacenter of this agent.
+            Returns a tuple of (*index*, *nodes*) of all nodes known
+            about in the *dc* datacenter. *dc* defaults to the current
+            datacenter of this agent.
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
 
             The response looks like this::
 
-                [
-                    {
-                        "Node": "baz",
-                        "Address": "10.1.10.11"
-                    },
-                    {
-                        "Node": "foobar",
-                        "Address": "10.1.10.12"
-                    }
-                ]
+                (
+                    index,
+                    [
+                        {
+                            "Node": "baz",
+                            "Address": "10.1.10.11"
+                        },
+                        {
+                            "Node": "foobar",
+                            "Address": "10.1.10.12"
+                        }
+                    ]
+                )
             """
-            # TODO: supports blocking queries and all consistency modes
             params = {}
             if dc:
                 params['dc'] = dc
@@ -360,85 +382,119 @@ class Consul(object):
             return self.agent.http.get(
                 callback, '/v1/catalog/nodes', params=params)
 
-        def services(self, dc=None):
+        def services(self, dc=None, index=None, consistency=None):
             """
-            Returns the services known about in the *dc* datacenter. *dc*
-            defaults to the current datacenter of this agent.
+            Returns a tuple of (*index*, *services*) of all services known
+            about in the *dc* datacenter. *dc* defaults to the current
+            datacenter of this agent.
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
 
             The response looks like this::
 
-                {
-                    "consul": [],
-                    "redis": [],
-                    "postgresql": [
-                        "master",
-                        "slave"
-                    ]
-                }
+                (
+                    index,
+                    {
+                        "consul": [],
+                        "redis": [],
+                        "postgresql": [
+                            "master",
+                            "slave"
+                        ]
+                    }
+                )
 
-            The main keys are the service names, and the list provides all the
+            The main keys are the service names and the list provides all the
             known tags for a given service.
             """
-            # TODO: supports blocking queries and all consistency modes
 
-        def node(self, node, dc=None):
+        def node(self, node, dc=None, index=None, consistency=None):
             """
-            Returns the services provided by *node*.
+            Returns a tuple of (*index*, *services*) of all services provided
+            by *node*.
 
             *dc* is the datacenter of the node and defaults to this agents
             datacenter.
 
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
+
             The response looks like this::
 
-                {
-                    "Node": {
-                        "Node": "foobar",
-                        "Address": "10.1.10.12"
-                    },
-                    "Services": {
-                        "consul": {
-                            "ID": "consul",
-                            "Service": "consul",
-                            "Tags": null,
-                            "Port": 8300
+                (
+                    index,
+                    {
+                        "Node": {
+                            "Node": "foobar",
+                            "Address": "10.1.10.12"
                         },
-                        "redis": {
-                            "ID": "redis",
-                            "Service": "redis",
-                            "Tags": [
-                                "v1"
-                            ],
-                            "Port": 8000
+                        "Services": {
+                            "consul": {
+                                "ID": "consul",
+                                "Service": "consul",
+                                "Tags": null,
+                                "Port": 8300
+                            },
+                            "redis": {
+                                "ID": "redis",
+                                "Service": "redis",
+                                "Tags": [
+                                    "v1"
+                                ],
+                                "Port": 8000
+                            }
                         }
                     }
-                }
+                )
             """
-            # TODO: supports blocking queries and all consistency modes
-            pass
 
-        def service(self, service, dc=None, tag=None):
+        def service(
+                self,
+                service,
+                dc=None,
+                tag=None,
+                index=None,
+                consistency=None):
             """
-            Returns the nodes providing *service* in the *dc* datacenter. *dc*
-            defaults to the current datacenter of this agent.
+            Returns a tuple of (*index*, *nodes*) of the nodes providing
+            *service* in the *dc* datacenter. *dc* defaults to the current
+            datacenter of this agent.
 
             If *tag* is provided, the list of nodes returned will be filtered
             by that tag.
 
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
+
             The response looks like this::
 
-                [
-                    {
-                        "Node": "foobar",
-                        "Address": "10.1.10.12",
-                        "ServiceID": "redis",
-                        "ServiceName": "redis",
-                        "ServiceTags": null,
-                        "ServicePort": 8000
-                    }
-                ]
+                (
+                    index,
+                    [
+                        {
+                            "Node": "foobar",
+                            "Address": "10.1.10.12",
+                            "ServiceID": "redis",
+                            "ServiceName": "redis",
+                            "ServiceTags": null,
+                            "ServicePort": 8000
+                        }
+                    ]
+                )
             """
-            # TODO: supports blocking queries and all consistency modes
-            pass
 
     class Health(object):
         # TODO: All of the health endpoints support blocking queries and all

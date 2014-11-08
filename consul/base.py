@@ -7,19 +7,34 @@ class ConsulException(Exception):
     pass
 
 
-class ACLDisabled(Exception):
+class ACLDisabled(ConsulException):
     pass
 
 
-class ACLPermissionDenied(Exception):
+class ACLPermissionDenied(ConsulException):
     pass
 
 
-class Timeout(Exception):
+class Timeout(ConsulException):
     pass
 
 
 Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
+
+
+def callback(callback=None, is_200=False, is_indexed=False):
+    def cb(response):
+        if response.code == 500:
+            raise ConsulException(response.body)
+        if is_200:
+            return response.code == 200
+        if is_indexed:
+            return (
+                response.headers['X-Consul-Index'], json.loads(response.body))
+        if callback:
+            return callback(response)
+        return response
+    return cb
 
 
 class Consul(object):
@@ -320,8 +335,18 @@ class Consul(object):
 
             Returns *True* on success.
             """
+            data = {'node': node, 'address': address}
+            if dc:
+                data['datacenter'] = dc
+            if service:
+                data['service'] = service
+            if check:
+                data['check'] = check
+            return self.agent.http.put(
+                callback(is_200=True),
+                '/v1/catalog/register', data=json.dumps(data))
 
-        def deregister(self, node, dc, service_id=None, check_id=None):
+        def deregister(self, node, dc=None, service_id=None, check_id=None):
             """
             A low level mechanism for directly removing entries in the catalog.
             It is usually recommended to use the agent APIs, as they are
@@ -332,8 +357,20 @@ class Consul(object):
             services and checks are deleted. Otherwise only one of *service_id*
             and *check_id* should be provided and only that service or check
             will be removed.
+
+            Returns *True* on success.
             """
             assert not (service_id and check_id)
+            data = {'node': node}
+            if dc:
+                data['datacenter'] = dc
+            if service_id:
+                data['serviceid'] = service_id
+            if check_id:
+                data['checkid'] = check_id
+            return self.agent.http.put(
+                callback(is_200=True),
+                '/v1/catalog/deregister', data=json.dumps(data))
 
         def datacenters(self):
             """
@@ -371,16 +408,8 @@ class Consul(object):
             params = {}
             if dc:
                 params['dc'] = dc
-
-            def callback(response):
-                if response.code == 500:
-                    raise ConsulException(response.body)
-                return (
-                    response.headers['X-Consul-Index'],
-                    json.loads(response.body))
-
             return self.agent.http.get(
-                callback, '/v1/catalog/nodes', params=params)
+                callback(is_indexed=True), '/v1/catalog/nodes', params=params)
 
         def services(self, dc=None, index=None, consistency=None):
             """
@@ -409,6 +438,12 @@ class Consul(object):
             The main keys are the service names and the list provides all the
             known tags for a given service.
             """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            return self.agent.http.get(
+                callback(is_indexed=True),
+                '/v1/catalog/services', params=params)
 
         def node(self, node, dc=None, index=None, consistency=None):
             """
@@ -450,6 +485,12 @@ class Consul(object):
                     }
                 })
             """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            return self.agent.http.get(
+                callback(is_indexed=True),
+                '/v1/catalog/node/%s' % node, params=params)
 
         def service(
                 self,
@@ -486,6 +527,14 @@ class Consul(object):
                     }
                 ])
             """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            if tag:
+                params['tag'] = tag
+            return self.agent.http.get(
+                callback(is_indexed=True),
+                '/v1/catalog/service/%s' % service, params=params)
 
     class Health(object):
         # TODO: All of the health endpoints support blocking queries and all

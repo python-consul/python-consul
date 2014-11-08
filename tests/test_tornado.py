@@ -107,6 +107,41 @@ class TestConsul(object):
             loop.stop()
         loop.run_sync(main)
 
+    def test_catalog(self, loop, consul_port):
+        c = consul.tornado.Consul(port=consul_port)
+
+        def sleep(s):
+            result = gen.Future()
+            loop.add_timeout(
+                time.time()+s, lambda: result.set_result(None))
+            return result
+
+        @gen.coroutine
+        def nodes():
+            index, nodes = yield c.catalog.nodes()
+            assert len(nodes) == 1
+            current = nodes[0]
+
+            index, nodes = yield c.catalog.nodes(index=index)
+            nodes.remove(current)
+            assert [x['Node'] for x in nodes] == ['n1']
+
+            index, nodes = yield c.catalog.nodes(index=index)
+            nodes.remove(current)
+            assert [x['Node'] for x in nodes] == []
+            loop.stop()
+
+        @gen.coroutine
+        def register():
+            response = yield c.catalog.register('n1', '10.1.10.11')
+            assert response is True
+            yield sleep(50/1000.0)
+            response = yield c.catalog.deregister('n1')
+            assert response is True
+
+        loop.add_timeout(time.time()+(1.0/100), register)
+        loop.run_sync(nodes)
+
     def test_health_service(self, loop, consul_port):
         @gen.coroutine
         def main():

@@ -1,6 +1,14 @@
 Change log
 ==========
 
+0.3.2
+-----
+
+Features
+~~~~~~~~
+
+* Add support for Python 3.4
+
 0.3.1
 -----
 

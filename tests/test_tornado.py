@@ -1,9 +1,10 @@
 import time
 
+import pytest
+import six
+
 from tornado import ioloop
 from tornado import gen
-
-import pytest
 
 import consul
 import consul.tornado
@@ -26,7 +27,7 @@ class TestConsul(object):
             response = yield c.kv.put('foo', 'bar')
             assert response is True
             index, data = yield c.kv.get('foo')
-            assert data['Value'] == 'bar'
+            assert data['Value'] == six.b('bar')
             loop.stop()
         loop.run_sync(main)
 
@@ -74,7 +75,7 @@ class TestConsul(object):
             index, data = yield c.kv.get('foo')
             assert data is None
             index, data = yield c.kv.get('foo', index=index)
-            assert data['Value'] == 'bar'
+            assert data['Value'] == six.b('bar')
             loop.stop()
 
         @gen.coroutine

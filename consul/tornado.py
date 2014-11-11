@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-import urllib
+from six.moves import urllib
 
 from tornado import httpclient
 from tornado import gen
@@ -22,16 +22,17 @@ class HTTPClient(object):
         uri = self.base_uri + path
         if not params:
             return uri
-        return '%s?%s' % (uri, urllib.urlencode(params))
+        return '%s?%s' % (uri, urllib.parse.urlencode(params))
 
     def response(self, response):
-        return base.Response(response.code, response.headers, response.body)
+        return base.Response(
+            response.code, response.headers, response.body.decode('utf-8'))
 
     @gen.coroutine
     def _request(self, callback, request):
         try:
             response = yield self.client.fetch(request)
-        except httpclient.HTTPError, e:
+        except httpclient.HTTPError as e:
             if e.code == 599:
                 raise base.Timeout
             response = e.response

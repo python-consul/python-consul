@@ -1,4 +1,4 @@
-import urllib
+from six.moves import urllib
 
 import requests
 
@@ -22,7 +22,7 @@ class HTTPClient(object):
         uri = self.base_uri + path
         if not params:
             return uri
-        return '%s?%s' % (uri, urllib.urlencode(params))
+        return '%s?%s' % (uri, urllib.parse.urlencode(params))
 
     def get(self, callback, path, params=None):
         uri = self.uri(path, params)

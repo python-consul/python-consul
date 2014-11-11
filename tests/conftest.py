@@ -19,7 +19,7 @@ def get_free_ports(num, host=None):
         host = '127.0.0.1'
     sockets = []
     ret = []
-    for i in xrange(num):
+    for i in range(num):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((host, 0))
         ret.append(s.getsockname()[1])

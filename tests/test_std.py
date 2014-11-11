@@ -1,6 +1,8 @@
+import operator
 import time
 
 import pytest
+import six
 
 import consul
 import consul.std
@@ -21,7 +23,7 @@ class TestConsul(object):
         assert data is None
         assert c.kv.put('foo', 'bar') is True
         index, data = c.kv.get('foo')
-        assert data['Value'] == 'bar'
+        assert data['Value'] == six.b('bar')
 
     def test_kv_put_cas(self, consul_port):
         c = consul.Consul(port=consul_port)
@@ -33,7 +35,7 @@ class TestConsul(object):
         assert c.kv.put('foo', 'bar2', cas=data['ModifyIndex']-1) is False
         assert c.kv.put('foo', 'bar2', cas=data['ModifyIndex']) is True
         index, data = c.kv.get('foo')
-        assert data['Value'] == 'bar2'
+        assert data['Value'] == six.b('bar2')
 
     def test_kv_put_flags(self, consul_port):
         c = consul.Consul(port=consul_port)
@@ -66,11 +68,11 @@ class TestConsul(object):
 
     def test_agent_services(self, consul_port):
         c = consul.Consul(port=consul_port)
-        assert c.agent.services().keys() == ['consul']
+        assert set(c.agent.services().keys()) == set(['consul'])
         assert c.agent.service.register('foo') is True
         assert set(c.agent.services().keys()) == set(['consul', 'foo'])
         assert c.agent.service.deregister('foo') is True
-        assert c.agent.services().keys() == ['consul']
+        assert set(c.agent.services().keys()) == set(['consul'])
 
     def test_catalog(self, consul_port):
         c = consul.Consul(port=consul_port)
@@ -223,12 +225,12 @@ class TestConsul(object):
         master_token = acl_consul.token
 
         acls = c.acl.list(token=master_token)
-        acls.sort()
-        assert [x['ID'] for x in acls] == ['anonymous', master_token]
+        assert set([x['ID'] for x in acls]) == \
+            set(['anonymous', master_token])
 
         assert c.acl.info('foo') is None
         compare = [c.acl.info(master_token), c.acl.info('anonymous')]
-        compare.sort()
+        compare.sort(key=operator.itemgetter('ID'))
         assert acls == compare
 
         rules = """
@@ -255,13 +257,13 @@ class TestConsul(object):
         c.kv.put('foo', 'bar')
         c.kv.put('private/foo', 'bar')
 
-        assert c.kv.get('foo', token=token)[1]['Value'] == 'bar'
+        assert c.kv.get('foo', token=token)[1]['Value'] == six.b('bar')
         pytest.raises(
             consul.ACLPermissionDenied, c.kv.put, 'foo', 'bar2', token=token)
         pytest.raises(
             consul.ACLPermissionDenied, c.kv.delete, 'foo', token=token)
 
-        assert c.kv.get('private/foo')[1]['Value'] == 'bar'
+        assert c.kv.get('private/foo')[1]['Value'] == six.b('bar')
         assert c.kv.get('private/foo', token=token)[1] is None
         pytest.raises(
             consul.ACLPermissionDenied,
@@ -273,8 +275,8 @@ class TestConsul(object):
         # clean up
         c.acl.destroy(token, token=master_token)
         acls = c.acl.list(token=master_token)
-        acls.sort()
-        assert [x['ID'] for x in acls] == ['anonymous', master_token]
+        assert set([x['ID'] for x in acls]) == \
+            set(['anonymous', master_token])
 
     def test_acl_implicit_token_use(self, acl_consul):
         # configure client to use the master token by default
@@ -282,12 +284,12 @@ class TestConsul(object):
         master_token = acl_consul.token
 
         acls = c.acl.list()
-        acls.sort()
-        assert [x['ID'] for x in acls] == ['anonymous', master_token]
+        assert set([x['ID'] for x in acls]) == \
+            set(['anonymous', master_token])
 
         assert c.acl.info('foo') is None
         compare = [c.acl.info(master_token), c.acl.info('anonymous')]
-        compare.sort()
+        compare.sort(key=operator.itemgetter('ID'))
         assert acls == compare
 
         rules = """
@@ -314,13 +316,13 @@ class TestConsul(object):
         c.kv.put('private/foo', 'bar')
 
         c_limited = consul.Consul(port=acl_consul.port, token=token)
-        assert c_limited.kv.get('foo')[1]['Value'] == 'bar'
+        assert c_limited.kv.get('foo')[1]['Value'] == six.b('bar')
         pytest.raises(
             consul.ACLPermissionDenied, c_limited.kv.put, 'foo', 'bar2')
         pytest.raises(
             consul.ACLPermissionDenied, c_limited.kv.delete, 'foo')
 
-        assert c.kv.get('private/foo')[1]['Value'] == 'bar'
+        assert c.kv.get('private/foo')[1]['Value'] == six.b('bar')
         assert c_limited.kv.get('private/foo')[1] is None
         pytest.raises(
             consul.ACLPermissionDenied,
@@ -341,5 +343,5 @@ class TestConsul(object):
         # clean up
         c.acl.destroy(token)
         acls = c.acl.list()
-        acls.sort()
-        assert [x['ID'] for x in acls] == ['anonymous', master_token]
+        assert set([x['ID'] for x in acls]) == \
+            set(['anonymous', master_token])

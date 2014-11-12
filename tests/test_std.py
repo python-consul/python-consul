@@ -203,6 +203,12 @@ class TestConsul(object):
         index, nodes = c.health.service('foo')
         assert nodes == []
 
+    def test_session(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        pytest.raises(consul.ConsulException, c.session.create, node='n2')
+        pytest.raises(consul.ConsulException, c.session.create, dc='dc2')
+        print c.session.create('my-session')
+
     def test_acl_disabled(self, consul_port):
         c = consul.Consul(port=consul_port)
         pytest.raises(consul.ACLDisabled, c.acl.list)

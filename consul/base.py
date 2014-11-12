@@ -22,7 +22,7 @@ class Timeout(ConsulException):
 Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
 
 
-def callback(callback=None, is_200=False, is_indexed=False):
+def callback(map=None, is_200=False, is_indexed=False):
     def cb(response):
         if response.code == 500:
             raise ConsulException(response.body)
@@ -31,8 +31,8 @@ def callback(callback=None, is_200=False, is_indexed=False):
         if is_indexed:
             return (
                 response.headers['X-Consul-Index'], json.loads(response.body))
-        if callback:
-            return callback(response)
+        if map:
+            return map(response)
         return response
     return cb
 
@@ -644,6 +644,25 @@ class Consul(object):
 
             Returns the string *session_id* for the session.
             """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            data = {}
+            if name:
+                data['name'] = name
+            if node:
+                data['node'] = node
+            if checks is not None:
+                data['checks'] = checks
+            if lock_delay != 15:
+                data['lockdelay'] = '%ss' % lock_delay
+            if data:
+                data = json.dumps(data)
+            else:
+                data = ''
+            return self.agent.http.put(
+                callback(lambda x: json.loads(x.body)['ID']),
+                '/v1/session/create', params=params, data=data)
 
         def destroy(self, session_id, dc=None):
             """

@@ -56,7 +56,7 @@ class Consul(object):
         either 'default', 'consistent' or 'stale'.
         """
 
-        # TODO: Session, Event, Status
+        # TODO: Event, Status
 
         self.http = self.connect(host, port)
         self.token = token
@@ -67,6 +67,7 @@ class Consul(object):
         self.agent = Consul.Agent(self)
         self.catalog = Consul.Catalog(self)
         self.health = Consul.Health(self)
+        self.session = Consul.Session(self)
         self.acl = Consul.ACL(self)
 
     class KV(object):
@@ -157,6 +158,7 @@ class Consul(object):
             The return value is simply either True or False. If False is
             returned, then the update has not taken place.
             """
+            # TODO: add acquire and release
             assert not key.startswith('/')
             params = {}
             if cas is not None:
@@ -610,6 +612,73 @@ class Consul(object):
                 return self.agent.http.get(
                     lambda x: x.code == 200,
                     '/v1/agent/check/pass/%s' % check_id)
+
+    class Session(object):
+        def __init__(self, agent):
+            self.agent = agent
+            self.check = Consul.Health.Check(agent)
+
+        def create(self):
+            pass
+
+        def destroy(self, session_id):
+            pass
+
+        def list(self, dc=None, index=None, consistency=None):
+            """
+            Returns a tuple of (*index*, *sessions*) of all active sessions in
+            the *dc* datacenter. *dc* defaults to the current datacenter of
+            this agent.
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
+
+            The response looks like this::
+
+                (index, [
+                    {
+                        "LockDelay": 1.5e+10,
+                        "Checks": [
+                            "serfHealth"
+                        ],
+                        "Node": "foobar",
+                        "ID": "adf4238a-882b-9ddc-4a9d-5b6758e4159e",
+                        "CreateIndex": 1086449
+                    },
+                  ...
+               ])
+            """
+
+        def node(self, node, dc=None, index=None, consistency=None):
+            """
+            Returns a tuple of (*index*, *sessions*) as per *session.list*, but
+            filters the sessions returned to only those active for *node*.
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
+            """
+
+        def info(self, session_id, dc=None, index=None, consistency=None):
+            """
+            Returns a tuple of (*index*, *session*) for the session
+            *session_id* in the *dc* datacenter. *dc* defaults to the current
+            datacenter of this agent.
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
+            """
 
     class ACL(object):
         def __init__(self, agent):

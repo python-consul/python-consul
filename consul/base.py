@@ -618,11 +618,39 @@ class Consul(object):
             self.agent = agent
             self.check = Consul.Health.Check(agent)
 
-        def create(self):
-            pass
+        def create(
+                self,
+                name=None,
+                node=None,
+                checks=None,
+                lock_delay=15,
+                dc=None):
+            """
+            Creates a new session. There is more documentation for sessions
+            `here <https://consul.io/docs/internals/sessions.html>`_.
 
-        def destroy(self, session_id):
-            pass
+            *name* is an optional human readable name for the session.
+
+            *node* is the node to create the session on. if not provided the
+            current agent's node will be used.
+
+            *checks* is a list of checks to associate with the session. if not
+            provided it defaults to the *serfHealth* check.
+
+            *lock_delay* is an integer of seconds.
+
+            By default the session will be created in the current datacenter
+            but an optional *dc* can be provided.
+
+            Returns the string *session_id* for the session.
+            """
+
+        def destroy(self, session_id, dc=None):
+            """
+            Destroys the session *session_id*
+
+            Returns *True* on success.
+            """
 
         def list(self, dc=None, index=None, consistency=None):
             """

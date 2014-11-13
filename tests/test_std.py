@@ -219,6 +219,8 @@ class TestConsul(object):
         # session.info
         pytest.raises(
             consul.ConsulException, c.session.info, session_id, dc='dc2')
+        index, session = c.session.info('foo')
+        assert session is None
         index, session = c.session.info(session_id)
         assert session['Name'] == 'my-session'
 

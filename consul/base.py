@@ -762,7 +762,7 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
             return self.agent.http.get(
-                callback(lambda r: (r[0], r[1][0]), is_indexed=True),
+                callback(lambda r: (r[0], r[1] and r[1][0]), is_indexed=True),
                 '/v1/session/info/%s' % session_id, params=params)
 
     class ACL(object):

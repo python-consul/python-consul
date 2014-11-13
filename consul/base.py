@@ -22,18 +22,26 @@ class Timeout(ConsulException):
 Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
 
 
-def callback(map=None, is_200=False, is_indexed=False):
+def callback(map=None, is_200=False, is_json=False, index=False, one=False):
     def cb(response):
         if response.code == 500:
             raise ConsulException(response.body)
+        if response.code == 403:
+            raise ACLPermissionDenied(response.body)
         if is_200:
-            response = response.code == 200
-        if is_indexed:
-            response = (
-                response.headers['X-Consul-Index'], json.loads(response.body))
+            data = response.code == 200
+        elif is_json:
+            data = json.loads(response.body)
+        else:
+            data = response
+        if one:
+            if data is not None:
+                data = data[0]
         if map:
-            return map(response)
-        return response
+            data = map(data)
+        if index:
+            return response.headers['X-Consul-Index'], data
+        return data
     return cb
 
 
@@ -137,7 +145,15 @@ class Consul(object):
             return self.agent.http.get(
                 callback, '/v1/kv/%s' % key, params=params)
 
-        def put(self, key, value, cas=None, flags=None, token=None):
+        def put(
+                self,
+                key,
+                value,
+                cas=None,
+                flags=None,
+                acquire=None,
+                release=None,
+                token=None):
             """
             Sets *key* to the given *value*.
 
@@ -150,6 +166,12 @@ class Consul(object):
 
             An optional *flags* can be set. This can be used to specify an
             unsigned value between 0 and 2^64-1.
+
+            *acquire* is an optional session_id. if supplied a lock acquisition
+            will be attempted.
+
+            *release* is an optional session_id. if supplied a lock release
+            will be attempted.
 
             *token* is an optional `ACL token`_ to apply to this request. If
             the token's policy is not allowed to write to this key an
@@ -165,17 +187,16 @@ class Consul(object):
                 params['cas'] = cas
             if flags is not None:
                 params['flags'] = flags
+            if acquire:
+                params['acquire'] = acquire
+            if release:
+                params['release'] = release
             token = token or self.agent.token
             if token:
                 params['token'] = token
-
-            def callback(response):
-                if response.code == 403:
-                    raise ACLPermissionDenied(response.body)
-                return json.loads(response.body)
-
             return self.agent.http.put(
-                callback, '/v1/kv/%s' % key, params=params, data=value)
+                callback(is_json=True),
+                '/v1/kv/%s' % key, params=params, data=value)
 
         def delete(self, key, recurse=None, token=None):
             """
@@ -424,7 +445,8 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
             return self.agent.http.get(
-                callback(is_indexed=True), '/v1/catalog/nodes', params=params)
+                callback(is_json=True, index=True),
+                '/v1/catalog/nodes', params=params)
 
         def services(self, dc=None, index=None, consistency=None):
             """
@@ -462,7 +484,7 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
             return self.agent.http.get(
-                callback(is_indexed=True),
+                callback(is_json=True, index=True),
                 '/v1/catalog/services', params=params)
 
         def node(self, node, dc=None, index=None, consistency=None):
@@ -514,7 +536,7 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
             return self.agent.http.get(
-                callback(is_indexed=True),
+                callback(is_json=True, index=True),
                 '/v1/catalog/node/%s' % node, params=params)
 
         def service(
@@ -563,7 +585,7 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
             return self.agent.http.get(
-                callback(is_indexed=True),
+                callback(is_json=True, index=True),
                 '/v1/catalog/service/%s' % service, params=params)
 
     class Health(object):
@@ -714,7 +736,8 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
             return self.agent.http.get(
-                callback(is_indexed=True), '/v1/session/list', params=params)
+                callback(is_json=True, index=True),
+                '/v1/session/list', params=params)
 
         def node(self, node, dc=None, index=None, consistency=None):
             """
@@ -737,7 +760,7 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
             return self.agent.http.get(
-                callback(is_indexed=True),
+                callback(is_json=True, index=True),
                 '/v1/session/node/%s' % node, params=params)
 
         def info(self, session_id, dc=None, index=None, consistency=None):
@@ -762,7 +785,7 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
             return self.agent.http.get(
-                callback(lambda r: (r[0], r[1] and r[1][0]), is_indexed=True),
+                callback(is_json=True, index=True, one=True),
                 '/v1/session/info/%s' % session_id, params=params)
 
     class ACL(object):

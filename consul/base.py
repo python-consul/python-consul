@@ -27,9 +27,9 @@ def callback(map=None, is_200=False, is_indexed=False):
         if response.code == 500:
             raise ConsulException(response.body)
         if is_200:
-            return response.code == 200
+            response = response.code == 200
         if is_indexed:
-            return (
+            response = (
                 response.headers['X-Consul-Index'], json.loads(response.body))
         if map:
             return map(response)
@@ -670,6 +670,12 @@ class Consul(object):
 
             Returns *True* on success.
             """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            return self.agent.http.put(
+                callback(is_200=True),
+                '/v1/session/destroy/%s' % session_id, params=params)
 
         def list(self, dc=None, index=None, consistency=None):
             """
@@ -699,6 +705,16 @@ class Consul(object):
                   ...
                ])
             """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            if index:
+                params['index'] = index
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params[consistency] = '1'
+            return self.agent.http.get(
+                callback(is_indexed=True), '/v1/session/list', params=params)
 
         def node(self, node, dc=None, index=None, consistency=None):
             """
@@ -712,6 +728,17 @@ class Consul(object):
             not specified *consistency* will the consistency level this client
             was configured with.
             """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            if index:
+                params['index'] = index
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params[consistency] = '1'
+            return self.agent.http.get(
+                callback(is_indexed=True),
+                '/v1/session/node/%s' % node, params=params)
 
         def info(self, session_id, dc=None, index=None, consistency=None):
             """
@@ -726,6 +753,17 @@ class Consul(object):
             not specified *consistency* will the consistency level this client
             was configured with.
             """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            if index:
+                params['index'] = index
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params[consistency] = '1'
+            return self.agent.http.get(
+                callback(lambda r: (r[0], r[1][0]), is_indexed=True),
+                '/v1/session/info/%s' % session_id, params=params)
 
     class ACL(object):
         def __init__(self, agent):

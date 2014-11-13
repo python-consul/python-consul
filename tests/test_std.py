@@ -205,9 +205,36 @@ class TestConsul(object):
 
     def test_session(self, consul_port):
         c = consul.Consul(port=consul_port)
+
+        # session.create
         pytest.raises(consul.ConsulException, c.session.create, node='n2')
         pytest.raises(consul.ConsulException, c.session.create, dc='dc2')
-        print c.session.create('my-session')
+        session_id = c.session.create('my-session')
+
+        # session.list
+        pytest.raises(consul.ConsulException, c.session.list, dc='dc2')
+        _, sessions = c.session.list()
+        assert [x['Name'] for x in sessions] == ['my-session']
+
+        # session.info
+        pytest.raises(
+            consul.ConsulException, c.session.info, session_id, dc='dc2')
+        index, session = c.session.info(session_id)
+        assert session['Name'] == 'my-session'
+
+        # session.node
+        node = session['Node']
+        pytest.raises(
+            consul.ConsulException, c.session.node, node, dc='dc2')
+        _, sessions = c.session.node(node)
+        assert [x['Name'] for x in sessions] == ['my-session']
+
+        # session.destroy
+        pytest.raises(
+            consul.ConsulException, c.session.destroy, session_id, dc='dc2')
+        assert c.session.destroy(session_id) is True
+        _, sessions = c.session.list()
+        assert sessions == []
 
     def test_acl_disabled(self, consul_port):
         c = consul.Consul(port=consul_port)

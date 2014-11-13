@@ -128,7 +128,7 @@ class Consul(object):
                 else:
                     data = json.loads(response.body)
                     for item in data:
-                        if item.get('Value', None) is not None:
+                        if item.get('Value') is not None:
                             item['Value'] = base64.b64decode(item['Value'])
                     if not recurse:
                         data = data[0]

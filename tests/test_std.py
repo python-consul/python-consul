@@ -27,7 +27,6 @@ class TestConsul(object):
 
     def test_kv_put_cas(self, consul_port):
         c = consul.Consul(port=consul_port)
-
         assert c.kv.put('foo', 'bar', cas=50) is False
         assert c.kv.put('foo', 'bar', cas=0) is True
         index, data = c.kv.get('foo')
@@ -46,6 +45,22 @@ class TestConsul(object):
         assert c.kv.put('foo', 'bar', flags=50) is True
         index, data = c.kv.get('foo')
         assert data['Flags'] == 50
+
+    def test_kv_recurse(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        index, data = c.kv.get('foo/', recurse=True)
+        assert data is None
+
+        c.kv.put('foo/', None)
+        index, data = c.kv.get('foo/', recurse=True)
+        assert len(data) == 1
+
+        c.kv.put('foo/bar1', '1')
+        c.kv.put('foo/bar2', '2')
+        c.kv.put('foo/bar3', '3')
+        index, data = c.kv.get('foo/', recurse=True)
+        assert [x['Key'] for x in data] == ['foo/bar1', 'foo/bar2', 'foo/bar3', 'foo/']
+        assert [x['Value'] for x in data] == ['1', '2', '3', None]
 
     def test_kv_delete(self, consul_port):
         c = consul.Consul(port=consul_port)

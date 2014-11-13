@@ -17,6 +17,13 @@ def loop():
     return loop
 
 
+def sleep(loop, s):
+    result = gen.Future()
+    loop.add_timeout(
+        time.time()+s, lambda: result.set_result(None))
+    return result
+
+
 class TestConsul(object):
     def test_kv(self, loop, consul_port):
         @gen.coroutine
@@ -111,12 +118,6 @@ class TestConsul(object):
     def test_catalog(self, loop, consul_port):
         c = consul.tornado.Consul(port=consul_port)
 
-        def sleep(s):
-            result = gen.Future()
-            loop.add_timeout(
-                time.time()+s, lambda: result.set_result(None))
-            return result
-
         @gen.coroutine
         def nodes():
             index, nodes = yield c.catalog.nodes()
@@ -136,7 +137,7 @@ class TestConsul(object):
         def register():
             response = yield c.catalog.register('n1', '10.1.10.11')
             assert response is True
-            yield sleep(50/1000.0)
+            yield sleep(loop, 50/1000.0)
             response = yield c.catalog.deregister('n1')
             assert response is True
 
@@ -226,25 +227,19 @@ class TestConsul(object):
                     'foo', index=index, passing=True)
                 config.nodes = [node['Service']['ID'] for node in nodes]
 
-        def sleep(s):
-            result = gen.Future()
-            loop.add_timeout(
-                time.time()+s, lambda: result.set_result(None))
-            return result
-
         @gen.coroutine
         def keepalive():
             # give the monitor a chance to register the service
-            yield sleep(50/1000.0)
+            yield sleep(loop, 50/1000.0)
             assert config.nodes == []
 
             # ping the service's health check
             yield c.health.check.ttl_pass('service:foo:1')
-            yield sleep(10/1000.0)
+            yield sleep(loop, 10/1000.0)
             assert config.nodes == ['foo:1']
 
             # the service should fail
-            yield sleep(20/1000.0)
+            yield sleep(loop, 20/1000.0)
             assert config.nodes == []
 
             yield c.agent.service.deregister('foo:1')
@@ -252,6 +247,32 @@ class TestConsul(object):
 
         loop.add_callback(monitor)
         loop.run_sync(keepalive)
+
+    def test_session(self, loop, consul_port):
+        c = consul.tornado.Consul(port=consul_port)
+
+        @gen.coroutine
+        def monitor():
+            index, services = yield c.session.list()
+            assert services == []
+            yield sleep(loop, 20/1000.0)
+
+            index, services = yield c.session.list(index=index)
+            assert len(services)
+
+            index, services = yield c.session.list(index=index)
+            assert services == []
+            loop.stop()
+
+        @gen.coroutine
+        def register():
+            session_id = yield c.session.create()
+            yield sleep(loop, 50/1000.0)
+            response = yield c.session.destroy(session_id)
+            assert response is True
+
+        loop.add_timeout(time.time()+(1.0/100), register)
+        loop.run_sync(monitor)
 
     def test_acl(self, loop, acl_consul):
         @gen.coroutine

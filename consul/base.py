@@ -22,18 +22,26 @@ class Timeout(ConsulException):
 Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
 
 
-def callback(callback=None, is_200=False, is_indexed=False):
+def callback(map=None, is_200=False, is_json=False, index=False, one=False):
     def cb(response):
         if response.code == 500:
             raise ConsulException(response.body)
+        if response.code == 403:
+            raise ACLPermissionDenied(response.body)
         if is_200:
-            return response.code == 200
-        if is_indexed:
-            return (
-                response.headers['X-Consul-Index'], json.loads(response.body))
-        if callback:
-            return callback(response)
-        return response
+            data = response.code == 200
+        elif is_json:
+            data = json.loads(response.body)
+        else:
+            data = response
+        if one:
+            if data is not None:
+                data = data[0]
+        if map:
+            data = map(data)
+        if index:
+            return response.headers['X-Consul-Index'], data
+        return data
     return cb
 
 
@@ -56,7 +64,7 @@ class Consul(object):
         either 'default', 'consistent' or 'stale'.
         """
 
-        # TODO: Session, Event, Status
+        # TODO: Event, Status
 
         self.http = self.connect(host, port)
         self.token = token
@@ -67,6 +75,7 @@ class Consul(object):
         self.agent = Consul.Agent(self)
         self.catalog = Consul.Catalog(self)
         self.health = Consul.Health(self)
+        self.session = Consul.Session(self)
         self.acl = Consul.ACL(self)
 
     class KV(object):
@@ -137,7 +146,15 @@ class Consul(object):
             return self.agent.http.get(
                 callback, '/v1/kv/%s' % key, params=params)
 
-        def put(self, key, value, cas=None, flags=None, token=None):
+        def put(
+                self,
+                key,
+                value,
+                cas=None,
+                flags=None,
+                acquire=None,
+                release=None,
+                token=None):
             """
             Sets *key* to the given *value*.
 
@@ -151,6 +168,12 @@ class Consul(object):
             An optional *flags* can be set. This can be used to specify an
             unsigned value between 0 and 2^64-1.
 
+            *acquire* is an optional session_id. if supplied a lock acquisition
+            will be attempted.
+
+            *release* is an optional session_id. if supplied a lock release
+            will be attempted.
+
             *token* is an optional `ACL token`_ to apply to this request. If
             the token's policy is not allowed to write to this key an
             *ACLPermissionDenied* exception will be raised.
@@ -158,23 +181,23 @@ class Consul(object):
             The return value is simply either True or False. If False is
             returned, then the update has not taken place.
             """
+            # TODO: add acquire and release
             assert not key.startswith('/')
             params = {}
             if cas is not None:
                 params['cas'] = cas
             if flags is not None:
                 params['flags'] = flags
+            if acquire:
+                params['acquire'] = acquire
+            if release:
+                params['release'] = release
             token = token or self.agent.token
             if token:
                 params['token'] = token
-
-            def callback(response):
-                if response.code == 403:
-                    raise ACLPermissionDenied(response.body)
-                return json.loads(response.body)
-
             return self.agent.http.put(
-                callback, '/v1/kv/%s' % key, params=params, data=value)
+                callback(is_json=True),
+                '/v1/kv/%s' % key, params=params, data=value)
 
         def delete(self, key, recurse=None, token=None):
             """
@@ -423,7 +446,8 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
             return self.agent.http.get(
-                callback(is_indexed=True), '/v1/catalog/nodes', params=params)
+                callback(is_json=True, index=True),
+                '/v1/catalog/nodes', params=params)
 
         def services(self, dc=None, index=None, consistency=None):
             """
@@ -461,7 +485,7 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
             return self.agent.http.get(
-                callback(is_indexed=True),
+                callback(is_json=True, index=True),
                 '/v1/catalog/services', params=params)
 
         def node(self, node, dc=None, index=None, consistency=None):
@@ -513,7 +537,7 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
             return self.agent.http.get(
-                callback(is_indexed=True),
+                callback(is_json=True, index=True),
                 '/v1/catalog/node/%s' % node, params=params)
 
         def service(
@@ -562,7 +586,7 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
             return self.agent.http.get(
-                callback(is_indexed=True),
+                callback(is_json=True, index=True),
                 '/v1/catalog/service/%s' % service, params=params)
 
     class Health(object):
@@ -611,6 +635,159 @@ class Consul(object):
                 return self.agent.http.get(
                     lambda x: x.code == 200,
                     '/v1/agent/check/pass/%s' % check_id)
+
+    class Session(object):
+        def __init__(self, agent):
+            self.agent = agent
+            self.check = Consul.Health.Check(agent)
+
+        def create(
+                self,
+                name=None,
+                node=None,
+                checks=None,
+                lock_delay=15,
+                dc=None):
+            """
+            Creates a new session. There is more documentation for sessions
+            `here <https://consul.io/docs/internals/sessions.html>`_.
+
+            *name* is an optional human readable name for the session.
+
+            *node* is the node to create the session on. if not provided the
+            current agent's node will be used.
+
+            *checks* is a list of checks to associate with the session. if not
+            provided it defaults to the *serfHealth* check.
+
+            *lock_delay* is an integer of seconds.
+
+            By default the session will be created in the current datacenter
+            but an optional *dc* can be provided.
+
+            Returns the string *session_id* for the session.
+            """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            data = {}
+            if name:
+                data['name'] = name
+            if node:
+                data['node'] = node
+            if checks is not None:
+                data['checks'] = checks
+            if lock_delay != 15:
+                data['lockdelay'] = '%ss' % lock_delay
+            if data:
+                data = json.dumps(data)
+            else:
+                data = ''
+            return self.agent.http.put(
+                callback(lambda x: json.loads(x.body)['ID']),
+                '/v1/session/create', params=params, data=data)
+
+        def destroy(self, session_id, dc=None):
+            """
+            Destroys the session *session_id*
+
+            Returns *True* on success.
+            """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            return self.agent.http.put(
+                callback(is_200=True),
+                '/v1/session/destroy/%s' % session_id, params=params)
+
+        def list(self, dc=None, index=None, consistency=None):
+            """
+            Returns a tuple of (*index*, *sessions*) of all active sessions in
+            the *dc* datacenter. *dc* defaults to the current datacenter of
+            this agent.
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
+
+            The response looks like this::
+
+                (index, [
+                    {
+                        "LockDelay": 1.5e+10,
+                        "Checks": [
+                            "serfHealth"
+                        ],
+                        "Node": "foobar",
+                        "ID": "adf4238a-882b-9ddc-4a9d-5b6758e4159e",
+                        "CreateIndex": 1086449
+                    },
+                  ...
+               ])
+            """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            if index:
+                params['index'] = index
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params[consistency] = '1'
+            return self.agent.http.get(
+                callback(is_json=True, index=True),
+                '/v1/session/list', params=params)
+
+        def node(self, node, dc=None, index=None, consistency=None):
+            """
+            Returns a tuple of (*index*, *sessions*) as per *session.list*, but
+            filters the sessions returned to only those active for *node*.
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
+            """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            if index:
+                params['index'] = index
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params[consistency] = '1'
+            return self.agent.http.get(
+                callback(is_json=True, index=True),
+                '/v1/session/node/%s' % node, params=params)
+
+        def info(self, session_id, dc=None, index=None, consistency=None):
+            """
+            Returns a tuple of (*index*, *session*) for the session
+            *session_id* in the *dc* datacenter. *dc* defaults to the current
+            datacenter of this agent.
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
+            """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            if index:
+                params['index'] = index
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params[consistency] = '1'
+            return self.agent.http.get(
+                callback(is_json=True, index=True, one=True),
+                '/v1/session/info/%s' % session_id, params=params)
 
     class ACL(object):
         def __init__(self, agent):

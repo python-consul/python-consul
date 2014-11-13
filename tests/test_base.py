@@ -28,11 +28,18 @@ class Consul(consul.base.Consul):
 
 def _should_support(c):
     return (
+        # kv
         lambda **kw: c.kv.get('foo', **kw),
+        # catalog
         c.catalog.nodes,
         c.catalog.services,
         lambda **kw: c.catalog.node('foo', **kw),
-        lambda **kw: c.catalog.service('foo', **kw),)
+        lambda **kw: c.catalog.service('foo', **kw),
+        # session
+        c.session.list,
+        lambda **kw: c.session.info('foo', **kw),
+        lambda **kw: c.session.node('foo', **kw),
+    )
 
 
 class TestIndex(object):

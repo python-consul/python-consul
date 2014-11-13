@@ -128,7 +128,8 @@ class Consul(object):
                 else:
                     data = json.loads(response.body)
                     for item in data:
-                        item['Value'] = base64.b64decode(item['Value'])
+                        if item.get('Value', None) is not None:
+                            item['Value'] = base64.b64decode(item['Value'])
                     if not recurse:
                         data = data[0]
                 return response.headers['X-Consul-Index'], data

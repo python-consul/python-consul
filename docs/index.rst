@@ -165,6 +165,13 @@ consul.health
    :members:
    :undoc-members:
 
+consul.session
+~~~~~~~~~~~~~~
+
+.. autoclass:: consul.base::Consul.Session()
+   :members:
+   :undoc-members:
+
 consul.acl
 ~~~~~~~~~~
 

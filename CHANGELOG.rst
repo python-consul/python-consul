@@ -1,6 +1,21 @@
 Change log
 ==========
 
+0.3.3
+-----
+
+Features
+~~~~~~~~
+
+* Add support for the Session API (Consul.Session)
+
+Bug Fixes
+~~~~~~~~~
+
+* Fix a bug retrieving folder nodes from the KV store
+  https://github.com/cablehead/python-consul/pull/6#issue-48589128
+  Thanks @zacman85
+
 0.3.2
 -----
 

@@ -59,7 +59,8 @@ class TestConsul(object):
         c.kv.put('foo/bar2', '2')
         c.kv.put('foo/bar3', '3')
         index, data = c.kv.get('foo/', recurse=True)
-        assert [x['Key'] for x in data] == ['foo/bar1', 'foo/bar2', 'foo/bar3', 'foo/']
+        assert [x['Key'] for x in data] == [
+            'foo/bar1', 'foo/bar2', 'foo/bar3', 'foo/']
         assert [x['Value'] for x in data] == ['1', '2', '3', None]
 
     def test_kv_delete(self, consul_port):

@@ -37,10 +37,10 @@ Installation
     pip install python-consul
 
 .. |Build Status|
-   image:: https://travis-ci.org/cablehead/python-consul.svg?branch=master
+   image:: https://img.shields.io/travis/cablehead/python-consul.svg?style=flat-square
    :target: https://travis-ci.org/cablehead/python-consul
 .. |Coverage Status|
-   image:: https://coveralls.io/repos/cablehead/python-consul/badge.png?branch=master
+   image:: https://img.shields.io/coveralls/cablehead/python-consul.svg?style=flat-square
    :target: https://coveralls.io/r/cablehead/python-consul?branch=master
 .. _Read the Docs: http://python-consul.readthedocs.org/
 

@@ -115,7 +115,7 @@ ACLs
     """
     token = master.acl.create(rules=rules)
 
-    client = consul.Consule(token=token)
+    client = consul.Consul(token=token)
 
     client.kv.get('foo')          # OK
     client.kv.put('foo', 'bar2')  # raises ACLPermissionDenied

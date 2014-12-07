@@ -45,13 +45,14 @@ class TestConsul(object):
         def main():
             yield c.kv.put('index', 'bump')
             index, data = yield c.kv.get('foo')
+            assert data is None
             index, data = yield c.kv.get('foo', index=index)
             assert data['Value'] == six.b('bar')
             loop.stop()
 
         @gen.coroutine
         def put():
-            response = yield c.kv.put('foo', 'bar')
+            yield c.kv.put('foo', 'bar')
 
         loop.add_timeout(time.time()+(1.0/100), put)
         loop.run_sync(main)

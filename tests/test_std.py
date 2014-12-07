@@ -201,7 +201,7 @@ class TestConsul(object):
         c.agent.service.register('foo', service_id='foo:1', ttl='10s')
         c.agent.service.register('foo', service_id='foo:2', ttl='100ms')
 
-        time.sleep(10/1000.0)
+        time.sleep(20/1000.0)
 
         # check the nodes show for the /health/service endpoint
         index, nodes = c.health.service('foo')

@@ -38,6 +38,24 @@ class TestConsul(object):
             loop.stop()
         loop.run_sync(main)
 
+    def test_kv_missing(self, loop, consul_port):
+        c = consul.tornado.Consul(port=consul_port)
+
+        @gen.coroutine
+        def main():
+            yield c.kv.put('index', 'bump')
+            index, data = yield c.kv.get('foo')
+            index, data = yield c.kv.get('foo', index=index)
+            assert data['Value'] == six.b('bar')
+            loop.stop()
+
+        @gen.coroutine
+        def put():
+            response = yield c.kv.put('foo', 'bar')
+
+        loop.add_timeout(time.time()+(1.0/100), put)
+        loop.run_sync(main)
+
     def test_kv_put_flags(self, loop, consul_port):
         @gen.coroutine
         def main():

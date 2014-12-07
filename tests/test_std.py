@@ -234,7 +234,7 @@ class TestConsul(object):
         c.agent.service.deregister('foo:1')
         c.agent.service.deregister('foo:2')
 
-        time.sleep(10/1000.0)
+        time.sleep(20/1000.0)
 
         index, nodes = c.health.service('foo')
         assert nodes == []

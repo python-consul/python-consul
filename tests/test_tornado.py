@@ -254,7 +254,7 @@ class TestConsul(object):
 
             # ping the service's health check
             yield c.health.check.ttl_pass('service:foo:1')
-            yield sleep(loop, 10/1000.0)
+            yield sleep(loop, 20/1000.0)
             assert config.nodes == ['foo:1']
 
             # the service should fail

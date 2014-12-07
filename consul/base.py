@@ -2,6 +2,8 @@ import collections
 import base64
 import json
 
+import six
+
 
 class ConsulException(Exception):
     pass
@@ -182,6 +184,8 @@ class Consul(object):
             returned, then the update has not taken place.
             """
             assert not key.startswith('/')
+            assert isinstance(value, six.string_types)
+
             params = {}
             if cas is not None:
                 params['cas'] = cas

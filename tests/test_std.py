@@ -32,6 +32,11 @@ class TestConsul(object):
         index, data = c.kv.get('foo')
         assert struct.unpack('i', data['Value']) == (1000,)
 
+    def test_kv_assert_is_string(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        index, data = c.kv.get('foo')
+        pytest.raises(AssertionError, c.kv.put, 'foo', {1: 2})
+
     def test_kv_put_cas(self, consul_port):
         c = consul.Consul(port=consul_port)
         assert c.kv.put('foo', 'bar', cas=50) is False

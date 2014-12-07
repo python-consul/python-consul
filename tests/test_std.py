@@ -1,4 +1,5 @@
 import operator
+import struct
 import time
 
 import pytest
@@ -24,6 +25,12 @@ class TestConsul(object):
         assert c.kv.put('foo', 'bar') is True
         index, data = c.kv.get('foo')
         assert data['Value'] == six.b('bar')
+
+    def test_kv_binary(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        c.kv.put('foo', struct.pack('i', 1000))
+        index, data = c.kv.get('foo')
+        assert struct.unpack('i', data['Value']) == (1000,)
 
     def test_kv_put_cas(self, consul_port):
         c = consul.Consul(port=consul_port)

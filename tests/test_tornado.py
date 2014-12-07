@@ -1,3 +1,4 @@
+import struct
 import time
 
 import pytest
@@ -35,6 +36,16 @@ class TestConsul(object):
             assert response is True
             index, data = yield c.kv.get('foo')
             assert data['Value'] == six.b('bar')
+            loop.stop()
+        loop.run_sync(main)
+
+    def test_kv_binary(self, loop, consul_port):
+        @gen.coroutine
+        def main():
+            c = consul.tornado.Consul(port=consul_port)
+            yield c.kv.put('foo', struct.pack('i', 1000))
+            index, data = yield c.kv.get('foo')
+            assert struct.unpack('i', data['Value']) == (1000,)
             loop.stop()
         loop.run_sync(main)
 

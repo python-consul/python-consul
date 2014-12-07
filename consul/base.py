@@ -181,7 +181,6 @@ class Consul(object):
             The return value is simply either True or False. If False is
             returned, then the update has not taken place.
             """
-            # TODO: add acquire and release
             assert not key.startswith('/')
             params = {}
             if cas is not None:

@@ -26,15 +26,25 @@ class TestConsul(object):
         index, data = c.kv.get('foo')
         assert data['Value'] == six.b('bar')
 
-    def test_kv_binary(self, consul_port):
+    def test_kv_encoding(self, consul_port):
         c = consul.Consul(port=consul_port)
+
+        # test binary
         c.kv.put('foo', struct.pack('i', 1000))
         index, data = c.kv.get('foo')
         assert struct.unpack('i', data['Value']) == (1000,)
 
-    def test_kv_assert_is_string(self, consul_port):
-        c = consul.Consul(port=consul_port)
+        # test unicode
+        c.kv.put('foo', u'bar')
         index, data = c.kv.get('foo')
+        assert data['Value'] == six.b('bar')
+
+        # test None
+        c.kv.put('foo', None)
+        index, data = c.kv.get('foo')
+        assert data['Value'] is None
+
+        # check unencoded value's raises assert
         pytest.raises(AssertionError, c.kv.put, 'foo', {1: 2})
 
     def test_kv_put_cas(self, consul_port):

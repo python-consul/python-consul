@@ -160,6 +160,10 @@ class Consul(object):
             """
             Sets *key* to the given *value*.
 
+            *value* can either be None (useful for marking a key as a
+            directory) or any string type, including binary data (e.g. a
+            msgpack'd data structure)
+
             The optional *cas* parameter is used to turn the PUT into a
             Check-And-Set operation. This is very useful as it allows clients
             to build more complex syncronization primitives on top. If the
@@ -184,7 +188,9 @@ class Consul(object):
             returned, then the update has not taken place.
             """
             assert not key.startswith('/')
-            assert isinstance(value, six.string_types)
+            assert value is None or \
+                isinstance(value, (six.string_types, six.binary_type)), \
+                "value should be None or a string / binary data"
 
             params = {}
             if cas is not None:

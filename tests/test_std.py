@@ -44,7 +44,7 @@ class TestConsul(object):
         index, data = c.kv.get('foo')
         assert data['Value'] is None
 
-        # check unencoded value's raises assert
+        # check unencoded values raises assert
         pytest.raises(AssertionError, c.kv.put, 'foo', {1: 2})
 
     def test_kv_put_cas(self, consul_port):

@@ -263,7 +263,8 @@ class Consul(object):
             the checks known by the agent may be different than those reported
             by the Catalog. This is usually due to changes being made while
             there is no leader elected. The agent performs active anti-entropy,
-            so in most situations everything will be in sync within a few seconds.
+            so in most situations everything will be in sync within a few
+            seconds.
             """
             return self.agent.http.get(
                 lambda x: json.loads(x.body), '/v1/agent/checks')
@@ -276,10 +277,11 @@ class Consul(object):
                 self, name, check_id=None, notes=None,
                     script=None, interval=None, ttl=None):
                 """
-                Add a new check to the local agent. There is more documentation on
-                checks `here <https://consul.io/docs/agent/checks.html>`_.
-                Checks are either a script or TTL type. The agent is responsible for
-                managing the status of the check and keeping the Catalog in sync.
+                Add a new check to the local agent. There is more documentation
+                on checks `here <https://consul.io/docs/agent/checks.html>`_.
+                Checks are either a script or TTL type. The agent is
+                responsible for managing the status of the check and keeping
+                the Catalog in sync.
 
                 *name* is the name of the check.
 
@@ -287,9 +289,11 @@ class Consul(object):
                 *name*. You cannot have duplicate *check_id* entries per
                 agent, so it may be necessary to provide one.
 
-                *notes* is not used by Consul, and is meant to be human readable.
+                *notes* is not used by Consul, and is meant to be human
+                readable.
 
-                Exactly one of *script* and *interval* OR *ttl* must be specified.
+                Exactly one of *script* and *interval* OR *ttl* must be
+                specified.
                 """
                 payload = {'name': name}
                 if check_id:

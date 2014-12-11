@@ -245,6 +245,7 @@ class Consul(object):
         # TODO: Check. register, deregister, pass (move), warn, fail
         def __init__(self, agent):
             self.agent = agent
+            self.check = Consul.Agent.Check(agent)
             self.service = Consul.Agent.Service(agent)
 
         def self(self):
@@ -253,6 +254,129 @@ class Consul(object):
             """
             return self.agent.http.get(
                 lambda x: json.loads(x.body), '/v1/agent/self')
+
+        def checks(self):
+            """
+            Returns all the checks that are registered with the local agent.
+            These checks were either provided through configuration files, or
+            added dynamically using the HTTP API. It is important to note that
+            the checks known by the agent may be different than those reported
+            by the Catalog. This is usually due to changes being made while
+            there is no leader elected. The agent performs active anti-entropy,
+            so in most situations everything will be in sync within a few seconds.
+            """
+            return self.agent.http.get(
+                lambda x: json.loads(x.body), '/v1/agent/checks')
+
+        class Check(object):
+            def __init__(self, agent):
+                self.agent = agent
+
+            def register(
+                self, name, check_id=None, notes=None,
+                    script=None, interval=None, ttl=None):
+                """
+                Add a new check to the local agent. There is more documentation on
+                checks `here <https://consul.io/docs/agent/checks.html>`_.
+                Checks are either a script or TTL type. The agent is responsible for
+                managing the status of the check and keeping the Catalog in sync.
+
+                *name* is the name of the check.
+
+                If the optional *check_id* is not provided it is set to
+                *name*. You cannot have duplicate *check_id* entries per
+                agent, so it may be necessary to provide one.
+
+                *notes* is not used by Consul, and is meant to be human readable.
+
+                Exactly one of *script* and *interval* OR *ttl* must be specified.
+                """
+                payload = {'name': name}
+                if check_id:
+                    payload['id'] = check_id
+                if notes:
+                    payload['notes'] = notes
+                assert script or ttl
+                if script:
+                    assert interval and not ttl
+                    payload['script'] = script
+                    payload['interval'] = interval
+                if ttl:
+                    assert not (interval or script)
+                    payload['ttl'] = ttl
+
+                return self.agent.http.put(
+                    lambda x: x.code == 200,
+                    '/v1/agent/check/register',
+                    data=json.dumps(payload))
+
+            def deregister(self, check_id):
+                """
+                Used to remove a check from the local agent. The agent will
+                take care of deregistering the check with the Catalog.
+
+                *check_id* identifies the check to deregister.
+                """
+                return self.agent.http.get(
+                    lambda x: x.code == 200,
+                    '/v1/agent/check/deregister/%s' % check_id)
+
+            def pass_(self, check_id, note=None):
+                """
+                Used with a check that is of the TTL type to set the status of
+                the check to "passing", and reset the TTL clock.
+
+                *check_id* identifies the check to deregister.
+
+                *note* can be used to associate output with the status of the
+                check. This should be human readable for operators.
+                """
+                params = {}
+                if note:
+                    params['note'] = note
+
+                return self.agent.http.get(
+                    lambda x: x.code == 200,
+                    '/v1/agent/check/pass/%s' % check_id,
+                    params=params)
+
+            def warn(self, check_id, note=None):
+                """
+                Used with a check that is of the TTL type to set the status of
+                the check to "warning", and reset the TTL clock.
+
+                *check_id* identifies the check to deregister.
+
+                *note* can be used to associate output with the status of the
+                check. This should be human readable for operators.
+                """
+                params = {}
+                if note:
+                    params['note'] = note
+
+                return self.agent.http.get(
+                    lambda x: x.code == 200,
+                    '/v1/agent/check/warn/%s' % check_id,
+                    params=params)
+
+            def fail(self, check_id, note=None):
+                """
+                Used with a check that is of the TTL type to set the status of
+                the check to "critical", and reset the TTL clock.
+
+                *check_id* identifies the check to deregister.
+
+                *note* can be used to associate output with the status of the
+                check. This should be human readable for operators.
+                """
+                params = {}
+                if note:
+                    params['note'] = note
+
+                return self.agent.http.get(
+                    lambda x: x.code == 200,
+                    '/v1/agent/check/fail/%s' % check_id,
+                    params=params)
 
         def services(self):
             """

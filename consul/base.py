@@ -290,7 +290,7 @@ class Consul(object):
             wide consistent view of members
             """
             return self.agent.http.get(
-                    lambda x: json.loads(x.body), '/v1/agent/members')
+                lambda x: json.loads(x.body), '/v1/agent/members')
 
         class Service(object):
             def __init__(self, agent):
@@ -342,50 +342,47 @@ class Consul(object):
                     lambda x: x.code == 200,
                     '/v1/agent/service/deregister/%s' % service_id)
 
-
         class Check(object):
             def __init__(self, agent):
                 self.agent = agent
 
             def register(self, name, node=None, host=None, check_id=None,
-                    script=None, interval=None, ttl=None):
+                         script=None, interval=None, ttl=None):
                 """
-                Add a new node level check. If the node name or host is supplied then
-                the check is added via the catalog otherwise it is added the local agent.
-                More documentation on checks can be found here.
-                `here <http://www.consul.io/docs/agent/checks.html>`_.
+                Add a new node level check. If the node name or host is
+                supplied then the check is added via the catalog otherwise it
+                is added to the local agent. More documentation on checks can
+                be found `here <http://www.consul.io/docs/agent/checks.html>`_.
 
                 *name* is the name of the check.
 
                 If the optional *check_id* is not provided it is set to
                 *name*.
 
-                There are two ways to define a check, either with a script and an
-                interval or with a ttl timeout. If a script is supplied then the interval is
-                expected and the ttl should be absent. For a ttl check, the script and interval
-                should not be supplied.
+                There are two ways to define a check, either with a script and
+                an interval or with a ttl timeout. If a script is supplied then
+                the interval is expected and the ttl should be absent. For a
+                ttl check, the script and interval should not be supplied.
                 """
                 payload = {'name': name}
                 if check_id:
                     payload['id'] = check_id
                 if script:
-                    if not interval or ttl:
-                        raise ConsulException("Interval (not ttl) is required for check script")
+                    assert interval, 'Interval required for script check'
+                    assert not ttl, 'ttl not used with script based check'
                     payload['script'] = script
                     payload['interval'] = interval
                 if ttl:
-
-                    if interval:
-                        raise ConsulException("Interval not required for ttl check.")
+                    assert not (interval or script), 'Interval and script not required for ttl check'
                     payload['ttl'] = ttl
 
                 if node and host:
-                    return agent.catalog.register(node, host, check = payload)
+                    return self.agent.catalog.register(node, host, check=payload)
 
                 return self.agent.http.put(
-                            lambda x: x.code == 200,
-                            '/v1/agent/check/register',
-                        data=json.dumps(payload))
+                    lambda x: x.code == 200,
+                    '/v1/agent/check/register',
+                    data=json.dumps(payload))
 
             def deregister(self, check_id):
                 """
@@ -393,46 +390,52 @@ class Consul(object):
                 take care of deregistering the check with the Catalog.
                 """
                 return self.agent.http.get(
-                            lambda x: x.code == 200,
-                            '/v1/agent/check/deregister/%s' % check_id)
+                    lambda x: x.code == 200,
+                    '/v1/agent/check/deregister/%s' % check_id)
 
-            def passing(self, check_id, notes=None):
+            def ttl_pass(self, check_id, notes=None):
                 """
-                Mark a ttl based check as passing. Optional notes can be attached
-                to describe the status of the check.
-                """
-                return self._update_ttl_status('pass', check_id, notes)
-
-            def fail(self, check_id, notes=None):
-                """
-                Mark a ttl based check as failing. Optional notes can be attached
-                to describe why check is failing. The status of the check will be
-                set to critical and the ttl clock will be reset.
-                """
-                return self._update_ttl_status('fail', check_id, notes)
-
-            def warn(self, check_id, notes=None):
-                """
-                Mark a ttl based check as passing. Optional notes can be attached
-                to describe why check is failing. The status of the check will be
-                set to warning and the ttl clock will be reset.
-                """
-                return self._update_ttl_status('warn', check_id, notes)
-
-            def _update_ttl_status(self, status, check_id, note):
-                """
-                updates the status of ttl check.
+                Mark a ttl based check as passing. Optional notes can be
+                attached to describe the status of the check.
                 """
                 params = {}
-                if note:
-                    params['note'] = note
+                if notes:
+                    params['note'] = notes
 
                 return self.agent.http.get(
-                            lambda x: x.code == 200,
-                            '/v1/agent/check/%s/%s' % (status, check_id),
-                            params=params)
+                    lambda x: x.code == 200,
+                    '/v1/agent/check/pass/%s' % check_id,
+                    params=params)
 
+            def ttl_fail(self, check_id, notes=None):
+                """
+                Mark a ttl based check as failing. Optional notes can be
+                attached to describe why check is failing. The status of the
+                check will be set to critical and the ttl clock will be reset.
+                """
+                params = {}
+                if notes:
+                    params['note'] = notes
 
+                return self.agent.http.get(
+                    lambda x: x.code == 200,
+                    '/v1/agent/check/fail/%s' % check_id,
+                    params=params)
+
+            def ttl_warn(self, check_id, notes=None):
+                """
+                Mark a ttl based check with warning. Optional notes can be
+                attached to describe the warning. The status of the
+                check will be set to warn and the ttl clock will be reset.
+                """
+                params = {}
+                if notes:
+                    params['note'] = notes
+
+                return self.agent.http.get(
+                    lambda x: x.code == 200,
+                    '/v1/agent/check/warn/%s' % check_id,
+                    params=params)
 
     class Catalog(object):
         def __init__(self, agent):

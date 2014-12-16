@@ -246,6 +246,7 @@ class Consul(object):
         def __init__(self, agent):
             self.agent = agent
             self.service = Consul.Agent.Service(agent)
+            self.check = Consul.Agent.Check(agent)
 
         def self(self):
             """
@@ -267,6 +268,29 @@ class Consul(object):
             """
             return self.agent.http.get(
                 lambda x: json.loads(x.body), '/v1/agent/services')
+
+        def checks(self):
+            """
+            Returns all the checks that are registered with the local agent.
+            These checks were either provided through configuration files, or
+            added dynamically using the HTTP API. Similar to services,
+            the checks known by the agent may be different than those
+            reported by the Catalog. This is usually due to changes being made
+            while there is no leader elected. The agent performs active
+            anti-entropy, so in most situations everything will be in sync
+            within a few seconds.
+            """
+            return self.agent.http.get(
+                lambda x: json.loads(x.body), '/v1/agent/checks')
+
+        def members(self):
+            """
+            Returns all the members that this agent currently sees. This may
+            vary by agent, use the nodes api of Catalog to retrieve a cluster
+            wide consistent view of members
+            """
+            return self.agent.http.get(
+                lambda x: json.loads(x.body), '/v1/agent/members')
 
         class Service(object):
             def __init__(self, agent):
@@ -317,6 +341,103 @@ class Consul(object):
                 return self.agent.http.get(
                     lambda x: x.code == 200,
                     '/v1/agent/service/deregister/%s' % service_id)
+
+        class Check(object):
+            def __init__(self, agent):
+                self.agent = agent
+
+            def register(self, name, node=None, host=None, check_id=None,
+                         script=None, interval=None, ttl=None):
+                """
+                Add a new node level check. If the node name or host is
+                supplied then the check is added via the catalog otherwise it
+                is added to the local agent. More documentation on checks can
+                be found `here <http://www.consul.io/docs/agent/checks.html>`_.
+
+                *name* is the name of the check.
+
+                If the optional *check_id* is not provided it is set to
+                *name*.
+
+                There are two ways to define a check, either with a script and
+                an interval or with a ttl timeout. If a script is supplied then
+                the interval is expected and the ttl should be absent. For a
+                ttl check, the script and interval should not be supplied.
+                """
+                payload = {'name': name}
+                if check_id:
+                    payload['id'] = check_id
+                if script:
+                    assert interval, 'Interval required for script check'
+                    assert not ttl, 'ttl not used with script based check'
+                    payload['script'] = script
+                    payload['interval'] = interval
+                if ttl:
+                    assert not (interval or script), \
+                        'Interval and script not required for ttl check'
+                    payload['ttl'] = ttl
+
+                if node and host:
+                    return self.agent.catalog.register(node,
+                                                       host, check=payload)
+
+                return self.agent.http.put(
+                    lambda x: x.code == 200,
+                    '/v1/agent/check/register',
+                    data=json.dumps(payload))
+
+            def deregister(self, check_id):
+                """
+                Used to remove a node level check. The agent will
+                take care of deregistering the check with the Catalog.
+                """
+                return self.agent.http.get(
+                    lambda x: x.code == 200,
+                    '/v1/agent/check/deregister/%s' % check_id)
+
+            def ttl_pass(self, check_id, notes=None):
+                """
+                Mark a ttl based check as passing. Optional notes can be
+                attached to describe the status of the check.
+                """
+                params = {}
+                if notes:
+                    params['note'] = notes
+
+                return self.agent.http.get(
+                    lambda x: x.code == 200,
+                    '/v1/agent/check/pass/%s' % check_id,
+                    params=params)
+
+            def ttl_fail(self, check_id, notes=None):
+                """
+                Mark a ttl based check as failing. Optional notes can be
+                attached to describe why check is failing. The status of the
+                check will be set to critical and the ttl clock will be reset.
+                """
+                params = {}
+                if notes:
+                    params['note'] = notes
+
+                return self.agent.http.get(
+                    lambda x: x.code == 200,
+                    '/v1/agent/check/fail/%s' % check_id,
+                    params=params)
+
+            def ttl_warn(self, check_id, notes=None):
+                """
+                Mark a ttl based check with warning. Optional notes can be
+                attached to describe the warning. The status of the
+                check will be set to warn and the ttl clock will be reset.
+                """
+                params = {}
+                if notes:
+                    params['note'] = notes
+
+                return self.agent.http.get(
+                    lambda x: x.code == 200,
+                    '/v1/agent/check/warn/%s' % check_id,
+                    params=params)
 
     class Catalog(object):
         def __init__(self, agent):

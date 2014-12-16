@@ -18,6 +18,7 @@ class TestHTTPClient(object):
 
 
 class TestConsul(object):
+
     def test_kv(self, consul_port):
         c = consul.Consul(port=consul_port)
         index, data = c.kv.get('foo')
@@ -119,6 +120,69 @@ class TestConsul(object):
 
         c.session.destroy(s1)
         c.session.destroy(s2)
+
+    def test_agent_checks(self, consul_port):
+        c = consul.Consul(port=consul_port)
+
+        def verify_and_dereg_check(check_id):
+            assert set(c.agent.checks().keys()) == set([check_id])
+            assert c.agent.check.deregister(check_id) is True
+            assert set(c.agent.checks().keys()) == set([])
+
+        def verify_check_status(check_id, status, notes=None):
+            checks = c.agent.checks()
+            assert checks[check_id]['Status'] == status
+            if notes:
+                assert checks[check_id]['Output'] == notes
+
+        assert set(c.agent.checks().keys()) == set([])
+        assert c.agent.check.register('script_check',
+                                      script='/bin/true', interval=10) is True
+        verify_and_dereg_check('script_check')
+
+        assert c.agent.check.register('check name',
+                                      check_id='check_id',
+                                      script='/bin/true', interval=10) is True
+        verify_and_dereg_check('check_id')
+
+        assert c.agent.check.register('ttl_check', ttl='100ms') is True
+
+        assert c.agent.check.ttl_warn('ttl_check') is True
+        verify_check_status('ttl_check', 'warning')
+        assert c.agent.check.ttl_warn('ttl_check',
+                                      notes='its not quite right') is True
+        verify_check_status('ttl_check', 'warning', 'its not quite right')
+
+        assert c.agent.check.ttl_fail('ttl_check') is True
+        verify_check_status('ttl_check', 'critical')
+        assert c.agent.check.ttl_fail('ttl_check',
+                                      notes='something went boink!') is True
+        verify_check_status('ttl_check', 'critical',
+                            notes='something went boink!')
+
+        assert c.agent.check.ttl_pass('ttl_check') is True
+        verify_check_status('ttl_check', 'passing')
+        assert c.agent.check.ttl_pass('ttl_check',
+                                      notes='all hunky dory!') is True
+        verify_check_status('ttl_check', 'passing', notes='all hunky dory!')
+        # wait for ttl to expire
+        time.sleep(120/1000.0)
+        verify_check_status('ttl_check', 'critical')
+        verify_and_dereg_check('ttl_check')
+
+        pytest.raises(AssertionError, c.agent.check.register,
+                      'check_id', script='/bin/true', ttl=50)
+        pytest.raises(AssertionError, c.agent.check.register,
+                      'check_id', interval=10, ttl=50)
+
+    def test_agent_members(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        members = c.agent.members()
+        for x in members:
+            assert x['Status'] == 1
+            assert not x['Name'] is None
+            assert not x['Tags'] is None
+        assert c.agent.self()['Member'] in members
 
     def test_agent_self(self, consul_port):
         c = consul.Consul(port=consul_port)

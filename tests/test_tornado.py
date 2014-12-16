@@ -189,7 +189,7 @@ class TestConsul(object):
             yield c.agent.service.register(
                 'foo', service_id='foo:2', ttl='100ms')
 
-            time.sleep(20/1000.0)
+            time.sleep(30/1000.0)
 
             # check the nodes show for the /health/service endpoint
             index, nodes = yield c.health.service('foo')
@@ -204,7 +204,7 @@ class TestConsul(object):
             yield c.health.check.ttl_pass('service:foo:1')
             yield c.health.check.ttl_pass('service:foo:2')
 
-            time.sleep(20/1000.0)
+            time.sleep(30/1000.0)
 
             # both nodes are now available
             index, nodes = yield c.health.service('foo', passing=True)
@@ -221,7 +221,7 @@ class TestConsul(object):
             # ping the failed node's health check
             yield c.health.check.ttl_pass('service:foo:2')
 
-            time.sleep(20/1000.0)
+            time.sleep(30/1000.0)
 
             # check both nodes are available
             index, nodes = yield c.health.service('foo', passing=True)
@@ -232,7 +232,7 @@ class TestConsul(object):
             yield c.agent.service.deregister('foo:1')
             yield c.agent.service.deregister('foo:2')
 
-            time.sleep(20/1000.0)
+            time.sleep(30/1000.0)
 
             index, nodes = yield c.health.service('foo')
             assert nodes == []
@@ -265,11 +265,11 @@ class TestConsul(object):
 
             # ping the service's health check
             yield c.health.check.ttl_pass('service:foo:1')
-            yield sleep(loop, 20/1000.0)
+            yield sleep(loop, 10/1000.0)
             assert config.nodes == ['foo:1']
 
             # the service should fail
-            yield sleep(loop, 20/1000.0)
+            yield sleep(loop, 30/1000.0)
             assert config.nodes == []
 
             yield c.agent.service.deregister('foo:1')
@@ -285,7 +285,7 @@ class TestConsul(object):
         def monitor():
             index, services = yield c.session.list()
             assert services == []
-            yield sleep(loop, 20/1000.0)
+            yield sleep(loop, 30/1000.0)
 
             index, services = yield c.session.list(index=index)
             assert len(services)

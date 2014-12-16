@@ -373,11 +373,13 @@ class Consul(object):
                     payload['script'] = script
                     payload['interval'] = interval
                 if ttl:
-                    assert not (interval or script), 'Interval and script not required for ttl check'
+                    assert not (interval or script), \
+                        'Interval and script not required for ttl check'
                     payload['ttl'] = ttl
 
                 if node and host:
-                    return self.agent.catalog.register(node, host, check=payload)
+                    return self.agent.catalog.register(node,
+                                                       host, check=payload)
 
                 return self.agent.http.put(
                     lambda x: x.code == 200,

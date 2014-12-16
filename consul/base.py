@@ -289,6 +289,7 @@ class Consul(object):
             vary by agent, use the nodes api of Catalog to retrieve a cluster
             wide consistent view of members
             """
+            # TODO: add wan flag
             return self.agent.http.get(
                 lambda x: json.loads(x.body), '/v1/agent/members')
 

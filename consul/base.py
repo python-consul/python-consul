@@ -351,40 +351,54 @@ class Consul(object):
             def __init__(self, agent):
                 self.agent = agent
 
-            def register(self, name, node=None, host=None, check_id=None,
-                         script=None, interval=None, ttl=None):
+            def register(
+                    self,
+                    name,
+                    check_id=None,
+                    script=None,
+                    interval=None,
+                    ttl=None,
+                    notes=None):
                 """
-                Add a new node level check. If the node name or host is
-                supplied then the check is added via the catalog otherwise it
-                is added to the local agent. More documentation on checks can
-                be found `here <http://www.consul.io/docs/agent/checks.html>`_.
+                Register a new check with the local agent. More documentation
+                on checks can be found `here
+                <http://www.consul.io/docs/agent/checks.html>`_.
 
                 *name* is the name of the check.
 
-                If the optional *check_id* is not provided it is set to
-                *name*.
+                If the optional *check_id* is not provided it is set to *name*.
+                *check_id* must be unique for this agent.
 
-                There are two ways to define a check, either with a script and
-                an interval or with a ttl timeout. If a script is supplied then
-                the interval is expected and the ttl should be absent. For a
-                ttl check, the script and interval should not be supplied.
+                There are two ways to define a check, either with a *script*
+                and an *interval* or with a *ttl* timeout. If a *script* is
+                supplied then the *interval* is expected and the *ttl* should
+                be absent. For a *ttl* check, the *script* and *interval*
+                should not be supplied.
+
+                *notes is not used by Consul, and is meant to be human
+                readable.
+
+                Returns *True* on success.
                 """
                 payload = {'name': name}
                 if check_id:
                     payload['id'] = check_id
+
+                assert script or ttl, 'Either script or ttl is required'
+
                 if script:
                     assert interval, 'Interval required for script check'
                     assert not ttl, 'ttl not used with script based check'
                     payload['script'] = script
                     payload['interval'] = interval
+
                 if ttl:
                     assert not (interval or script), \
                         'Interval and script not required for ttl check'
                     payload['ttl'] = ttl
 
-                if node and host:
-                    return self.agent.catalog.register(node,
-                                                       host, check=payload)
+                if notes:
+                    params['note'] = notes
 
                 return self.agent.http.put(
                     lambda x: x.code == 200,

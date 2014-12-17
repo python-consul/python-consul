@@ -18,7 +18,6 @@ class TestHTTPClient(object):
 
 
 class TestConsul(object):
-
     def test_kv(self, consul_port):
         c = consul.Consul(port=consul_port)
         index, data = c.kv.get('foo')

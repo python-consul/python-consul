@@ -250,7 +250,7 @@ class TestConsul(object):
         @gen.coroutine
         def monitor():
             yield c.agent.service.register(
-                'foo', service_id='foo:1', ttl='20ms')
+                'foo', service_id='foo:1', ttl='40ms')
             index = None
             while True:
                 index, nodes = yield c.health.service(
@@ -265,11 +265,11 @@ class TestConsul(object):
 
             # ping the service's health check
             yield c.health.check.ttl_pass('service:foo:1')
-            yield sleep(loop, 10/1000.0)
+            yield sleep(loop, 30/1000.0)
             assert config.nodes == ['foo:1']
 
             # the service should fail
-            yield sleep(loop, 40/1000.0)
+            yield sleep(loop, 60/1000.0)
             assert config.nodes == []
 
             yield c.agent.service.deregister('foo:1')

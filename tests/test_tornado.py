@@ -189,7 +189,7 @@ class TestConsul(object):
             yield c.agent.service.register(
                 'foo', service_id='foo:2', ttl='100ms')
 
-            time.sleep(20/1000.0)
+            time.sleep(30/1000.0)
 
             # check the nodes show for the /health/service endpoint
             index, nodes = yield c.health.service('foo')
@@ -204,7 +204,7 @@ class TestConsul(object):
             yield c.health.check.ttl_pass('service:foo:1')
             yield c.health.check.ttl_pass('service:foo:2')
 
-            time.sleep(20/1000.0)
+            time.sleep(30/1000.0)
 
             # both nodes are now available
             index, nodes = yield c.health.service('foo', passing=True)
@@ -212,7 +212,7 @@ class TestConsul(object):
                 ['foo:1', 'foo:2']
 
             # wait until the short ttl node fails
-            time.sleep(110/1000.0)
+            time.sleep(120/1000.0)
 
             # only one node available
             index, nodes = yield c.health.service('foo', passing=True)
@@ -221,7 +221,7 @@ class TestConsul(object):
             # ping the failed node's health check
             yield c.health.check.ttl_pass('service:foo:2')
 
-            time.sleep(20/1000.0)
+            time.sleep(30/1000.0)
 
             # check both nodes are available
             index, nodes = yield c.health.service('foo', passing=True)
@@ -232,7 +232,7 @@ class TestConsul(object):
             yield c.agent.service.deregister('foo:1')
             yield c.agent.service.deregister('foo:2')
 
-            time.sleep(20/1000.0)
+            time.sleep(30/1000.0)
 
             index, nodes = yield c.health.service('foo')
             assert nodes == []

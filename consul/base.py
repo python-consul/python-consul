@@ -375,7 +375,7 @@ class Consul(object):
                 be absent. For a *ttl* check, the *script* and *interval*
                 should not be supplied.
 
-                *notes is not used by Consul, and is meant to be human
+                *notes* is not used by Consul, and is meant to be human
                 readable.
 
                 Returns *True* on success.

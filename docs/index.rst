@@ -146,6 +146,9 @@ consul.agent
 .. autoclass:: consul.base::Consul.Agent.Service()
    :members:
 
+.. autoclass:: consul.base::Consul.Agent.Check()
+   :members:
+
 consul.catalog
 ~~~~~~~~~~~~~~
 

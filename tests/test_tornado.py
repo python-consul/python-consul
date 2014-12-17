@@ -269,7 +269,7 @@ class TestConsul(object):
             assert config.nodes == ['foo:1']
 
             # the service should fail
-            yield sleep(loop, 30/1000.0)
+            yield sleep(loop, 40/1000.0)
             assert config.nodes == []
 
             yield c.agent.service.deregister('foo:1')

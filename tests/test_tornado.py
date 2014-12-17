@@ -189,7 +189,7 @@ class TestConsul(object):
             yield c.agent.service.register(
                 'foo', service_id='foo:2', ttl='100ms')
 
-            time.sleep(30/1000.0)
+            time.sleep(20/1000.0)
 
             # check the nodes show for the /health/service endpoint
             index, nodes = yield c.health.service('foo')
@@ -232,7 +232,7 @@ class TestConsul(object):
             yield c.agent.service.deregister('foo:1')
             yield c.agent.service.deregister('foo:2')
 
-            time.sleep(30/1000.0)
+            time.sleep(20/1000.0)
 
             index, nodes = yield c.health.service('foo')
             assert nodes == []
@@ -285,7 +285,7 @@ class TestConsul(object):
         def monitor():
             index, services = yield c.session.list()
             assert services == []
-            yield sleep(loop, 30/1000.0)
+            yield sleep(loop, 20/1000.0)
 
             index, services = yield c.session.list(index=index)
             assert len(services)

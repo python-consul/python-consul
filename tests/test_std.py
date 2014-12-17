@@ -293,7 +293,7 @@ class TestConsul(object):
         c.health.check.ttl_pass('service:foo:1')
         c.health.check.ttl_pass('service:foo:2')
 
-        time.sleep(20/1000.0)
+        time.sleep(40/1000.0)
 
         # both nodes are now available
         index, nodes = c.health.service('foo', passing=True)
@@ -309,7 +309,7 @@ class TestConsul(object):
         # ping the failed node's health check
         c.health.check.ttl_pass('service:foo:2')
 
-        time.sleep(20/1000.0)
+        time.sleep(40/1000.0)
 
         # check both nodes are available
         index, nodes = c.health.service('foo', passing=True)
@@ -319,7 +319,7 @@ class TestConsul(object):
         c.agent.service.deregister('foo:1')
         c.agent.service.deregister('foo:2')
 
-        time.sleep(20/1000.0)
+        time.sleep(40/1000.0)
 
         index, nodes = c.health.service('foo')
         assert nodes == []

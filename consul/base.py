@@ -1,8 +1,12 @@
 import collections
+import logging
 import base64
 import json
 
 import six
+
+
+log = logging.getLogger(__name__)
 
 
 class ConsulException(Exception):
@@ -758,11 +762,14 @@ class Consul(object):
         class Check(object):
             def __init__(self, agent):
                 self.agent = agent
+                self.warned = False
 
             def ttl_pass(self, check_id):
                 """
                 Mark a local TTL check as passing.
                 """
+                if not self.warned:
+                    log.warn('DEPRECATED: update call to agent.check.ttl_pass')
                 return self.agent.http.get(
                     lambda x: x.code == 200,
                     '/v1/agent/check/pass/%s' % check_id)

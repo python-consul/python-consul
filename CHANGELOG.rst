@@ -1,6 +1,19 @@
 Change log
 ==========
 
+0.3.4
+-----
+
+Features
+~~~~~~~~
+
+* Add support for the Agent.Check (thanks @sgargan and @ShaheedHaque)
+
+Deprecated
+~~~~~~~~~~
+
+* health.check.ttl_pass has been moved to agent.check.ttl_pass
+
 0.3.3
 -----
 

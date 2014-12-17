@@ -407,8 +407,7 @@ class Consul(object):
 
             def deregister(self, check_id):
                 """
-                Used to remove a node level check. The agent will
-                take care of deregistering the check with the Catalog.
+                Remove a check from the local agent.
                 """
                 return self.agent.http.get(
                     lambda x: x.code == 200,

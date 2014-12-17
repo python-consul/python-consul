@@ -65,7 +65,7 @@ class TestConsul(object):
         def put():
             yield c.kv.put('foo', 'bar')
 
-        loop.add_timeout(time.time()+(1.0/100), put)
+        loop.add_timeout(time.time()+(2.0/100), put)
         loop.run_sync(main)
 
     def test_kv_put_flags(self, loop, consul_port):

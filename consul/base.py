@@ -398,7 +398,7 @@ class Consul(object):
                     payload['ttl'] = ttl
 
                 if notes:
-                    params['note'] = notes
+                    payload['note'] = notes
 
                 return self.agent.http.put(
                     lambda x: x.code == 200,

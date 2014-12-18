@@ -134,6 +134,11 @@ class TestConsul(object):
             if notes:
                 assert checks[check_id]['Output'] == notes
 
+        # test setting notes on a check
+        c.agent.check.register('check', ttl='1s', notes='foo')
+        assert c.agent.checks()['check']['Notes'] == 'foo'
+        c.agent.check.deregister('check')
+
         assert set(c.agent.checks().keys()) == set([])
         assert c.agent.check.register('script_check',
                                       script='/bin/true', interval=10) is True

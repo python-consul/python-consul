@@ -1,6 +1,14 @@
 Change log
 ==========
 
+0.3.5
+-----
+
+Bug Fix
+~~~~~~~
+
+* Fix typo setting notes on a check (thanks @ShaheedHaque!)
+
 0.3.4
 -----
 

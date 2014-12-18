@@ -204,7 +204,7 @@ class TestConsul(object):
             yield c.health.check.ttl_pass('service:foo:1')
             yield c.health.check.ttl_pass('service:foo:2')
 
-            time.sleep(30/1000.0)
+            time.sleep(50/1000.0)
 
             # both nodes are now available
             index, nodes = yield c.health.service('foo', passing=True)

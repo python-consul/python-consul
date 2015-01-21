@@ -1,6 +1,15 @@
 Change log
 ==========
 
+0.3.6
+-----
+
+Features
+~~~~~~~~
+
+* Add https support (thanks @pete0emerson)
+* Add wan param to agent.members (thanks @sgargan)
+
 0.3.5
 -----
 

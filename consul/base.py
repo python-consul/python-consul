@@ -296,7 +296,11 @@ class Consul(object):
             """
             Returns all the members that this agent currently sees. This may
             vary by agent, use the nodes api of Catalog to retrieve a cluster
-            wide consistent view of members
+            wide consistent view of members.
+
+            For agents running in server mode, setting *wan* to *True* returns
+            the list of WAN members instead of the LAN members which is
+            default.
             """
             params = {}
             if wan:

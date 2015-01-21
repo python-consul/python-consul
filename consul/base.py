@@ -247,8 +247,7 @@ class Consul(object):
         takes on the burden of registering with the Catalog and performing
         anti-entropy to recover from outages.
         """
-        # TODO: checks, members, join, force-leave
-        # TODO: Check. register, deregister, pass (move), warn, fail
+        # TODO: join, force-leave
         def __init__(self, agent):
             self.agent = agent
             self.service = Consul.Agent.Service(agent)

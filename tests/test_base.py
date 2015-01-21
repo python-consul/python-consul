@@ -8,7 +8,7 @@ Request = collections.namedtuple(
 
 
 class HTTPClient(object):
-    def __init__(self, host=None, port=None):
+    def __init__(self, host=None, port=None, scheme=None):
         pass
 
     def get(self, callback, path, params=None):
@@ -22,8 +22,8 @@ class HTTPClient(object):
 
 
 class Consul(consul.base.Consul):
-    def connect(self, host, port):
-        return HTTPClient(host, port)
+    def connect(self, host, port, scheme):
+        return HTTPClient(host, port, scheme)
 
 
 def _should_support(c):

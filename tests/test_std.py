@@ -188,6 +188,10 @@ class TestConsul(object):
             assert not x['Tags'] is None
         assert c.agent.self()['Member'] in members
 
+        wan_members = c.agent.members(wan=True)
+        for x in wan_members:
+            assert 'dc1' in x['Name']
+
     def test_agent_self(self, consul_port):
         c = consul.Consul(port=consul_port)
         assert set(c.agent.self().keys()) == set(['Member', 'Config'])

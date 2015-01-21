@@ -289,15 +289,20 @@ class Consul(object):
             return self.agent.http.get(
                 lambda x: json.loads(x.body), '/v1/agent/checks')
 
-        def members(self):
+        def members(self, wan=False):
             """
             Returns all the members that this agent currently sees. This may
             vary by agent, use the nodes api of Catalog to retrieve a cluster
             wide consistent view of members
             """
-            # TODO: add wan flag
+            params = {}
+            if wan:
+                params['wan'] = 1
+
             return self.agent.http.get(
-                lambda x: json.loads(x.body), '/v1/agent/members')
+                lambda x: json.loads(x.body),
+                '/v1/agent/members',
+                params=params)
 
         class Service(object):
             def __init__(self, agent):

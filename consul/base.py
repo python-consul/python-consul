@@ -125,6 +125,10 @@ class Consul(object):
                     "Value": "bar",
                     "Session": "adf4238a-882b-9ddc-4a9d-5b6758e4159e"
                 }
+
+            Note, if the requested key does not exists *(index, None)* is
+            returned. It's then possible to long poll on the index for when the
+            key is created.
             """
             assert not key.startswith('/')
             params = {}

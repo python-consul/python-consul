@@ -12,10 +12,11 @@ __all__ = ['Consul']
 
 
 class HTTPClient(object):
-    def __init__(self, host='127.0.0.1', port=8500):
+    def __init__(self, host='127.0.0.1', port=8500, scheme='http'):
         self.host = host
         self.port = port
-        self.base_uri = 'http://%s:%s' % (self.host, self.port)
+        self.scheme = scheme
+        self.base_uri = '%s://%s:%s' % (self.scheme, self.host, self.port)
         self.client = httpclient.AsyncHTTPClient()
 
     def uri(self, path, params=None):
@@ -54,5 +55,5 @@ class HTTPClient(object):
 
 
 class Consul(base.Consul):
-    def connect(self, host, port):
-        return HTTPClient(host, port)
+    def connect(self, host, port, scheme):
+        return HTTPClient(host, port, scheme)

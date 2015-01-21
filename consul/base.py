@@ -57,7 +57,7 @@ class Consul(object):
             host='127.0.0.1',
             port=8500,
             token=None,
-            ssl=False,
+            scheme='http',
             consistency='default'):
         """
         *token* is an optional `ACL token`_. If supplied it will be used by
@@ -73,9 +73,9 @@ class Consul(object):
 
         # TODO: Event, Status
 
-        self.http = self.connect(host, port, ssl)
+        self.http = self.connect(host, port, scheme)
         self.token = token
-        self.ssl = ssl
+        self.scheme = scheme
         assert consistency in ('default', 'consistent', 'stale')
         self.consistency = consistency
 

@@ -9,14 +9,11 @@ __all__ = ['Consul']
 
 
 class HTTPClient(object):
-    def __init__(self, host='127.0.0.1', port=8500, ssl=False):
+    def __init__(self, host='127.0.0.1', port=8500, scheme='http'):
         self.host = host
         self.port = port
-        self.ssl = ssl
-        if self.ssl:
-            self.base_uri = 'https://%s:%s' % (self.host, self.port)
-        else:
-            self.base_uri = 'http://%s:%s' % (self.host, self.port)
+        self.scheme = scheme
+        self.base_uri = '%s://%s:%s' % (self.scheme, self.host, self.port)
 
     def response(self, response):
         return base.Response(
@@ -42,5 +39,5 @@ class HTTPClient(object):
 
 
 class Consul(base.Consul):
-    def connect(self, host, port, ssl):
-        return HTTPClient(host, port, ssl)
+    def connect(self, host, port, scheme):
+        return HTTPClient(host, port, scheme)

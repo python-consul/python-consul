@@ -58,7 +58,8 @@ class Consul(object):
             port=8500,
             token=None,
             scheme='http',
-            consistency='default'):
+            consistency='default',
+            dc=None):
         """
         *token* is an optional `ACL token`_. If supplied it will be used by
         default for all requests made with this client session. It's still
@@ -76,6 +77,7 @@ class Consul(object):
         self.http = self.connect(host, port, scheme)
         self.token = token
         self.scheme = scheme
+        self.dc = dc
         assert consistency in ('default', 'consistent', 'stale')
         self.consistency = consistency
 
@@ -101,7 +103,8 @@ class Consul(object):
                 index=None,
                 recurse=False,
                 token=None,
-                consistency=None):
+                consistency=None,
+                dc=None):
             """
             Returns a tuple of (*index*, *value[s]*)
 
@@ -109,6 +112,8 @@ class Consul(object):
             calls to wait for changes since this query was last run.
 
             *token* is an optional `ACL token`_ to apply to this request.
+
+            *dc* is the optional datacenter that you wish to communicate with.
 
             The *value* returned is for the specified key, or if *recurse* is
             True a list of *values* for all keys with the given prefix is
@@ -139,6 +144,9 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 params['token'] = token
+            dc = dc or self.agent.dc
+            if dc:
+                params['dc'] = dc
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -166,7 +174,8 @@ class Consul(object):
                 flags=None,
                 acquire=None,
                 release=None,
-                token=None):
+                token=None,
+                dc=None):
             """
             Sets *key* to the given *value*.
 
@@ -194,6 +203,8 @@ class Consul(object):
             the token's policy is not allowed to write to this key an
             *ACLPermissionDenied* exception will be raised.
 
+            *dc* is the optional datacenter that you wish to communicate with.
+
             The return value is simply either True or False. If False is
             returned, then the update has not taken place.
             """
@@ -214,11 +225,14 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 params['token'] = token
+            dc = dc or self.agent.dc
+            if dc:
+                params['dc'] = dc
             return self.agent.http.put(
                 callback(is_json=True),
                 '/v1/kv/%s' % key, params=params, data=value)
 
-        def delete(self, key, recurse=None, token=None):
+        def delete(self, key, recurse=None, token=None, dc=None):
             """
             Deletes a single key or if *recurse* is True, all keys sharing a
             prefix.
@@ -226,6 +240,8 @@ class Consul(object):
             *token* is an optional `ACL token`_ to apply to this request. If
             the token's policy is not allowed to delete to this key an
             *ACLPermissionDenied* exception will be raised.
+
+            *dc* is the optional datacenter that you wish to communicate with.
             """
             assert not key.startswith('/')
 
@@ -235,6 +251,9 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 params['token'] = token
+            dc = dc or self.agent.dc
+            if dc:
+                params['dc'] = dc
 
             def callback(response):
                 if response.code == 403:

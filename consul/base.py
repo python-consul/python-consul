@@ -175,6 +175,9 @@ class Consul(object):
                 params['keys'] = True
             if separator:
                 params['separator'] = separator
+            dc = dc or self.agent.dc
+            if dc:
+                params['dc'] = dc
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'

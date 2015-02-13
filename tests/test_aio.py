@@ -15,7 +15,7 @@ def loop():
     return loop
 
 
-class TestConsul(object):
+class TestAsyncioConsul(object):
 
     def test_kv(self, loop, consul_port):
 
@@ -72,7 +72,7 @@ class TestConsul(object):
 
         @asyncio.coroutine
         def put():
-            yield from asyncio.sleep(3.0/100, loop=loop)
+            yield from asyncio.sleep(2.0/100, loop=loop)
             yield from c.kv.put('foo', 'bar')
 
         loop.run_until_complete(main())
@@ -269,6 +269,8 @@ class TestConsul(object):
 
         @asyncio.coroutine
         def keepalive():
+            # run monitor as background task
+            fut = asyncio.async(monitor(), loop=loop)
             # give the monitor a chance to register the service
             yield from asyncio.sleep(50/1000.0, loop=loop)
             assert config.nodes == []
@@ -283,9 +285,10 @@ class TestConsul(object):
             assert config.nodes == []
 
             yield from c.agent.service.deregister('foo:1')
+            # all done kill background task
+            fut.cancel()
 
-        waiter = asyncio.gather(keepalive(), monitor(), loop=loop)
-        loop.run_until_complete(waiter)
+        loop.run_until_complete(keepalive())
 
     def test_session(self, loop, consul_port):
         c = consul.aio.Consul(port=consul_port, loop=loop)
@@ -295,7 +298,7 @@ class TestConsul(object):
             fut = asyncio.async(register(), loop=loop)
             index, services = yield from c.session.list()
             assert services == []
-            yield from asyncio.sleep(20/100.0, loop=loop)
+            yield from asyncio.sleep(20/1000.0, loop=loop)
 
             index, services = yield from c.session.list(index=index)
             assert len(services)
@@ -308,7 +311,7 @@ class TestConsul(object):
         def register():
             yield from asyncio.sleep(1.0/100, loop=loop)
             session_id = yield from c.session.create()
-            yield from asyncio.sleep(50/100.0, loop=loop)
+            yield from asyncio.sleep(50/1000.0, loop=loop)
             response = yield from c.session.destroy(session_id)
             assert response is True
 

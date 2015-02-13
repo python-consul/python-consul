@@ -2,7 +2,7 @@ import asyncio
 import pytest
 import six
 import struct
-import time
+import sys
 
 import consul
 import consul.aio
@@ -15,6 +15,7 @@ def loop():
     return loop
 
 
+@pytest.mark.skipif(sys.version_info < (3, 3), reason="requires python3.3")
 class TestAsyncioConsul(object):
 
     def test_kv(self, loop, consul_port):

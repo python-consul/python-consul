@@ -70,6 +70,9 @@ class Consul(object):
         that support the consistency option. It's still possible to override
         this by passing explicitly for a given request. *consistency* can be
         either 'default', 'consistent' or 'stale'.
+
+        *dc* is the datacenter that this agent will communicate with.
+        By default the datacenter of the host is used.
         """
 
         # TODO: Event, Status

@@ -101,7 +101,9 @@ class Consul(object):
                 index=None,
                 recurse=False,
                 token=None,
-                consistency=None):
+                consistency=None,
+                keys_only=False,
+                separator=None):
             """
             Returns a tuple of (*index*, *value[s]*)
 
@@ -139,6 +141,10 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 params['token'] = token
+            if keys_only:
+                params['keys'] = True
+            if separator:
+                params['separator'] = separator
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -148,11 +154,12 @@ class Consul(object):
                     data = None
                 else:
                     data = json.loads(response.body)
-                    for item in data:
-                        if item.get('Value') is not None:
-                            item['Value'] = base64.b64decode(item['Value'])
-                    if not recurse:
-                        data = data[0]
+                    if not keys_only:
+                        for item in data:
+                            if item.get('Value') is not None:
+                                item['Value'] = base64.b64decode(item['Value'])
+                        if not recurse:
+                            data = data[0]
                 return response.headers['X-Consul-Index'], data
 
             return self.agent.http.get(

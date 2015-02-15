@@ -58,7 +58,8 @@ class Consul(object):
             port=8500,
             token=None,
             scheme='http',
-            consistency='default'):
+            consistency='default',
+            dc=None):
         """
         *token* is an optional `ACL token`_. If supplied it will be used by
         default for all requests made with this client session. It's still
@@ -69,6 +70,9 @@ class Consul(object):
         that support the consistency option. It's still possible to override
         this by passing explicitly for a given request. *consistency* can be
         either 'default', 'consistent' or 'stale'.
+
+        *dc* is the datacenter that this agent will communicate with.
+        By default the datacenter of the host is used.
         """
 
         # TODO: Event, Status
@@ -76,6 +80,7 @@ class Consul(object):
         self.http = self.connect(host, port, scheme)
         self.token = token
         self.scheme = scheme
+        self.dc = dc
         assert consistency in ('default', 'consistent', 'stale')
         self.consistency = consistency
 
@@ -101,7 +106,8 @@ class Consul(object):
                 index=None,
                 recurse=False,
                 token=None,
-                consistency=None):
+                consistency=None,
+                dc=None):
             """
             Returns a tuple of (*index*, *value[s]*)
 
@@ -109,6 +115,9 @@ class Consul(object):
             calls to wait for changes since this query was last run.
 
             *token* is an optional `ACL token`_ to apply to this request.
+
+            *dc* is the optional datacenter that you wish to communicate with.
+            If None is provided, defaults to the agent's datacenter.
 
             The *value* returned is for the specified key, or if *recurse* is
             True a list of *values* for all keys with the given prefix is
@@ -139,6 +148,9 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 params['token'] = token
+            dc = dc or self.agent.dc
+            if dc:
+                params['dc'] = dc
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -166,7 +178,8 @@ class Consul(object):
                 flags=None,
                 acquire=None,
                 release=None,
-                token=None):
+                token=None,
+                dc=None):
             """
             Sets *key* to the given *value*.
 
@@ -194,6 +207,9 @@ class Consul(object):
             the token's policy is not allowed to write to this key an
             *ACLPermissionDenied* exception will be raised.
 
+            *dc* is the optional datacenter that you wish to communicate with.
+            If None is provided, defaults to the agent's datacenter.
+
             The return value is simply either True or False. If False is
             returned, then the update has not taken place.
             """
@@ -214,11 +230,14 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 params['token'] = token
+            dc = dc or self.agent.dc
+            if dc:
+                params['dc'] = dc
             return self.agent.http.put(
                 callback(is_json=True),
                 '/v1/kv/%s' % key, params=params, data=value)
 
-        def delete(self, key, recurse=None, token=None):
+        def delete(self, key, recurse=None, token=None, dc=None):
             """
             Deletes a single key or if *recurse* is True, all keys sharing a
             prefix.
@@ -226,6 +245,9 @@ class Consul(object):
             *token* is an optional `ACL token`_ to apply to this request. If
             the token's policy is not allowed to delete to this key an
             *ACLPermissionDenied* exception will be raised.
+
+            *dc* is the optional datacenter that you wish to communicate with.
+            If None is provided, defaults to the agent's datacenter.
             """
             assert not key.startswith('/')
 
@@ -235,6 +257,9 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 params['token'] = token
+            dc = dc or self.agent.dc
+            if dc:
+                params['dc'] = dc
 
             def callback(response):
                 if response.code == 403:
@@ -530,6 +555,7 @@ class Consul(object):
             Returns *True* on success.
             """
             data = {'node': node, 'address': address}
+            dc = dc or self.agent.dc
             if dc:
                 data['datacenter'] = dc
             if service:
@@ -556,6 +582,7 @@ class Consul(object):
             """
             assert not (service_id and check_id)
             data = {'node': node}
+            dc = dc or self.agent.dc
             if dc:
                 data['datacenter'] = dc
             if service_id:
@@ -600,6 +627,7 @@ class Consul(object):
                 ])
             """
             params = {}
+            dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
             if index:
@@ -639,6 +667,7 @@ class Consul(object):
             known tags for a given service.
             """
             params = {}
+            dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
             if index:
@@ -691,6 +720,7 @@ class Consul(object):
                 })
             """
             params = {}
+            dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
             if index:
@@ -738,6 +768,7 @@ class Consul(object):
                 ])
             """
             params = {}
+            dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
             if tag:
@@ -833,6 +864,7 @@ class Consul(object):
             Returns the string *session_id* for the session.
             """
             params = {}
+            dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
             data = {}
@@ -859,6 +891,7 @@ class Consul(object):
             Returns *True* on success.
             """
             params = {}
+            dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
             return self.agent.http.put(
@@ -894,6 +927,7 @@ class Consul(object):
                ])
             """
             params = {}
+            dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
             if index:
@@ -918,6 +952,7 @@ class Consul(object):
             was configured with.
             """
             params = {}
+            dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
             if index:
@@ -943,6 +978,7 @@ class Consul(object):
             was configured with.
             """
             params = {}
+            dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
             if index:

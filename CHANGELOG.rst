@@ -1,6 +1,15 @@
 Change log
 ==========
 
+0.3.8
+-----
+
+API changes (backwards incompatible)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Reorder named arguments to be more consistent. index is always the first
+  named argument, if available, and dc is now always the last named argument.
+
 0.3.7
 -----
 

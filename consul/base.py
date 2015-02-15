@@ -500,7 +500,7 @@ class Consul(object):
         def __init__(self, agent):
             self.agent = agent
 
-        def register(self, node, address, dc=None, service=None, check=None):
+        def register(self, node, address, service=None, check=None, dc=None):
             """
             A low level mechanism for directly registering or updating entries
             in the catalog. It is usually recommended to use
@@ -510,9 +510,6 @@ class Consul(object):
             *node* is the name of the node to register.
 
             *address* is the ip of the node.
-
-            *dc* is the datacenter of the node and defaults to this agents
-            datacenter.
 
             *service* is an optional service to register. if supplied this is a
             dict::
@@ -548,6 +545,9 @@ class Consul(object):
                     "ServiceID": "redis1"
                 }
 
+            *dc* is the datacenter of the node and defaults to this agents
+            datacenter.
+
             This manipulates the health check entry, but does not setup a
             script or TTL to actually update the status. The full documentation
             is `here <https://consul.io/docs/agent/http.html#catalog>`_.
@@ -566,7 +566,7 @@ class Consul(object):
                 callback(is_200=True),
                 '/v1/catalog/register', data=json.dumps(data))
 
-        def deregister(self, node, dc=None, service_id=None, check_id=None):
+        def deregister(self, node, service_id=None, check_id=None, dc=None):
             """
             A low level mechanism for directly removing entries in the catalog.
             It is usually recommended to use the agent APIs, as they are
@@ -600,7 +600,7 @@ class Consul(object):
             return self.agent.http.get(
                 lambda x: json.loads(x.body), '/v1/catalog/datacenters')
 
-        def nodes(self, dc=None, index=None, consistency=None):
+        def nodes(self, index=None, consistency=None, dc=None):
             """
             Returns a tuple of (*index*, *nodes*) of all nodes known
             about in the *dc* datacenter. *dc* defaults to the current
@@ -639,7 +639,7 @@ class Consul(object):
                 callback(is_json=True, index=True),
                 '/v1/catalog/nodes', params=params)
 
-        def services(self, dc=None, index=None, consistency=None):
+        def services(self, index=None, consistency=None, dc=None):
             """
             Returns a tuple of (*index*, *services*) of all services known
             about in the *dc* datacenter. *dc* defaults to the current
@@ -679,13 +679,10 @@ class Consul(object):
                 callback(is_json=True, index=True),
                 '/v1/catalog/services', params=params)
 
-        def node(self, node, dc=None, index=None, consistency=None):
+        def node(self, node, index=None, consistency=None, dc=None):
             """
             Returns a tuple of (*index*, *services*) of all services provided
             by *node*.
-
-            *dc* is the datacenter of the node and defaults to this agents
-            datacenter.
 
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
@@ -693,6 +690,9 @@ class Consul(object):
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
             was configured with.
+
+            *dc* is the datacenter of the node and defaults to this agents
+            datacenter.
 
             The response looks like this::
 
@@ -735,20 +735,20 @@ class Consul(object):
         def service(
                 self,
                 service,
-                dc=None,
-                tag=None,
                 index=None,
-                consistency=None):
+                tag=None,
+                consistency=None,
+                dc=None):
             """
             Returns a tuple of (*index*, *nodes*) of the nodes providing
             *service* in the *dc* datacenter. *dc* defaults to the current
             datacenter of this agent.
 
-            If *tag* is provided, the list of nodes returned will be filtered
-            by that tag.
-
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
+
+            If *tag* is provided, the list of nodes returned will be filtered
+            by that tag.
 
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
@@ -898,7 +898,7 @@ class Consul(object):
                 callback(is_200=True),
                 '/v1/session/destroy/%s' % session_id, params=params)
 
-        def list(self, dc=None, index=None, consistency=None):
+        def list(self, index=None, consistency=None, dc=None):
             """
             Returns a tuple of (*index*, *sessions*) of all active sessions in
             the *dc* datacenter. *dc* defaults to the current datacenter of
@@ -939,7 +939,7 @@ class Consul(object):
                 callback(is_json=True, index=True),
                 '/v1/session/list', params=params)
 
-        def node(self, node, dc=None, index=None, consistency=None):
+        def node(self, node, index=None, consistency=None, dc=None):
             """
             Returns a tuple of (*index*, *sessions*) as per *session.list*, but
             filters the sessions returned to only those active for *node*.
@@ -964,7 +964,7 @@ class Consul(object):
                 callback(is_json=True, index=True),
                 '/v1/session/node/%s' % node, params=params)
 
-        def info(self, session_id, dc=None, index=None, consistency=None):
+        def info(self, session_id, index=None, consistency=None, dc=None):
             """
             Returns a tuple of (*index*, *session*) for the session
             *session_id* in the *dc* datacenter. *dc* defaults to the current

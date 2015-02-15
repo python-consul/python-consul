@@ -1,6 +1,7 @@
 import collections
 import subprocess
 import platform
+import sys
 import tempfile
 import socket
 import shlex
@@ -12,6 +13,12 @@ import os
 import requests
 import pytest
 import py
+
+
+collect_ignore = []
+if sys.version_info[0] < 3:
+    p = os.path.join(os.path.dirname(__file__), 'test_aio.py')
+    collect_ignore.append(p)
 
 
 def get_free_ports(num, host=None):
@@ -56,7 +63,6 @@ def start_consul_instance(acl_master_token=None):
         postfix = 'osx'
     else:
         postfix = 'linux64'
-
     bin = os.path.join(os.path.dirname(__file__), 'consul.'+postfix)
     command = """
         {bin} agent -server -bootstrap -config-dir=. -data-dir=./data

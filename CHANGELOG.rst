@@ -1,6 +1,15 @@
 Change log
 ==========
 
+0.3.7
+-----
+
+Features
+~~~~~~~~
+
+* Add dc support for kv calls; add ability to set the default dc for an entire
+  client session (thanks @angad)
+
 0.3.6
 -----
 

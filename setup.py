@@ -35,13 +35,16 @@ setup(
     version=metadata['version'],
     author='Andy Gayton',
     author_email='andy@thecablelounge.com',
-    install_requires=requirements,
-    packages=find_packages(),
     url='https://github.com/cablehead/python-consul',
     license='MIT',
     description=description,
     long_description=open('README.rst').read() + '\n\n' +
         open('CHANGELOG.rst').read(),
+    packages=find_packages(),
+    install_requires=requirements,
+    extras_require={
+        'asyncio': ['aiohttp'],
+    },
     tests_require=['pytest'],
     cmdclass={'test': PyTest},
     classifiers=[

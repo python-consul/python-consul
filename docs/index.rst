@@ -71,10 +71,48 @@ need to *yield* the result of each API call. This client is available in
                 index, data = yield c.kv.get('foo', index=index)
                 self.foo = data['Value']
 
+asyncio
+~~~~~~~
+
+There is a `asyncio`_ (using aiohttp_) client which works with `Python3.4` and
+makes use of `asyncio.coroutine`_. The API for this client is identical to
+the standard python-consul client except that you need to ``yield from`` the
+result of each API call. This client is available in *consul.aio*.
+
+.. code:: python
+
+    import asyncio
+    import consul.aio
+
+
+    loop = asyncio.get_event_loop()
+
+    @asyncio.coroutine
+    def go():
+
+        # always better to pass ``loop`` explicitly, but this
+        # is not mandatory, you can relay on global event loop
+        c = consul.aio.Consul(port=consul_port, loop=loop)
+
+        # set value, same as default api but with ``yield from``
+        response = yield from c.kv.put(b'foo', b'bar')
+        assert response is True
+
+        # get value
+        index, data = yield from c.kv.get(b'foo')
+        assert data['Value'] == b'bar'
+
+        # delete value
+        response = yield from c.kv.delete(b'foo2')
+        assert response is True
+
+    loop.run_until_complete(go())
+
+
 Wanted
 ~~~~~~
 
-Adaptors for `asyncio`_, `Twisted`_ and a `thread pool`_ based adaptor.
+Adaptors for `Twisted`_ and a `thread pool`_ based adaptor.
 
 Tools
 -----
@@ -189,7 +227,8 @@ consul.acl
 .. _gevent: http://www.gevent.org
 .. _Tornado: http://www.tornadoweb.org
 .. _gen.coroutine: http://tornado.readthedocs.org/en/latest/gen.html
-
+.. _asyncio.coroutine: https://docs.python.org/3/library/asyncio-task.html#coroutines
+.. _aiohttp: https://github.com/KeepSafe/aiohttp
 .. _asyncio: https://docs.python.org/3/library/asyncio.html
 .. _Twisted: https://twistedmatrix.com/trac/
 .. _thread pool: https://docs.python.org/2/library/threading.html

@@ -3,7 +3,7 @@ import asyncio
 import aiohttp
 
 from six.moves import urllib
-from . import base
+from consul import base
 
 
 __all__ = ['Consul']

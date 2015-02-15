@@ -9,6 +9,7 @@ Features
 
 * Add dc support for kv calls; add ability to set the default dc for an entire
   client session (thanks @angad)
+* Add asyncio client (thanks @jettify)
 
 0.3.6
 -----

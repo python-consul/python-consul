@@ -134,6 +134,11 @@ class Consul(object):
 
             *token* is an optional `ACL token`_ to apply to this request.
 
+            *keys* is a boolean which, if True, says to return a flat list of keys
+            without values or other metadata.
+
+            *separator* is used to list only up to a given separator character.
+
             *dc* is the optional datacenter that you wish to communicate with.
             If None is provided, defaults to the agent's datacenter.
 
@@ -189,7 +194,7 @@ class Consul(object):
                     data = None
                 else:
                     data = json.loads(response.body)
-                    if not keys_only:
+                    if not keys:
                         for item in data:
                             if item.get('Value') is not None:
                                 item['Value'] = base64.b64decode(item['Value'])

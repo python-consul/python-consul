@@ -52,6 +52,7 @@ setup(
     py_modules=py_modules,
     install_requires=requirements,
     extras_require={
+        'tornado': ['tornado'],
         'asyncio': ['aiohttp'],
     },
     tests_require=['pytest'],

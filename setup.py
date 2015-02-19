@@ -1,5 +1,7 @@
+import glob
 import sys
 import re
+import os
 
 from setuptools.command.test import test as TestCommand
 from setuptools import setup
@@ -16,6 +18,13 @@ requirements = [
 
 
 description = "Python client for Consul (http://www.consul.io/)"
+
+
+py_modules = [os.path.splitext(x)[0] for x in glob.glob('consul/*.py')]
+try:
+    import asyncio
+except:
+    py_modules.remove('consul/aio')
 
 
 class PyTest(TestCommand):
@@ -40,7 +49,7 @@ setup(
     description=description,
     long_description=open('README.rst').read() + '\n\n' +
         open('CHANGELOG.rst').read(),
-    packages=find_packages(),
+    py_modules=py_modules,
     install_requires=requirements,
     extras_require={
         'asyncio': ['aiohttp'],

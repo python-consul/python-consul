@@ -5,7 +5,6 @@ import os
 
 from setuptools.command.test import test as TestCommand
 from setuptools import setup
-from setuptools import find_packages
 
 
 metadata = dict(
@@ -23,6 +22,7 @@ description = "Python client for Consul (http://www.consul.io/)"
 py_modules = [os.path.splitext(x)[0] for x in glob.glob('consul/*.py')]
 try:
     import asyncio
+    del asyncio
 except:
     py_modules.remove('consul/aio')
 

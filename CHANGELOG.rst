@@ -1,6 +1,15 @@
 Change log
 ==========
 
+0.3.9
+-----
+
+Bug Fix
+~~~~~~~
+
+* Exclude consul.aio if asyncio isn't available, avoids an error message on
+  install, trying to byte compile that module
+
 0.3.8
 -----
 

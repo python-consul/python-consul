@@ -21,12 +21,12 @@ description = "Python client for Consul (http://www.consul.io/)"
 
 py_modules = [os.path.splitext(x)[0] for x in glob.glob('consul/*.py')]
 
-print py_modules
 try:
     import asyncio
     del asyncio
 except:
-    py_modules.remove('consul/aio')
+    if 'consul/aio' in py_modules:
+        py_modules.remove('consul/aio')
 
 
 class PyTest(TestCommand):

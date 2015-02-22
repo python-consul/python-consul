@@ -145,7 +145,11 @@ class TestAsyncioConsul(object):
             del services['consul']
             assert services == {
                 'foo': {
-                    'Port': 0, 'ID': 'foo', 'Service': 'foo', 'Tags': None}}
+                    'Port': 0,
+                    'ID': 'foo',
+                    'Service': 'foo',
+                    'Tags': None,
+                    'Address': ''}, }
             response = yield from c.agent.service.deregister('foo')
             assert response is True
             services = yield from c.agent.services()

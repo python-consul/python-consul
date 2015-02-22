@@ -819,7 +819,6 @@ class Consul(object):
 
         def state(self, name, index=None):
             """
-
             Returns a tuple of (*index*, *nodes*)
 
             *name* is a supported state. From the Consul docs:
@@ -832,7 +831,6 @@ class Consul(object):
             calls to wait for changes since this query was last run.
 
             *nodes* are the nodes providing the given service.
-
             """
             assert name in ['any', 'unknown', 'passing', 'warning', 'critical']
             params = {}

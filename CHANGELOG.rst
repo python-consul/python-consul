@@ -1,6 +1,15 @@
 Change log
 ==========
 
+0.3.11
+------
+
+Features
+~~~~~~~~
+
+* add the health.state endpoint (thanks @pete0emerson!)
+* bump test binaries to 0.5.0
+
 0.3.9
 -----
 

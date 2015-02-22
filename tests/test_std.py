@@ -336,9 +336,10 @@ class TestConsul(object):
     def test_health_state(self, consul_port):
         c = consul.Consul(port=consul_port)
 
-        # check there are no nodes for the service 'foo'
+        # The empty string is for the Serf Health Status check, which has an
+        # empty ServiceID
         index, nodes = c.health.state('any')
-        assert [node['ServiceID'] for node in nodes] != 'foo'
+        assert [node['ServiceID'] for node in nodes] == ['']
 
         # register two nodes, one with a long ttl, the other shorter
         c.agent.service.register('foo', service_id='foo:1', ttl='10s')
@@ -348,8 +349,6 @@ class TestConsul(object):
 
         # check the nodes show for the /health/state/any endpoint
         index, nodes = c.health.state('any')
-        # The empty string is for the Serf Health Status check, which has an
-        # empty ServiceID
         assert [node['ServiceID'] for node in nodes] == ['', 'foo:1', 'foo:2']
 
         # but that they aren't passing their health check
@@ -389,7 +388,7 @@ class TestConsul(object):
         time.sleep(40/1000.0)
 
         index, nodes = c.health.state('any')
-        assert [node['ServiceID'] for node in nodes] != 'foo'
+        assert [node['ServiceID'] for node in nodes] == ['']
 
     def test_session(self, consul_port):
         c = consul.Consul(port=consul_port)

@@ -136,7 +136,11 @@ class TestConsul(object):
             del services['consul']
             assert services == {
                 'foo': {
-                    'Port': 0, 'ID': 'foo', 'Service': 'foo', 'Tags': None}}
+                    'Port': 0,
+                    'ID': 'foo',
+                    'Service': 'foo',
+                    'Tags': None,
+                    'Address': ''}, }
             response = yield c.agent.service.deregister('foo')
             assert response is True
             services = yield c.agent.services()

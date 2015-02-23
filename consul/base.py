@@ -21,6 +21,10 @@ class ACLPermissionDenied(ConsulException):
     pass
 
 
+class NotFound(ConsulException):
+    pass
+
+
 class Timeout(ConsulException):
     pass
 
@@ -28,12 +32,21 @@ class Timeout(ConsulException):
 Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
 
 
-def callback(map=None, is_200=False, is_json=False, index=False, one=False):
+def callback(
+        map=None,
+        is_200=False,
+        is_json=False,
+        index=False,
+        one=False,
+        allow_404=True):
+
     def cb(response):
         if response.code == 500:
             raise ConsulException(response.body)
         if response.code == 403:
             raise ACLPermissionDenied(response.body)
+        if response.code == 404 and not allow_404:
+            raise NotFound(response.body)
         if is_200:
             data = response.code == 200
         elif is_json:
@@ -871,6 +884,8 @@ class Consul(object):
                 node=None,
                 checks=None,
                 lock_delay=15,
+                behavior='release',
+                ttl=None,
                 dc=None):
             """
             Creates a new session. There is more documentation for sessions
@@ -885,6 +900,17 @@ class Consul(object):
             provided it defaults to the *serfHealth* check.
 
             *lock_delay* is an integer of seconds.
+
+            *behavior* can be set to either 'release' or 'delete'. This
+            controls the behavior when a session is invalidated. By default,
+            this is 'release', causing any locks that are held to be released.
+            Changing this to 'delete' causes any locks that are held to be
+            deleted. 'delete' is useful for creating ephemeral key/value
+            entries.
+
+            when *ttl* is provided, the session is invalidated if it is not
+            renewed before the TTL expires.  If specified, it is an integer of
+            seconds.  Currently it must be between 10 and 3600 seconds.
 
             By default the session will be created in the current datacenter
             but an optional *dc* can be provided.
@@ -904,6 +930,12 @@ class Consul(object):
                 data['checks'] = checks
             if lock_delay != 15:
                 data['lockdelay'] = '%ss' % lock_delay
+            assert behavior in ('release', 'delete')
+            if behavior != 'release':
+                data['behavior'] = behavior
+            if ttl:
+                assert 10 <= ttl <= 3600
+                data['ttl'] = '%ss' % ttl
             if data:
                 data = json.dumps(data)
             else:
@@ -1017,6 +1049,24 @@ class Consul(object):
             return self.agent.http.get(
                 callback(is_json=True, index=True, one=True),
                 '/v1/session/info/%s' % session_id, params=params)
+
+        def renew(self, session_id, dc=None):
+            """
+            This is used with sessions that have a TTL, and it extends the
+            expiration by the TTL.
+
+            *dc* is the optional datacenter that you wish to communicate with.
+            If None is provided, defaults to the agent's datacenter.
+
+            Returns the session.
+            """
+            params = {}
+            dc = dc or self.agent.dc
+            if dc:
+                params['dc'] = dc
+            return self.agent.http.put(
+                callback(is_json=True, one=True, allow_404=False),
+                '/v1/session/renew/%s' % session_id, params=params)
 
     class ACL(object):
         def __init__(self, agent):

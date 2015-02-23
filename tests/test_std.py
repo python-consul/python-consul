@@ -425,6 +425,27 @@ class TestConsul(object):
         _, sessions = c.session.list()
         assert sessions == []
 
+    def test_session_delete_ttl_renew(self, consul_port):
+        c = consul.Consul(port=consul_port)
+
+        s = c.session.create(behavior='delete', ttl=20)
+
+        # attempt to renew an unknown session
+        pytest.raises(consul.NotFound, c.session.renew, 'foo')
+
+        session = c.session.renew(s)
+        assert session['Behavior'] == 'delete'
+        assert session['TTL'] == '20s'
+
+        # trying out the behavior
+        assert c.kv.put('foo', '1', acquire=s) is True
+        index, data = c.kv.get('foo')
+        assert data['Value'] == six.b('1')
+
+        c.session.destroy(s)
+        index, data = c.kv.get('foo')
+        assert data is None
+
     def test_acl_disabled(self, consul_port):
         c = consul.Consul(port=consul_port)
         pytest.raises(consul.ACLDisabled, c.acl.list)

@@ -1,6 +1,15 @@
 Change log
 ==========
 
+0.3.12
+------
+
+Features
+~~~~~~~~
+
+* add behavior and ttl to session.create
+* add session.renew
+
 0.3.11
 ------
 

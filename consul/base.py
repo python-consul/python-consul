@@ -97,6 +97,7 @@ class Consul(object):
         assert consistency in ('default', 'consistent', 'stale')
         self.consistency = consistency
 
+        self.event = Consul.Event(self)
         self.kv = Consul.KV(self)
         self.agent = Consul.Agent(self)
         self.catalog = Consul.Catalog(self)
@@ -189,7 +190,7 @@ class Consul(object):
                 return response.headers['X-Consul-Index'], data
 
             return self.agent.http.get(
-                callback, '/v1/events/list', params=params)
+                callback, '/v1/event/list', params=params)
 
 
     class KV(object):

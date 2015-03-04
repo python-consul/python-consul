@@ -333,6 +333,64 @@ class TestConsul(object):
         index, nodes = c.health.service('foo')
         assert nodes == []
 
+    def test_health_state(self, consul_port):
+        c = consul.Consul(port=consul_port)
+
+        # check there are no nodes for the service 'foo'
+        index, nodes = c.health.state('any')
+        assert [node['ServiceID'] for node in nodes] != 'foo'
+
+        # register two nodes, one with a long ttl, the other shorter
+        c.agent.service.register('foo', service_id='foo:1', ttl='10s')
+        c.agent.service.register('foo', service_id='foo:2', ttl='100ms')
+
+        time.sleep(40/1000.0)
+
+        # check the nodes show for the /health/state/any endpoint
+        index, nodes = c.health.state('any')
+        # The empty string is for the Serf Health Status check, which has an
+        # empty ServiceID
+        assert [node['ServiceID'] for node in nodes] == ['', 'foo:1', 'foo:2']
+
+        # but that they aren't passing their health check
+        index, nodes = c.health.state('passing')
+        assert [node['ServiceID'] for node in nodes] != 'foo'
+
+        # ping the two node's health check
+        c.health.check.ttl_pass('service:foo:1')
+        c.health.check.ttl_pass('service:foo:2')
+
+        time.sleep(40/1000.0)
+
+        # both nodes are now available
+        index, nodes = c.health.state('passing')
+        assert [node['ServiceID'] for node in nodes] == ['', 'foo:1', 'foo:2']
+
+        # wait until the short ttl node fails
+        time.sleep(120/1000.0)
+
+        # only one node available
+        index, nodes = c.health.state('passing')
+        assert [node['ServiceID'] for node in nodes] == ['', 'foo:1']
+
+        # ping the failed node's health check
+        c.health.check.ttl_pass('service:foo:2')
+
+        time.sleep(40/1000.0)
+
+        # check both nodes are available
+        index, nodes = c.health.state('passing')
+        assert [node['ServiceID'] for node in nodes] == ['', 'foo:1', 'foo:2']
+
+        # deregister the nodes
+        c.agent.service.deregister('foo:1')
+        c.agent.service.deregister('foo:2')
+
+        time.sleep(40/1000.0)
+
+        index, nodes = c.health.state('any')
+        assert [node['ServiceID'] for node in nodes] != 'foo'
+
     def test_session(self, consul_port):
         c = consul.Consul(port=consul_port)
 

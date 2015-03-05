@@ -834,6 +834,7 @@ class Consul(object):
             *nodes* are the nodes providing the given service.
 
             """
+            assert name in ['any', 'unknown', 'passing', 'warning', 'critical']
             params = {}
             if index:
                 params['index'] = index

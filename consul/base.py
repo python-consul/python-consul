@@ -817,6 +817,36 @@ class Consul(object):
                 callback,
                 '/v1/health/service/%s' % service, params=params)
 
+        def state(self, name, index=None):
+            """
+
+            Returns a tuple of (*index*, *nodes*)
+
+            *name* is a supported state. From the Consul docs:
+
+                The supported states are any, unknown, passing, warning, or
+                critical. The any state is a wildcard that can be used to
+                return all checks.
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *nodes* are the nodes providing the given service.
+
+            """
+            assert name in ['any', 'unknown', 'passing', 'warning', 'critical']
+            params = {}
+            if index:
+                params['index'] = index
+
+            def callback(response):
+                data = json.loads(response.body)
+                return response.headers['X-Consul-Index'], data
+
+            return self.agent.http.get(
+                callback,
+                '/v1/health/state/%s' % name, params=params)
+
         class Check(object):
             def __init__(self, agent):
                 self.agent = agent

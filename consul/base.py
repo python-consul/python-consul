@@ -169,7 +169,9 @@ class Consul(object):
                 params[consistency] = '1'
 
             def callback(response):
-                if response.code == 404:
+                if response.code == 500:
+                    raise ConsulException(response.body)
+                elif response.code == 404:
                     data = None
                 else:
                     data = json.loads(response.body)

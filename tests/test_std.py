@@ -140,8 +140,8 @@ class TestConsul(object):
         c.agent.check.deregister('check')
 
         assert set(c.agent.checks().keys()) == set([])
-        assert c.agent.check.register('script_check',
-                                      script='/bin/true', interval=10) is True
+        assert c.agent.check.register(
+            'script_check', script='/bin/true', interval=10) is True
         verify_and_dereg_check('script_check')
 
         assert c.agent.check.register('check name',
@@ -167,31 +167,33 @@ class TestConsul(object):
 
         assert c.agent.check.ttl_warn('ttl_check') is True
         verify_check_status('ttl_check', 'warning')
-        assert c.agent.check.ttl_warn('ttl_check',
-                                      notes='its not quite right') is True
+        assert c.agent.check.ttl_warn(
+            'ttl_check', notes='its not quite right') is True
         verify_check_status('ttl_check', 'warning', 'its not quite right')
 
         assert c.agent.check.ttl_fail('ttl_check') is True
         verify_check_status('ttl_check', 'critical')
-        assert c.agent.check.ttl_fail('ttl_check',
-                                      notes='something went boink!') is True
-        verify_check_status('ttl_check', 'critical',
-                            notes='something went boink!')
+        assert c.agent.check.ttl_fail(
+            'ttl_check', notes='something went boink!') is True
+        verify_check_status(
+            'ttl_check', 'critical', notes='something went boink!')
 
         assert c.agent.check.ttl_pass('ttl_check') is True
         verify_check_status('ttl_check', 'passing')
-        assert c.agent.check.ttl_pass('ttl_check',
-                                      notes='all hunky dory!') is True
+        assert c.agent.check.ttl_pass(
+            'ttl_check', notes='all hunky dory!') is True
         verify_check_status('ttl_check', 'passing', notes='all hunky dory!')
         # wait for ttl to expire
         time.sleep(120/1000.0)
         verify_check_status('ttl_check', 'critical')
         verify_and_dereg_check('ttl_check')
 
-        pytest.raises(AssertionError, c.agent.check.register,
-                      'check_id', script='/bin/true', ttl=50)
-        pytest.raises(AssertionError, c.agent.check.register,
-                      'check_id', interval=10, ttl=50)
+        pytest.raises(
+            AssertionError,
+            c.agent.check.register, 'check_id', script='/bin/true', ttl=50)
+        pytest.raises(
+            AssertionError,
+            c.agent.check.register, 'check_id', interval=10, ttl=50)
 
     def test_agent_members(self, consul_port):
         c = consul.Consul(port=consul_port)

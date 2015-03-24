@@ -150,19 +150,17 @@ class TestConsul(object):
         verify_and_dereg_check('check_id')
 
         http_addr = "http://127.0.0.1:{0}".format(consul_port)
-        assert c.agent.check.register('http_check',
-                                      http=http_addr,
-                                      interval='1s') is True
-        time.sleep(1200.0/1000.0)
+        assert c.agent.check.register(
+            'http_check', http=http_addr, interval='10ms') is True
+        time.sleep(1)
         verify_check_status('http_check', 'passing')
         verify_and_dereg_check('http_check')
 
-        assert c.agent.check.register('http_timeout_check',
-                                      http=http_addr,
-                                      timeout='2s',
-                                      interval='1s') is True
-        time.sleep(1200.0/1000.0)
-        verify_check_status('http_timeout_check', 'passing')
+        assert c.agent.check.register(
+            'http_timeout_check',
+            http=http_addr,
+            timeout='2s',
+            interval='100ms') is True
         verify_and_dereg_check('http_timeout_check')
 
         assert c.agent.check.register('ttl_check', ttl='100ms') is True

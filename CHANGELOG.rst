@@ -1,6 +1,16 @@
 Change log
 ==========
 
+0.3.13
+------
+
+Features
+~~~~~~~~
+
+* add HTTP check support (thanks @JoeHazzers)
+* raise ConsulException on kv.get 500 response code (thanks @jjpersch)
+* add the wait argument to kv.get
+
 0.3.12
 ------
 

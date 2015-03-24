@@ -29,6 +29,20 @@ class Timeout(ConsulException):
     pass
 
 
+class Check(object):
+    @classmethod
+    def ttl(kls, ttl):
+        pass
+
+    @classmethod
+    def script(kls, command, interval=None):
+        pass
+
+    @classmethod
+    def http(kls, uri, interval=None, timeout=None):
+        pass
+
+
 Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
 
 
@@ -361,9 +375,13 @@ class Consul(object):
                 self.agent = agent
 
             def register(
-                self, name, service_id=None, port=None,
-                    tags=None, script=None, interval=None, ttl=None,
-                    http=None, timeout=None):
+                    self, name, service_id=None, port=None, tags=None,
+                    # Deprecated
+                    script=None,
+                    interval=None,
+                    ttl=None,
+                    http=None,
+                    timeout=None):
                 """
                 Add a new service to the local agent. There is more
                 documentation on services
@@ -421,11 +439,13 @@ class Consul(object):
                     self,
                     name,
                     check_id=None,
+                    # Deprecated
                     script=None,
                     interval=None,
                     ttl=None,
                     http=None,
                     timeout=None,
+                    ##
                     notes=None):
                 """
                 Register a new check with the local agent. More documentation

@@ -357,7 +357,8 @@ class Consul(object):
 
             def register(
                 self, name, service_id=None, port=None,
-                    tags=None, script=None, interval=None, ttl=None):
+                    tags=None, script=None, interval=None, ttl=None,
+                    http=None, timeout=None):
                 """
                 Add a new service to the local agent. There is more
                 documentation on services
@@ -380,11 +381,17 @@ class Consul(object):
                 if tags:
                     payload['tags'] = tags
                 if script:
-                    assert interval and not ttl
+                    assert interval and not (ttl or http)
                     payload['check'] = {'script': script, 'interval': interval}
                 if ttl:
-                    assert not (interval or script)
+                    assert not (interval or script or http)
                     payload['check'] = {'ttl': ttl}
+                if http:
+                    assert interval and not (script or ttl)
+                    payload['check'] = {'http': http, 'interval': interval}
+                if timeout:
+                    assert http
+                    payload['check']['timeout'] = timeout
 
                 return self.agent.http.put(
                     lambda x: x.code == 200,
@@ -412,6 +419,8 @@ class Consul(object):
                     script=None,
                     interval=None,
                     ttl=None,
+                    http=None,
+                    timeout=None,
                     notes=None):
                 """
                 Register a new check with the local agent. More documentation
@@ -438,18 +447,31 @@ class Consul(object):
                 if check_id:
                     payload['id'] = check_id
 
-                assert script or ttl, 'Either script or ttl is required'
+                assert script or ttl or http, \
+                    'Either script, ttl, or http is required'
 
                 if script:
                     assert interval, 'Interval required for script check'
-                    assert not ttl, 'ttl not used with script based check'
+                    assert not (ttl or http), \
+                        'ttl and http not used with script based check'
                     payload['script'] = script
                     payload['interval'] = interval
 
                 if ttl:
-                    assert not (interval or script), \
-                        'Interval and script not required for ttl check'
+                    assert not (interval or script or http), \
+                        'Interval, script and http not required for ttl check'
                     payload['ttl'] = ttl
+
+                if http:
+                    assert interval, 'Interval required for http check'
+                    assert not (script or ttl), \
+                        'Script and ttl not used with http based check'
+                    payload['http'] = http
+                    payload['interval'] = interval
+
+                if timeout:
+                    assert http, 'Timeout only required for http check'
+                    payload['timeout'] = timeout
 
                 if notes:
                     payload['notes'] = notes

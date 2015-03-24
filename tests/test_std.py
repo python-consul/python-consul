@@ -26,6 +26,13 @@ class TestConsul(object):
         index, data = c.kv.get('foo')
         assert data['Value'] == six.b('bar')
 
+    def test_kv_wait(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        assert c.kv.put('foo', 'bar') is True
+        index, data = c.kv.get('foo')
+        check, data = c.kv.get('foo', index=index, wait='20ms')
+        assert index == check
+
     def test_kv_encoding(self, consul_port):
         c = consul.Consul(port=consul_port)
 

@@ -5,7 +5,7 @@ Run these by  simply running:
     trial tests/test_twisted.py
 """
 import struct
-import six
+# import six
 
 from consul.twisted import Consul
 from twisted.internet import defer
@@ -54,3 +54,10 @@ class TwistedConsul(unittest.TestCase):
         # Line below seems to block.
         # index, data = yield self.c.kv.get('foo', index=index)
         # self.assertEqual(data['Value'], six.b('bar'))
+
+    @defer.inlineCallbacks
+    def test_agent_services(self):
+        """Test getting services from the agent."""
+        services = yield self.c.agent.services()
+        del services['consul']
+        self.assertEqual(services, {})

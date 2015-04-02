@@ -107,14 +107,18 @@ class Consul(object):
 
     class Event(object):
         """
-        The event command provides a mechanism to fire a custom user event to an entire datacenter. These events are
-        opaque to Consul, but they can be used to build scripting infrastructure to do automated deploys, restart
-        services, or perform any other orchestration action.
+        The event command provides a mechanism to fire a custom user event to
+        an entire datacenter. These events are opaque to Consul, but they can
+        be used to build scripting infrastructure to do automated deploys,
+        restart services, or perform any other orchestration action.
 
-        Unlike most Consul data, which is replicated using consensus, event data is purely peer-to-peer over gossip.
-        This means it is not persisted and does not have a total ordering. In practice, this means you cannot rely on
-        the order of message delivery. An advantage however is that events can still be used even in the absence of
-        server nodes or during an outage."""
+        Unlike most Consul data, which is replicated using consensus, event
+        data is purely peer-to-peer over gossip.
+
+        This means it is not persisted and does not have a total ordering. In
+        practice, this means you cannot rely on the order of message delivery.
+        An advantage however is that events can still be used even in the
+        absence of server nodes or during an outage."""
         def __init__(self, agent):
             self.agent = agent
 
@@ -128,15 +132,20 @@ class Consul(object):
             """
             Sends an event to Consul's gossip protocol.
 
-            *name* is the Consul-opaque name of the event. This can be filtered on in calls to list, below
+            *name* is the Consul-opaque name of the event. This can be filtered
+            on in calls to list, below
 
-            *body* is the Consul-opaque body to be delivered with the event. From the Consul documentation:
-                The underlying gossip also sets limits on the size of a user event message. It is hard to give an exact
-                number, as it depends on various parameters of the event, but the payload should be kept very small
-                (< 100 bytes). Specifying too large of an event will return an error.
+            *body* is the Consul-opaque body to be delivered with the event.
+             From the Consul documentation:
+                The underlying gossip also sets limits on the size of a user
+                event message. It is hard to give an exact number, as it
+                depends on various parameters of the event, but the payload
+                should be kept very small (< 100 bytes). Specifying too large
+                of an event will return an error.
 
-            *node*, *service*, and *tag* are regular expressions which remote agents will filter against to determine
-            if they should store the event
+            *node*, *service*, and *tag* are regular expressions which remote
+            agents will filter against to determine if they should store the
+            event
             """
             assert not name.startswith('/')
             params = {}
@@ -156,13 +165,14 @@ class Consul(object):
                 name=None):
             """
             Returns a tuple of (*index*, *events*)
-                Note: Since Consul's event protocol uses gossip, there is no ordering, and instead index maps to
-                the newest event that matches the query.
+                Note: Since Consul's event protocol uses gossip, there is no
+                ordering, and instead index maps to the newest event that
+                matches the query.
 
             *name* is the type of events to list, if None, lists all available.
 
-            Consul agents only buffer the most recent entries. The current buffer size is 256, but this value could
-            change in the future.
+            Consul agents only buffer the most recent entries. The current
+            buffer size is 256, but this value could change in the future.
 
             Each *event* looks like this:
             {
@@ -191,7 +201,6 @@ class Consul(object):
 
             return self.agent.http.get(
                 callback, '/v1/event/list', params=params)
-
 
     class KV(object):
         """
@@ -223,8 +232,8 @@ class Consul(object):
 
             *token* is an optional `ACL token`_ to apply to this request.
 
-            *keys* is a boolean which, if True, says to return a flat list of keys
-            without values or other metadata.
+            *keys* is a boolean which, if True, says to return a flat list of
+            keys without values or other metadata.
 
             *separator* is used to list only up to a given separator character.
 

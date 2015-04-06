@@ -337,7 +337,8 @@ class TestConsul(object):
         assert nodes == []
 
         # register two nodes, one with a long ttl, the other shorter
-        c.agent.service.register('foo', service_id='foo:1', ttl='10s', tags=['tag:foo:1'])
+        c.agent.service.register(
+            'foo', service_id='foo:1', ttl='10s', tags=['tag:foo:1'])
         c.agent.service.register('foo', service_id='foo:2', ttl='100ms')
 
         time.sleep(40/1000.0)

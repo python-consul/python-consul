@@ -233,9 +233,8 @@ class Consul(object):
             *token* is an optional `ACL token`_ to apply to this request.
 
             *keys* is a boolean which, if True, says to return a flat list of
-            keys without values or other metadata.
-
-            *separator* is used to list only up to a given separator character.
+            keys without values or other metadata. *separator* can be used
+            with *keys* to list keys only up to a given separator character.
 
             *dc* is the optional datacenter that you wish to communicate with.
             If None is provided, defaults to the agent's datacenter.

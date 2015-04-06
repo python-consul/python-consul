@@ -7,7 +7,7 @@ Change log
 Features
 ~~~~~~~~
 
-* Add tag parameter to health.service() (thanks @eversefold)
+* Add tag parameter to health.service() (thanks @reversefold)
 
 0.3.14
 ------

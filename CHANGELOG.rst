@@ -1,6 +1,15 @@
 Change log
 ==========
 
+0.3.14
+------
+
+Features
+~~~~~~~~
+
+* add the keys and separator params to kv.get (thanks @Heuriskein)
+* add support for the events api (thanks @Heuriskein!)
+
 0.3.13
 ------
 

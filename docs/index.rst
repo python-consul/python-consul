@@ -234,3 +234,10 @@ consul.acl
 .. _thread pool: https://docs.python.org/2/library/threading.html
 
 .. _ianitor: https://github.com/ClearcodeHQ/ianitor
+
+consul.event
+~~~~~~~~~~~~
+
+.. autoclass:: consul.base::Consul.Event()
+   :members:
+   :undoc-members:

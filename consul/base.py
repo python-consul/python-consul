@@ -88,7 +88,7 @@ class Consul(object):
         By default the datacenter of the host is used.
         """
 
-        # TODO: Event, Status
+        # TODO: Status
 
         self.http = self.connect(host, port, scheme)
         self.token = token
@@ -174,19 +174,20 @@ class Consul(object):
             Consul agents only buffer the most recent entries. The current
             buffer size is 256, but this value could change in the future.
 
-            Each *event* looks like this:
-            {
-                  {
-                    "ID": "b54fe110-7af5-cafc-d1fb-afc8ba432b1c",
-                    "Name": "deploy",
-                    "Payload": "1609030",
-                    "NodeFilter": "",
-                    "ServiceFilter": "",
-                    "TagFilter": "",
-                    "Version": 1,
-                    "LTime": 19
-                  },
-            }
+            Each *event* looks like this::
+
+                {
+                      {
+                        "ID": "b54fe110-7af5-cafc-d1fb-afc8ba432b1c",
+                        "Name": "deploy",
+                        "Payload": "1609030",
+                        "NodeFilter": "",
+                        "ServiceFilter": "",
+                        "TagFilter": "",
+                        "Version": 1,
+                        "LTime": 19
+                      },
+                }
             """
             params = {}
             if name is not None:

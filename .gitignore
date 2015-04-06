@@ -43,3 +43,7 @@ pip-log.txt
 
 # Ropemacs
 .ropeproject
+
+# IntelliJ project files
+*.iml
+.idea/

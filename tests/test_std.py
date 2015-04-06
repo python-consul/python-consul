@@ -127,6 +127,35 @@ class TestConsul(object):
         c.session.destroy(s1)
         c.session.destroy(s2)
 
+    def test_kv_keys_only(self, consul_port):
+        c = consul.Consul(port=consul_port)
+
+        assert c.kv.put('bar', '4') is True
+        assert c.kv.put('base/foo', '1') is True
+        assert c.kv.put('base/base/foo', '5') is True
+
+        index, data = c.kv.get('base/', keys=True, separator='/')
+        assert data == ['base/base/', 'base/foo']
+
+    def test_event(self, consul_port):
+        c = consul.Consul(port=consul_port)
+
+        assert c.event.fire("fooname", "foobody")
+        index, events = c.event.list()
+        assert [x['Name'] == 'fooname' for x in events]
+        assert [x['Payload'] == 'foobody' for x in events]
+
+    def test_event_targeted(self, consul_port):
+        c = consul.Consul(port=consul_port)
+
+        assert c.event.fire("fooname", "foobody")
+        index, events = c.event.list(name="othername")
+        assert events == []
+
+        index, events = c.event.list(name="fooname")
+        assert [x['Name'] == 'fooname' for x in events]
+        assert [x['Payload'] == 'foobody' for x in events]
+
     def test_agent_checks(self, consul_port):
         c = consul.Consul(port=consul_port)
 

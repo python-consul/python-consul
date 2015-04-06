@@ -1,6 +1,14 @@
 Change log
 ==========
 
+0.3.15
+------
+
+Features
+~~~~~~~~
+
+* Add tag parameter to health.service() (thanks @eversefold)
+
 0.3.14
 ------
 

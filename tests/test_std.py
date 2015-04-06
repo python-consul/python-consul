@@ -337,7 +337,7 @@ class TestConsul(object):
         assert nodes == []
 
         # register two nodes, one with a long ttl, the other shorter
-        c.agent.service.register('foo', service_id='foo:1', ttl='10s')
+        c.agent.service.register('foo', service_id='foo:1', ttl='10s', tags=['tag:foo:1'])
         c.agent.service.register('foo', service_id='foo:2', ttl='100ms')
 
         time.sleep(40/1000.0)
@@ -375,6 +375,10 @@ class TestConsul(object):
         # check both nodes are available
         index, nodes = c.health.service('foo', passing=True)
         assert [node['Service']['ID'] for node in nodes] == ['foo:1', 'foo:2']
+
+        # check that tag works
+        index, nodes = c.health.service('foo', tag='tag:foo:1')
+        assert [node['Service']['ID'] for node in nodes] == ['foo:1']
 
         # deregister the nodes
         c.agent.service.deregister('foo:1')

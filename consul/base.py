@@ -938,12 +938,12 @@ class Consul(object):
         # TODO: All of the health endpoints support blocking queries and all
         # consistency modes
         # TODO: Check ttl_pass belongs under Agent
-        # TODO: still need to add node, checks and state endpoints
+        # TODO: still need to add node and checks endpoints
         def __init__(self, agent):
             self.agent = agent
             self.check = Consul.Health.Check(agent)
 
-        def service(self, service, index=None, passing=None):
+        def service(self, service, index=None, passing=None, tag=None):
             """
             Returns a tuple of (*index*, *nodes*)
 
@@ -954,12 +954,16 @@ class Consul(object):
 
             Calling with *passing* set to True will filter results to only
             those nodes whose checks are currently passing.
+
+            Calling with *tag* will filter the results by tag.
             """
             params = {}
-            if index:
+            if index is not None:
                 params['index'] = index
             if passing:
                 params['passing'] = '1'
+            if tag is not None:
+                params['tag'] = tag
 
             def callback(response):
                 data = json.loads(response.body)

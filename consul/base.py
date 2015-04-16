@@ -592,13 +592,13 @@ class Consul(object):
 
                 if notes:
                     payload['notes'] = notes
-                
+
                 if service_id:
                     payload['serviceid'] = service_id
 
                 if service_name:
                     payload['servicename'] = service_name
-                    
+
                 return self.agent.http.put(
                     lambda x: x.code == 200,
                     '/v1/agent/check/register',

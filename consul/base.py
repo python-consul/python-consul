@@ -536,7 +536,9 @@ class Consul(object):
                     ttl=None,
                     http=None,
                     timeout=None,
-                    notes=None):
+                    notes=None,
+                    service_id=None,
+                    service_name=None):
                 """
                 Register a new check with the local agent. More documentation
                 on checks can be found `here
@@ -590,7 +592,13 @@ class Consul(object):
 
                 if notes:
                     payload['notes'] = notes
+                
+                if service_id:
+                    payload['serviceid'] = service_id
 
+                if service_name:
+                    payload['servicename'] = service_name
+                    
                 return self.agent.http.put(
                     lambda x: x.code == 200,
                     '/v1/agent/check/register',

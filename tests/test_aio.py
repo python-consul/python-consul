@@ -293,6 +293,20 @@ class TestAsyncioConsul(object):
 
         loop.run_until_complete(keepalive())
 
+    def test_agent_register_check_no_service_id(self, loop, consul_port):
+        @asyncio.coroutine
+        def main():
+           c = consul.aio.Consul(port=consul_port, loop=loop)             
+
+            index, services = yield from c.agent.services()
+            assert services == []
+
+            result = yield from c.agent.check.register('foo', service_id='foo1')
+            assert result is False
+
+        loop.run_until_complete(main())
+
+            
     def test_session(self, loop, consul_port):
         c = consul.aio.Consul(port=consul_port, loop=loop)
 

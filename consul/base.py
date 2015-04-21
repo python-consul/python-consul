@@ -367,10 +367,17 @@ class Consul(object):
                 callback(is_json=True),
                 '/v1/kv/%s' % key, params=params, data=value)
 
-        def delete(self, key, recurse=None, token=None, dc=None):
+        def delete(self, key, recurse=None, cas=None, token=None, dc=None):
             """
             Deletes a single key or if *recurse* is True, all keys sharing a
             prefix.
+
+            *cas* is an optional flag is used to turn the DELETE into a
+            Check-And-Set operation. This is very useful as a building block for
+            more complex synchronization primitives. Unlike PUT, the index must
+            be greater than 0 for Consul to take any action: a 0 index will not
+            delete the key. If the index is non-zero, the key is only deleted
+            if the index matches the ModifyIndex of that key.
 
             *token* is an optional `ACL token`_ to apply to this request. If
             the token's policy is not allowed to delete to this key an
@@ -384,6 +391,8 @@ class Consul(object):
             params = {}
             if recurse:
                 params['recurse'] = '1'
+            if cas is not None:
+                params['cas'] = cas
             token = token or self.agent.token
             if token:
                 params['token'] = token

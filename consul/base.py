@@ -403,7 +403,7 @@ class Consul(object):
             def callback(response):
                 if response.code == 403:
                     raise ACLPermissionDenied(response.body)
-                return response.code == 200
+                return json.loads(response.body)
 
             return self.agent.http.delete(
                 callback, '/v1/kv/%s' % key, params=params)

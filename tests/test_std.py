@@ -108,6 +108,19 @@ class TestConsul(object):
         index, data = c.kv.get('foo', recurse=True)
         assert data is None
 
+    def test_kv_delete_cas(self, consul_port):
+        c = consul.Consul(port=consul_port)
+
+        c.kv.put('foo', 'bar')
+        index, data = c.kv.get('foo')
+
+        assert c.kv.delete('foo', cas=data['ModifyIndex']-1) is False
+        assert c.kv.get('foo') == (index, data)
+
+        assert c.kv.delete('foo', cas=data['ModifyIndex']) is True
+        index, data = c.kv.get('foo')
+        assert data is None
+
     def test_kv_acquire_release(self, consul_port):
         c = consul.Consul(port=consul_port)
 

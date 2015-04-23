@@ -1,6 +1,14 @@
 Change log
 ==========
 
+0.3.16
+------
+
+Features
+~~~~~~~~
+
+* Add cas param for kv.delete (thanks @qix)
+
 0.3.15
 ------
 

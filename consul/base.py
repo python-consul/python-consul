@@ -373,11 +373,11 @@ class Consul(object):
             prefix.
 
             *cas* is an optional flag is used to turn the DELETE into a
-            Check-And-Set operation. This is very useful as a building block for
-            more complex synchronization primitives. Unlike PUT, the index must
-            be greater than 0 for Consul to take any action: a 0 index will not
-            delete the key. If the index is non-zero, the key is only deleted
-            if the index matches the ModifyIndex of that key.
+            Check-And-Set operation. This is very useful as a building block
+            for more complex synchronization primitives. Unlike PUT, the index
+            must be greater than 0 for Consul to take any action: a 0 index
+            will not delete the key. If the index is non-zero, the key is only
+            deleted if the index matches the ModifyIndex of that key.
 
             *token* is an optional `ACL token`_ to apply to this request. If
             the token's policy is not allowed to delete to this key an

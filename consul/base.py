@@ -557,6 +557,9 @@ class Consul(object):
                 *notes* is not used by Consul, and is meant to be human
                 readable.
 
+                Optionally, a *service_id* can be specified to associate a
+                registered check with an existing service. 
+
                 Returns *True* on success.
                 """
                 payload = {'name': name}

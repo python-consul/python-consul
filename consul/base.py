@@ -558,7 +558,7 @@ class Consul(object):
                 readable.
 
                 Optionally, a *service_id* can be specified to associate a
-                registered check with an existing service. 
+                registered check with an existing service.
 
                 Returns *True* on success.
                 """

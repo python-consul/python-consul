@@ -480,7 +480,7 @@ class Consul(object):
                 self.agent = agent
 
             def register(
-                self, name, service_id=None, port=None,
+                self, name, service_id=None, address=None, port=None,
                     tags=None, script=None, interval=None, ttl=None,
                     http=None, timeout=None):
                 """
@@ -494,12 +494,17 @@ class Consul(object):
                 *name*. You cannot have duplicate *service_id* entries per
                 agent, so it may be necessary to provide one.
 
+                *address* will default to the address of the agent if not
+                provided.
+
                 An optional health check can be created for this service. The
                 health check is only one of *script* and *interval* OR *ttl*.
                 """
                 payload = {'name': name}
                 if service_id:
                     payload['id'] = service_id
+                if address:
+                    payload['address'] = address
                 if port:
                     payload['port'] = port
                 if tags:

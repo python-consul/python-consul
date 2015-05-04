@@ -269,6 +269,12 @@ class TestConsul(object):
         assert c.agent.service.deregister('foo') is True
         assert set(c.agent.services().keys()) == set(['consul'])
 
+        # test address param
+        assert c.agent.service.register('foo', address='10.10.10.1') is True
+        assert [
+            v['Address'] for k, v in c.agent.services().iteritems()
+            if k == 'foo'][0] == '10.10.10.1'
+
     def test_catalog(self, consul_port):
         c = consul.Consul(port=consul_port)
 

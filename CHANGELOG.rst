@@ -1,6 +1,14 @@
 Change log
 ==========
 
+0.3.17
+------
+
+Features
+~~~~~~~~
+
+* Add address param to agent.service.register
+
 0.3.16
 ------
 

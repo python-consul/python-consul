@@ -4,6 +4,7 @@ import re
 import os
 
 from setuptools.command.test import test as TestCommand
+from setuptools.command.install import install
 from setuptools import setup
 
 
@@ -21,12 +22,15 @@ description = "Python client for Consul (http://www.consul.io/)"
 
 py_modules = [os.path.splitext(x)[0] for x in glob.glob('consul/*.py')]
 
-try:
-    import asyncio
-    del asyncio
-except:
-    if 'consul/aio' in py_modules:
-        py_modules.remove('consul/aio')
+class Install(install):
+    def run(self):
+        try:
+            import asyncio
+            del asyncio
+        except:
+            if 'consul/aio' in self.distribution.py_modules:
+                self.distribution.py_modules.remove('consul/aio')
+        install.run(self)
 
 
 class PyTest(TestCommand):
@@ -58,7 +62,8 @@ setup(
         'asyncio': ['aiohttp'],
     },
     tests_require=['pytest'],
-    cmdclass={'test': PyTest},
+    cmdclass={'test': PyTest,
+              'install': Install},
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

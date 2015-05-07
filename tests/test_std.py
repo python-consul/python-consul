@@ -317,7 +317,7 @@ class TestConsul(object):
         # test address param
         assert c.agent.service.register('foo', address='10.10.10.1') is True
         assert [
-            v['Address'] for k, v in c.agent.services().iteritems()
+            v['Address'] for k, v in c.agent.services().items()
             if k == 'foo'][0] == '10.10.10.1'
         assert c.agent.service.deregister('foo') is True
 

@@ -22,6 +22,7 @@ description = "Python client for Consul (http://www.consul.io/)"
 
 py_modules = [os.path.splitext(x)[0] for x in glob.glob('consul/*.py')]
 
+
 class Install(install):
     def run(self):
         try:

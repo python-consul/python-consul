@@ -244,6 +244,51 @@ class TestConsul(object):
             AssertionError,
             c.agent.check.register, 'check_id', interval=10, ttl=50)
 
+    def test_agent_checks_service_id(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        c.agent.service.register('foo1')
+
+        time.sleep(40/1000.0)
+
+        index, nodes = c.health.service('foo1')
+        assert [node['Service']['ID'] for node in nodes] == ['foo1']
+
+        c.agent.check.register('foo', service_id='foo1', ttl='100ms')
+
+        time.sleep(40/1000.0)
+
+        index, nodes = c.health.service('foo1')
+        assert [check['ServiceID'] for node in nodes for check in node['Checks']] == \
+            ['foo1', '']
+        assert [check['CheckID'] for node in nodes for check in node['Checks']] == \
+            ['foo', 'serfHealth']
+
+        # Clean up tasks
+        assert c.agent.check.deregister('foo') is True
+
+        time.sleep(40/1000.0)
+
+        assert c.agent.service.deregister('foo1') is True
+
+        time.sleep(40/1000.0)
+
+    def test_agent_register_check_no_service_id(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        index, nodes = c.health.service("foo1")
+        assert nodes == []
+
+        assert c.agent.check.register('foo', service_id='foo1', ttl='100ms') is \
+            False
+
+        time.sleep(40/1000.0)
+
+        assert c.agent.checks() == {}
+
+        # Cleanup tasks
+        c.agent.check.deregister('foo')
+
+        time.sleep(40/1000.0)
+
     def test_agent_members(self, consul_port):
         c = consul.Consul(port=consul_port)
         members = c.agent.members()

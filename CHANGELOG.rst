@@ -1,14 +1,25 @@
 Change log
 ==========
 
+0.3.19
+------
+
+Bug Fix
+~~~~~~~
+
+* Fix six dependency (thanks @pawlowskimichal!)
+
 0.3.18
 ------
 
 Features
 ~~~~~~~~
 
-* Fix distribution for consul.aio for python3 (thanks @mbachry!)
 * Adding ability to register checks with services (thanks @cruatta!)
+
+Bug Fix
+~~~~~~~
+* Fix distribution for consul.aio for python3 (thanks @mbachry!)
 
 0.3.17
 ------

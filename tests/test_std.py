@@ -258,10 +258,12 @@ class TestConsul(object):
         time.sleep(40/1000.0)
 
         index, nodes = c.health.service('foo1')
-        assert [check['ServiceID'] for node in nodes for check in node['Checks']] == \
-            ['foo1', '']
-        assert [check['CheckID'] for node in nodes for check in node['Checks']] == \
-            ['foo', 'serfHealth']
+        assert [
+            check['ServiceID'] for node in nodes
+            for check in node['Checks']] == ['foo1', '']
+        assert [
+            check['CheckID'] for node in nodes
+            for check in node['Checks']] == ['foo', 'serfHealth']
 
         # Clean up tasks
         assert c.agent.check.deregister('foo') is True
@@ -277,8 +279,8 @@ class TestConsul(object):
         index, nodes = c.health.service("foo1")
         assert nodes == []
 
-        assert c.agent.check.register('foo', service_id='foo1', ttl='100ms') is \
-            False
+        assert c.agent.check.register(
+            'foo', service_id='foo1', ttl='100ms') is False
 
         time.sleep(40/1000.0)
 

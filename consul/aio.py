@@ -1,12 +1,15 @@
 from __future__ import absolute_import
+import sys
 import asyncio
-import aiohttp
+import warnings
 
+import aiohttp
 from six.moves import urllib
 from consul import base
 
 
 __all__ = ['Consul']
+PY_341 = sys.version_info >= (3, 4, 1)
 
 
 class HTTPClient:
@@ -37,6 +40,14 @@ class HTTPClient:
         r = base.Response(resp.status, resp.headers, body)
         return callback(r)
 
+    # python prior 3.4.1 does not play nice with __del__ method
+    if PY_341:  # pragma: no branch
+        def __del__(self):
+            if not self._connector.closed:
+                warnings.warn("Unclosed connector in aio.Consul.HTTPClient",
+                              ResourceWarning)
+                self.close()
+
     def get(self, callback, path, params=None):
         uri = self._uri(path, params)
         return self._request(callback, 'GET', uri)
@@ -49,6 +60,9 @@ class HTTPClient:
         uri = self._uri(path, params)
         return self._request(callback, 'DELETE', uri)
 
+    def close(self):
+        self._connector.close()
+
 
 class Consul(base.Consul):
 
@@ -58,3 +72,7 @@ class Consul(base.Consul):
 
     def connect(self, host, port, scheme):
         return HTTPClient(host, port, scheme, loop=self._loop)
+
+    def close(self):
+        """Close all opened http connections"""
+        self.http.close()

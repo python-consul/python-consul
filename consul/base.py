@@ -94,7 +94,8 @@ class Consul(object):
         self.token = token
         self.scheme = scheme
         self.dc = dc
-        assert consistency in ('default', 'consistent', 'stale')
+        assert consistency in ('default', 'consistent', 'stale'), \
+            'consistency must be either default, consistent or state'
         self.consistency = consistency
 
         self.event = Consul.Event(self)
@@ -147,7 +148,8 @@ class Consul(object):
             agents will filter against to determine if they should store the
             event
             """
-            assert not name.startswith('/')
+            assert not name.startswith('/'), \
+                'keys should not start with a forward slash'
             params = {}
             if node is not None:
                 params['node'] = node
@@ -227,9 +229,11 @@ class Consul(object):
             Returns a tuple of (*index*, *value[s]*)
 
             *index* is the current Consul index, suitable for making subsequent
-            calls to wait for changes since this query was last run. if *index*
-            is specified, *wait* may be set too, to indicated the maximum
-            duration to wait for. the default is 10 minutes.
+            calls to wait for changes since this query was last run.
+
+            *wait* the maximum duration to wait (e.g. '10ms') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 10 minutes.
 
             *token* is an optional `ACL token`_ to apply to this request.
 
@@ -260,7 +264,8 @@ class Consul(object):
             returned. It's then possible to long poll on the index for when the
             key is created.
             """
-            assert not key.startswith('/')
+            assert not key.startswith('/'), \
+                'keys should not start with a forward slash'
             params = {}
             if index:
                 params['index'] = index
@@ -343,7 +348,8 @@ class Consul(object):
             The return value is simply either True or False. If False is
             returned, then the update has not taken place.
             """
-            assert not key.startswith('/')
+            assert not key.startswith('/'), \
+                'keys should not start with a forward slash'
             assert value is None or \
                 isinstance(value, (six.string_types, six.binary_type)), \
                 "value should be None or a string / binary data"
@@ -386,7 +392,8 @@ class Consul(object):
             *dc* is the optional datacenter that you wish to communicate with.
             If None is provided, defaults to the agent's datacenter.
             """
-            assert not key.startswith('/')
+            assert not key.startswith('/'), \
+                'keys should not start with a forward slash'
 
             params = {}
             if recurse:
@@ -475,6 +482,29 @@ class Consul(object):
                 '/v1/agent/members',
                 params=params)
 
+        def maintenance(self, enable, reason=None):
+            """
+            The node maintenance endpoint can place the agent into
+            "maintenance mode".
+
+            *enable* is either 'true' or 'false'. 'true' enables maintenance
+            mode, 'false' disables maintenance mode.
+
+            *reason* is an optional string. This is simply to aid human
+            operators.
+            """
+
+            params = {}
+
+            params['enable'] = enable
+            if reason:
+                params['reason'] = reason
+
+            return self.agent.http.put(
+                lambda x: x.code == 200,
+                '/v1/agent/maintenance',
+                params=params)
+
         class Service(object):
             def __init__(self, agent):
                 self.agent = agent
@@ -536,6 +566,32 @@ class Consul(object):
                 return self.agent.http.get(
                     lambda x: x.code == 200,
                     '/v1/agent/service/deregister/%s' % service_id)
+
+            def maintenance(self, service_id, enable, reason=None):
+                """
+                The service maintenance endpoint allows placing a given service
+                into "maintenance mode".
+
+                *service_id* is the id of the service that is to be targeted
+                for maintenance.
+
+                *enable* is either 'true' or 'false'. 'true' enables
+                maintenance mode, 'false' disables maintenance mode.
+
+                *reason* is an optional string. This is simply to aid human
+                operators.
+                """
+
+                params = {}
+
+                params['enable'] = enable
+                if reason:
+                    params['reason'] = reason
+
+                return self.agent.http.put(
+                    lambda x: x.code == 200,
+                    '/v1/agent/service/maintenance/{0}'.format(service_id),
+                    params=params)
 
         class Check(object):
             def __init__(self, agent):
@@ -1061,7 +1117,9 @@ class Consul(object):
             current agent's node will be used.
 
             *checks* is a list of checks to associate with the session. if not
-            provided it defaults to the *serfHealth* check.
+            provided it defaults to the *serfHealth* check. It is highly
+            recommended that, if you override this list, you include the
+            default *serfHealth*.
 
             *lock_delay* is an integer of seconds.
 
@@ -1094,7 +1152,8 @@ class Consul(object):
                 data['checks'] = checks
             if lock_delay != 15:
                 data['lockdelay'] = '%ss' % lock_delay
-            assert behavior in ('release', 'delete')
+            assert behavior in ('release', 'delete'), \
+                'behavior must be release or delete'
             if behavior != 'release':
                 data['behavior'] = behavior
             if ttl:
@@ -1318,7 +1377,8 @@ class Consul(object):
             if name:
                 payload['Name'] = name
             if type:
-                assert type == 'client' or type == 'management'
+                assert type in ('client', 'management'), \
+                    'type must be client or management'
                 payload['Type'] = type
             if rules:
                 assert isinstance(rules, str), \
@@ -1368,7 +1428,8 @@ class Consul(object):
             if name:
                 payload['Name'] = name
             if type:
-                assert type == 'client' or type == 'management'
+                assert type in ('client', 'management'), \
+                    'type must be client or management'
                 payload['Type'] = type
             if rules:
                 assert isinstance(rules, str), \

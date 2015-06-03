@@ -475,6 +475,31 @@ class Consul(object):
                 '/v1/agent/members',
                 params=params)
 
+
+        def maintenance(self, enable, reason=None):
+            """
+            The node maintenance endpoint can place the agent into
+            "maintenance mode".
+
+            *enable* is either True or False. True enables maintenance mode,
+            False disables maintenance mode.
+
+            *reason* is an optional string. This is simply to aid human
+            operators.
+            """
+
+            params = {}
+
+            params['enable'] = enable
+            if reason:
+                params['reason'] = reason
+
+            return self.agent.http.put(
+                lambda x: x.code == 200,
+                '/v1/agent/maintenance',
+                params=params)
+
+
         class Service(object):
             def __init__(self, agent):
                 self.agent = agent
@@ -536,6 +561,29 @@ class Consul(object):
                 return self.agent.http.get(
                     lambda x: x.code == 200,
                     '/v1/agent/service/deregister/%s' % service_id)
+
+            def maintenance(self, service_id, enable, reason=None):
+                """
+                The service maintenance endpoint allows placing a given service
+                into "maintenance mode".
+
+                *enable* is either True or False. True enables maintenance mode,
+                False disables maintenance mode.
+
+                *reason* is an optional string. This is simply to aid human
+                operators.
+                """
+
+                params = {}
+
+                params['enable'] = enable
+                if reason:
+                    params['reason'] = reason
+
+                return self.agent.http.put(
+                    lambda x: x.code == 200,
+                    '/v1/agent/service/maintenance/{0}'.format(service_id),
+                    params=params)
 
         class Check(object):
             def __init__(self, agent):

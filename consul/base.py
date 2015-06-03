@@ -567,6 +567,9 @@ class Consul(object):
                 The service maintenance endpoint allows placing a given service
                 into "maintenance mode".
 
+                *service_id* is the id of the service that is to be targeted for
+                maintenance. 
+
                 *enable* is either True or False. True enables maintenance mode,
                 False disables maintenance mode.
 

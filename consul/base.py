@@ -480,7 +480,7 @@ class Consul(object):
             The node maintenance endpoint can place the agent into
             "maintenance mode".
 
-            *enable* is either 'true' or 'false'. True enables maintenance
+            *enable* is either 'true' or 'false'. 'true' enables maintenance
             mode, 'false' disables maintenance mode.
 
             *reason* is an optional string. This is simply to aid human
@@ -568,8 +568,8 @@ class Consul(object):
                 *service_id* is the id of the service that is to be targeted
                 for maintenance.
 
-                *enable* is either True or False. 'true' enables maintenance
-                mode, 'false' disables maintenance mode.
+                *enable* is either 'true' or 'false'. 'true' enables
+                maintenance mode, 'false' disables maintenance mode.
 
                 *reason* is an optional string. This is simply to aid human
                 operators.

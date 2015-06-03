@@ -475,14 +475,13 @@ class Consul(object):
                 '/v1/agent/members',
                 params=params)
 
-
         def maintenance(self, enable, reason=None):
             """
             The node maintenance endpoint can place the agent into
             "maintenance mode".
 
-            *enable* is either True or False. True enables maintenance mode,
-            False disables maintenance mode.
+            *enable* is either 'true' or 'false'. True enables maintenance
+            mode, 'false' disables maintenance mode.
 
             *reason* is an optional string. This is simply to aid human
             operators.
@@ -498,7 +497,6 @@ class Consul(object):
                 lambda x: x.code == 200,
                 '/v1/agent/maintenance',
                 params=params)
-
 
         class Service(object):
             def __init__(self, agent):
@@ -567,11 +565,11 @@ class Consul(object):
                 The service maintenance endpoint allows placing a given service
                 into "maintenance mode".
 
-                *service_id* is the id of the service that is to be targeted for
-                maintenance. 
+                *service_id* is the id of the service that is to be targeted
+                for maintenance.
 
-                *enable* is either True or False. True enables maintenance mode,
-                False disables maintenance mode.
+                *enable* is either True or False. 'true' enables maintenance
+                mode, 'false' disables maintenance mode.
 
                 *reason* is an optional string. This is simply to aid human
                 operators.

@@ -289,6 +289,51 @@ class TestConsul(object):
 
         time.sleep(40/1000.0)
 
+    def test_agent_service_maintenance(self, consul_port):
+        c = consul.Consul(port=consul_port)
+
+        c.agent.service.register('foo', ttl='100ms')
+
+        time.sleep(40/1000.0)
+
+        c.agent.service.maintenance('foo', 'true', "test")
+
+        time.sleep(40/1000.0)
+
+        checks_pre = c.agent.checks()
+        assert '_service_maintenance:foo' in checks_pre.keys()
+        assert 'test' == checks_pre['_service_maintenance:foo']['Notes']
+
+        c.agent.service.maintenance('foo', 'false')
+
+        time.sleep(40/1000.0)
+
+        checks_post = c.agent.checks()
+        assert '_service_maintenance:foo' not in checks_post.keys()
+
+        # Cleanup
+        c.agent.service.deregister('foo')
+
+        time.sleep(40/1000.0)
+
+    def test_agent_node_maintenance(self, consul_port):
+        c = consul.Consul(port=consul_port)
+
+        c.agent.maintenance('true', "test")
+
+        time.sleep(40/1000.0)
+
+        checks_pre = c.agent.checks()
+        assert '_node_maintenance' in checks_pre.keys()
+        assert 'test' == checks_pre['_node_maintenance']['Notes']
+
+        c.agent.maintenance('false')
+
+        time.sleep(40/1000.0)
+
+        checks_post = c.agent.checks()
+        assert '_node_maintenance' not in checks_post.keys()
+
     def test_agent_members(self, consul_port):
         c = consul.Consul(port=consul_port)
         members = c.agent.members()

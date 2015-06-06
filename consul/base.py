@@ -1117,7 +1117,9 @@ class Consul(object):
             current agent's node will be used.
 
             *checks* is a list of checks to associate with the session. if not
-            provided it defaults to the *serfHealth* check.
+            provided it defaults to the *serfHealth* check. It is highly
+            recommended that, if you override this list, you include the
+            default *serfHealth*.
 
             *lock_delay* is an integer of seconds.
 

@@ -229,9 +229,11 @@ class Consul(object):
             Returns a tuple of (*index*, *value[s]*)
 
             *index* is the current Consul index, suitable for making subsequent
-            calls to wait for changes since this query was last run. if *index*
-            is specified, *wait* may be set too, to indicated the maximum
-            duration to wait for. the default is 10 minutes.
+            calls to wait for changes since this query was last run.
+
+            *wait* the maximum duration to wait (e.g. '10ms') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 10 minutes.
 
             *token* is an optional `ACL token`_ to apply to this request.
 

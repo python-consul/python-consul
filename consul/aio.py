@@ -49,6 +49,9 @@ class HTTPClient:
         uri = self._uri(path, params)
         return self._request(callback, 'DELETE', uri)
 
+    def close(self):
+        self._connector.close()
+
 
 class Consul(base.Consul):
 
@@ -58,3 +61,7 @@ class Consul(base.Consul):
 
     def connect(self, host, port, scheme):
         return HTTPClient(host, port, scheme, loop=self._loop)
+
+    def close(self):
+        """Close all opened http connections"""
+        self.http.close()

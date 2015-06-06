@@ -8,9 +8,14 @@ import consul.aio
 
 
 @pytest.fixture
-def loop():
+def loop(request):
     asyncio.set_event_loop(None)
     loop = asyncio.new_event_loop()
+
+    def fin():
+        loop.close()
+
+    request.addfinalizer(fin)
     return loop
 
 
@@ -30,6 +35,7 @@ class TestAsyncioConsul(object):
             assert response is True
             index, data = yield from c.kv.get('foo')
             assert data['Value'] == six.b('bar')
+            c.close()
 
         loop.run_until_complete(main())
 
@@ -42,6 +48,7 @@ class TestAsyncioConsul(object):
             yield from c.kv.put('foo', struct.pack('i', 1000))
             index, data = yield from c.kv.get('foo')
             assert struct.unpack('i', data['Value']) == (1000,)
+            c.close()
 
         asyncio.set_event_loop(loop)
         loop.run_until_complete(main())
@@ -53,6 +60,7 @@ class TestAsyncioConsul(object):
             yield from c.kv.put('foo', struct.pack('i', 1000))
             index, data = yield from c.kv.get('foo')
             assert struct.unpack('i', data['Value']) == (1000,)
+            c.close()
 
         loop.run_until_complete(main())
 
@@ -68,6 +76,7 @@ class TestAsyncioConsul(object):
             index, data = yield from c.kv.get('foo', index=index)
             assert data['Value'] == six.b('bar')
             yield from fut
+            c.close()
 
         @asyncio.coroutine
         def put():
@@ -88,6 +97,7 @@ class TestAsyncioConsul(object):
             assert response is True
             index, data = yield from c.kv.get('foo')
             assert data['Flags'] == 50
+            c.close()
 
         loop.run_until_complete(main())
 
@@ -109,6 +119,7 @@ class TestAsyncioConsul(object):
             assert response is True
             index, data = yield from c.kv.get('foo', recurse=True)
             assert data is None
+            c.close()
 
         loop.run_until_complete(main())
 
@@ -123,6 +134,7 @@ class TestAsyncioConsul(object):
             index, data = yield from c.kv.get('foo', index=index)
             assert data['Value'] == six.b('bar')
             yield from fut
+            c.close()
 
         @asyncio.coroutine
         def put():
@@ -155,6 +167,8 @@ class TestAsyncioConsul(object):
             services = yield from c.agent.services()
             del services['consul']
             assert services == {}
+            c.close()
+
         loop.run_until_complete(main())
 
     def test_catalog(self, loop, consul_port):
@@ -175,6 +189,7 @@ class TestAsyncioConsul(object):
             nodes.remove(current)
             assert [x['Node'] for x in nodes] == []
             yield from fut
+            c.close()
 
         @asyncio.coroutine
         def register():
@@ -249,6 +264,7 @@ class TestAsyncioConsul(object):
 
             index, nodes = yield from c.health.service('foo')
             assert nodes == []
+            c.close()
 
         loop.run_until_complete(main())
 
@@ -290,6 +306,7 @@ class TestAsyncioConsul(object):
             yield from c.agent.service.deregister('foo:1')
             # all done kill background task
             fut.cancel()
+            c.close()
 
         loop.run_until_complete(keepalive())
 
@@ -309,6 +326,7 @@ class TestAsyncioConsul(object):
             index, services = yield from c.session.list(index=index)
             assert services == []
             yield from fut
+            c.close()
 
         @asyncio.coroutine
         def register():
@@ -344,5 +362,6 @@ class TestAsyncioConsul(object):
 
             destroyed = yield from c.acl.destroy(token)
             assert destroyed is True
+            c.close()
 
         loop.run_until_complete(main())

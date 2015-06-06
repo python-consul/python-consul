@@ -94,7 +94,8 @@ class Consul(object):
         self.token = token
         self.scheme = scheme
         self.dc = dc
-        assert consistency in ('default', 'consistent', 'stale')
+        assert consistency in ('default', 'consistent', 'stale'), \
+            'consistency must be either default, consistent or state'
         self.consistency = consistency
 
         self.event = Consul.Event(self)
@@ -147,7 +148,8 @@ class Consul(object):
             agents will filter against to determine if they should store the
             event
             """
-            assert not name.startswith('/')
+            assert not name.startswith('/'), \
+                'keys should not start with a forward slash'
             params = {}
             if node is not None:
                 params['node'] = node
@@ -260,7 +262,8 @@ class Consul(object):
             returned. It's then possible to long poll on the index for when the
             key is created.
             """
-            assert not key.startswith('/')
+            assert not key.startswith('/'), \
+                'keys should not start with a forward slash'
             params = {}
             if index:
                 params['index'] = index
@@ -343,7 +346,8 @@ class Consul(object):
             The return value is simply either True or False. If False is
             returned, then the update has not taken place.
             """
-            assert not key.startswith('/')
+            assert not key.startswith('/'), \
+                'keys should not start with a forward slash'
             assert value is None or \
                 isinstance(value, (six.string_types, six.binary_type)), \
                 "value should be None or a string / binary data"
@@ -386,7 +390,8 @@ class Consul(object):
             *dc* is the optional datacenter that you wish to communicate with.
             If None is provided, defaults to the agent's datacenter.
             """
-            assert not key.startswith('/')
+            assert not key.startswith('/'), \
+                'keys should not start with a forward slash'
 
             params = {}
             if recurse:
@@ -1143,7 +1148,8 @@ class Consul(object):
                 data['checks'] = checks
             if lock_delay != 15:
                 data['lockdelay'] = '%ss' % lock_delay
-            assert behavior in ('release', 'delete')
+            assert behavior in ('release', 'delete'), \
+                'behavior must be release or delete'
             if behavior != 'release':
                 data['behavior'] = behavior
             if ttl:
@@ -1367,7 +1373,8 @@ class Consul(object):
             if name:
                 payload['Name'] = name
             if type:
-                assert type == 'client' or type == 'management'
+                assert type in ('client', 'management'), \
+                    'type must be client or management'
                 payload['Type'] = type
             if rules:
                 assert isinstance(rules, str), \
@@ -1417,7 +1424,8 @@ class Consul(object):
             if name:
                 payload['Name'] = name
             if type:
-                assert type == 'client' or type == 'management'
+                assert type in ('client', 'management'), \
+                    'type must be client or management'
                 payload['Type'] = type
             if rules:
                 assert isinstance(rules, str), \

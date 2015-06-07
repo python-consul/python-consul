@@ -1,6 +1,8 @@
 import pytest
 import six
 import struct
+import warnings
+import sys
 
 import asyncio
 import consul
@@ -363,5 +365,20 @@ class TestAsyncioConsul(object):
             destroyed = yield from c.acl.destroy(token)
             assert destroyed is True
             c.close()
+
+        loop.run_until_complete(main())
+
+    @pytest.mark.skipif(sys.version_info < (3, 4, 1),
+                        reason="Python <3.4.1 doesnt support __del__ calls "
+                               "from GC")
+    def test_httpclient__del__method(self, loop, consul_port, recwarn):
+
+        @asyncio.coroutine
+        def main():
+            c = consul.aio.Consul(port=consul_port, loop=loop)
+            _, _ = yield from c.kv.get('foo')
+            del c
+            w = recwarn.pop(ResourceWarning)
+            assert issubclass(w.category, ResourceWarning)
 
         loop.run_until_complete(main())

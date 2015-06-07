@@ -378,6 +378,9 @@ class TestAsyncioConsul(object):
             c = consul.aio.Consul(port=consul_port, loop=loop)
             _, _ = yield from c.kv.get('foo')
             del c
+            import gc
+            # run gc to ensure c is collected
+            gc.collect()
             w = recwarn.pop(ResourceWarning)
             assert issubclass(w.category, ResourceWarning)
 

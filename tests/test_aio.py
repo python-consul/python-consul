@@ -1,7 +1,6 @@
 import pytest
 import six
 import struct
-import warnings
 import sys
 
 import asyncio

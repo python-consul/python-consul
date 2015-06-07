@@ -230,8 +230,8 @@ class TestAsyncioConsul(object):
             assert nodes == []
 
             # ping the two node's health check
-            yield from c.health.check.ttl_pass('service:foo:1')
-            yield from c.health.check.ttl_pass('service:foo:2')
+            yield from c.agent.check.ttl_pass('service:foo:1')
+            yield from c.agent.check.ttl_pass('service:foo:2')
 
             yield from asyncio.sleep(50/1000.0, loop=loop)
 
@@ -248,7 +248,7 @@ class TestAsyncioConsul(object):
             assert [node['Service']['ID'] for node in nodes] == ['foo:1']
 
             # ping the failed node's health check
-            yield from c.health.check.ttl_pass('service:foo:2')
+            yield from c.agent.check.ttl_pass('service:foo:2')
 
             yield from asyncio.sleep(30/1000.0, loop=loop)
 
@@ -296,7 +296,7 @@ class TestAsyncioConsul(object):
             assert config.nodes == []
 
             # ping the service's health check
-            yield from c.health.check.ttl_pass('service:foo:1')
+            yield from c.agent.check.ttl_pass('service:foo:1')
             yield from asyncio.sleep(30/1000.0, loop=loop)
             assert config.nodes == ['foo:1']
 

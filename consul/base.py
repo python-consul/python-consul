@@ -1014,11 +1014,9 @@ class Consul(object):
     class Health(object):
         # TODO: All of the health endpoints support blocking queries and all
         # consistency modes
-        # TODO: Check ttl_pass belongs under Agent
         # TODO: still need to add node and checks endpoints
         def __init__(self, agent):
             self.agent = agent
-            self.check = Consul.Health.Check(agent)
 
         def service(self, service, index=None, passing=None, tag=None):
             """
@@ -1078,25 +1076,9 @@ class Consul(object):
                 callback,
                 '/v1/health/state/%s' % name, params=params)
 
-        class Check(object):
-            def __init__(self, agent):
-                self.agent = agent
-                self.warned = False
-
-            def ttl_pass(self, check_id):
-                """
-                Mark a local TTL check as passing.
-                """
-                if not self.warned:
-                    log.warn('DEPRECATED: update call to agent.check.ttl_pass')
-                return self.agent.http.get(
-                    lambda x: x.code == 200,
-                    '/v1/agent/check/pass/%s' % check_id)
-
     class Session(object):
         def __init__(self, agent):
             self.agent = agent
-            self.check = Consul.Health.Check(agent)
 
         def create(
                 self,

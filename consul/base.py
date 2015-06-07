@@ -512,7 +512,7 @@ class Consul(object):
             def register(
                 self, name, service_id=None, address=None, port=None,
                     tags=None, script=None, interval=None, ttl=None,
-                    http=None, timeout=None):
+                    http=None, timeout=None, address=None):
                 """
                 Add a new service to the local agent. There is more
                 documentation on services
@@ -539,6 +539,8 @@ class Consul(object):
                     payload['port'] = port
                 if tags:
                     payload['tags'] = tags
+                if address:
+                    payload['address'] = address
                 if script:
                     assert interval and not (ttl or http)
                     payload['check'] = {'script': script, 'interval': interval}

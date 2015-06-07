@@ -1,6 +1,19 @@
 Change log
 ==========
 
+0.3.20
+------
+
+Features
+~~~~~~~~
+
+* Add Node and Service Maintenance (thanks @cruatta!)
+
+Bug Fix
+~~~~~~~
+
+* Unclosed connector Exception in consul.aio (thanks @jettify!)
+
 0.3.19
 ------
 

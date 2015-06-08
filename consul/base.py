@@ -1544,3 +1544,28 @@ class Consul(object):
 
             return self.agent.http.put(
                 callback, '/v1/acl/destroy/%s' % acl_id, params=params)
+
+    class Status(object):
+        '''
+        The Status endpoints are used to get information about the status
+         of the Consul cluster.
+        '''
+        def __init__(self, agent):
+            self.agent = agent
+
+        def leader(self):
+            '''
+            This endpoint is used to get the Raft leader for the datacenter
+            in which the agent is running.
+            '''
+            return self.agent.http.get(
+                lambda x: json.loads(x.body), '/v1/status/leader')
+
+
+        def peers(self):
+            '''
+            This endpoint retrieves the Raft peers for the datacenter in which
+            the the agent is running.
+            '''
+            return self.agent.http.get(
+                lambda x: json.loads(x.body), '/v1/status/peers')

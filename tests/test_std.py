@@ -9,6 +9,9 @@ import consul
 import consul.std
 
 
+Check = consul.Check
+
+
 class TestHTTPClient(object):
     def test_uri(self):
         http = consul.std.HTTPClient()
@@ -184,35 +187,34 @@ class TestConsul(object):
                 assert checks[check_id]['Output'] == notes
 
         # test setting notes on a check
-        c.agent.check.register('check', ttl='1s', notes='foo')
+        c.agent.check.register('check', Check.ttl('1s'), notes='foo')
         assert c.agent.checks()['check']['Notes'] == 'foo'
         c.agent.check.deregister('check')
 
         assert set(c.agent.checks().keys()) == set([])
         assert c.agent.check.register(
-            'script_check', script='/bin/true', interval=10) is True
+            'script_check', Check.script('/bin/true', 10)) is True
         verify_and_dereg_check('script_check')
 
-        assert c.agent.check.register('check name',
-                                      check_id='check_id',
-                                      script='/bin/true', interval=10) is True
+        assert c.agent.check.register(
+            'check name',
+            Check.script('/bin/true', 10),
+            check_id='check_id') is True
         verify_and_dereg_check('check_id')
 
         http_addr = "http://127.0.0.1:{0}".format(consul_port)
         assert c.agent.check.register(
-            'http_check', http=http_addr, interval='10ms') is True
+            'http_check', Check.http(http_addr, '10ms')) is True
         time.sleep(1)
         verify_check_status('http_check', 'passing')
         verify_and_dereg_check('http_check')
 
         assert c.agent.check.register(
             'http_timeout_check',
-            http=http_addr,
-            timeout='2s',
-            interval='100ms') is True
+            Check.http(http_addr, '100ms', timeout='2s')) is True
         verify_and_dereg_check('http_timeout_check')
 
-        assert c.agent.check.register('ttl_check', ttl='100ms') is True
+        assert c.agent.check.register('ttl_check', Check.ttl('100ms')) is True
 
         assert c.agent.check.ttl_warn('ttl_check') is True
         verify_check_status('ttl_check', 'warning')
@@ -237,13 +239,6 @@ class TestConsul(object):
         verify_check_status('ttl_check', 'critical')
         verify_and_dereg_check('ttl_check')
 
-        pytest.raises(
-            AssertionError,
-            c.agent.check.register, 'check_id', script='/bin/true', ttl=50)
-        pytest.raises(
-            AssertionError,
-            c.agent.check.register, 'check_id', interval=10, ttl=50)
-
     def test_agent_checks_service_id(self, consul_port):
         c = consul.Consul(port=consul_port)
         c.agent.service.register('foo1')
@@ -253,7 +248,7 @@ class TestConsul(object):
         index, nodes = c.health.service('foo1')
         assert [node['Service']['ID'] for node in nodes] == ['foo1']
 
-        c.agent.check.register('foo', service_id='foo1', ttl='100ms')
+        c.agent.check.register('foo', Check.ttl('100ms'), service_id='foo1')
 
         time.sleep(40/1000.0)
 
@@ -280,7 +275,7 @@ class TestConsul(object):
         assert nodes == []
 
         assert c.agent.check.register(
-            'foo', service_id='foo1', ttl='100ms') is False
+            'foo', Check.ttl('100ms'), service_id='foo1') is False
 
         time.sleep(40/1000.0)
 
@@ -294,7 +289,7 @@ class TestConsul(object):
     def test_agent_service_maintenance(self, consul_port):
         c = consul.Consul(port=consul_port)
 
-        c.agent.service.register('foo', ttl='100ms')
+        c.agent.service.register('foo', check=Check.ttl('100ms'))
 
         time.sleep(40/1000.0)
 
@@ -450,8 +445,12 @@ class TestConsul(object):
 
         # register two nodes, one with a long ttl, the other shorter
         c.agent.service.register(
-            'foo', service_id='foo:1', ttl='10s', tags=['tag:foo:1'])
-        c.agent.service.register('foo', service_id='foo:2', ttl='100ms')
+            'foo',
+            service_id='foo:1',
+            check=Check.ttl('10s'),
+            tags=['tag:foo:1'])
+        c.agent.service.register(
+            'foo', service_id='foo:2', check=Check.ttl('100ms'))
 
         time.sleep(40/1000.0)
 
@@ -511,8 +510,10 @@ class TestConsul(object):
         assert [node['ServiceID'] for node in nodes] == ['']
 
         # register two nodes, one with a long ttl, the other shorter
-        c.agent.service.register('foo', service_id='foo:1', ttl='10s')
-        c.agent.service.register('foo', service_id='foo:2', ttl='100ms')
+        c.agent.service.register(
+            'foo', service_id='foo:1', check=Check.ttl('10s'))
+        c.agent.service.register(
+            'foo', service_id='foo:2', check=Check.ttl('100ms'))
 
         time.sleep(40/1000.0)
 

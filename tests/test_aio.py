@@ -8,6 +8,9 @@ import consul
 import consul.aio
 
 
+Check = consul.Check
+
+
 @pytest.fixture
 def loop(request):
     asyncio.set_event_loop(None)
@@ -214,9 +217,9 @@ class TestAsyncioConsul(object):
 
             # register two nodes, one with a long ttl, the other shorter
             yield from c.agent.service.register(
-                'foo', service_id='foo:1', ttl='10s')
+                'foo', service_id='foo:1', check=Check.ttl('10s'))
             yield from c.agent.service.register(
-                'foo', service_id='foo:2', ttl='100ms')
+                'foo', service_id='foo:2', check=Check.ttl('100ms'))
 
             yield from asyncio.sleep(30/1000.0, loop=loop)
 
@@ -280,7 +283,7 @@ class TestAsyncioConsul(object):
         @asyncio.coroutine
         def monitor():
             yield from c.agent.service.register(
-                'foo', service_id='foo:1', ttl='40ms')
+                'foo', service_id='foo:1', check=Check.ttl('40ms'))
             index = None
             while True:
                 index, nodes = yield from c.health.service(

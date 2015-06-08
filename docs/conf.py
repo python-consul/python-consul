@@ -273,3 +273,14 @@ texinfo_documents = [
 
 autodoc_member_order = 'bysource'
 autoclass_content = 'both'
+
+
+def clean_check_signature(
+    app, what, name, obj, options, signature, return_annotation):
+    if name.startswith('consul.Check') and signature:
+        signature = '(' + signature[len('(klass, '):]
+        return (signature, return_annotation)
+
+
+def setup(app):
+    app.connect('autodoc-process-signature', clean_check_signature)

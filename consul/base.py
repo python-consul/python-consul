@@ -29,6 +29,72 @@ class Timeout(ConsulException):
     pass
 
 
+#
+# Convenience to define checks
+
+class Check(object):
+    """
+    There are three different kinds of checks: script, http and ttl
+    """
+    @classmethod
+    def script(klass, script, interval):
+        """
+        Run *script* every *interval* (e.g. "10s") to peform health check
+        """
+        return {'script': script, 'interval': interval}
+
+    @classmethod
+    def http(klass, url, interval, timeout=None):
+        """
+        Peform a HTTP GET against *url* every *interval* (e.g. "10s") to peform
+        health check with an option *timeout*
+        """
+        ret = {'http': url, 'interval': interval}
+        if timeout:
+            ret['timeout'] = timeout
+        return ret
+
+    @classmethod
+    def ttl(klass, ttl):
+        """
+        Set check to be marked as critical after *ttl* (e.g. "10s") unless the
+        check is periodically marked as passing.
+        """
+        return {'ttl': ttl}
+
+    @classmethod
+    def _compat(
+            self,
+            script=None,
+            interval=None,
+            ttl=None,
+            http=None,
+            timeout=None):
+
+        if not script and not http and not ttl:
+            return {}
+
+        log.warn(
+            'DEPRECATED: use consul.Check.script/http/ttl to specify check')
+
+        ret = {'check': {}}
+
+        if script:
+            assert interval and not (ttl or http)
+            ret['check'] = {'script': script, 'interval': interval}
+        if ttl:
+            assert not (interval or script or http)
+            ret['check'] = {'ttl': ttl}
+        if http:
+            assert interval and not (script or ttl)
+            ret['check'] = {'http': http, 'interval': interval}
+        if timeout:
+            assert http
+            ret['check']['timeout'] = timeout
+
+        return ret
+
+
 Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
 
 
@@ -510,9 +576,19 @@ class Consul(object):
                 self.agent = agent
 
             def register(
-                self, name, service_id=None, address=None, port=None,
-                    tags=None, script=None, interval=None, ttl=None,
-                    http=None, timeout=None):
+                    self,
+                    name,
+                    service_id=None,
+                    address=None,
+                    port=None,
+                    tags=None,
+                    check=None,
+                    # *deprecated* use check parameter
+                    script=None,
+                    interval=None,
+                    ttl=None,
+                    http=None,
+                    timeout=None):
                 """
                 Add a new service to the local agent. There is more
                 documentation on services
@@ -527,8 +603,11 @@ class Consul(object):
                 *address* will default to the address of the agent if not
                 provided.
 
-                An optional health check can be created for this service. The
-                health check is only one of *script* and *interval* OR *ttl*.
+                An optional health *check* can be created for this service is
+                one of `Check.script`_, `Check.http`_, or `Check.ttl`_.
+
+                *script*, *interval*, *ttl*, *http*, and *timeout* arguments
+                are deprecated. use *check* instead.
                 """
                 payload = {'name': name}
                 if service_id:
@@ -539,18 +618,17 @@ class Consul(object):
                     payload['port'] = port
                 if tags:
                     payload['tags'] = tags
-                if script:
-                    assert interval and not (ttl or http)
-                    payload['check'] = {'script': script, 'interval': interval}
-                if ttl:
-                    assert not (interval or script or http)
-                    payload['check'] = {'ttl': ttl}
-                if http:
-                    assert interval and not (script or ttl)
-                    payload['check'] = {'http': http, 'interval': interval}
-                if timeout:
-                    assert http
-                    payload['check']['timeout'] = timeout
+
+                if check:
+                    payload['check'] = check
+
+                else:
+                    payload.update(Check._compat(
+                        script=script,
+                        interval=interval,
+                        ttl=ttl,
+                        http=http,
+                        timeout=timeout))
 
                 return self.agent.http.put(
                     lambda x: x.code == 200,
@@ -600,14 +678,16 @@ class Consul(object):
             def register(
                     self,
                     name,
+                    check=None,
                     check_id=None,
+                    notes=None,
+                    service_id=None,
+                    # *deprecated* use check parameter
                     script=None,
                     interval=None,
                     ttl=None,
                     http=None,
-                    timeout=None,
-                    notes=None,
-                    service_id=None):
+                    timeout=None):
                 """
                 Register a new check with the local agent. More documentation
                 on checks can be found `here
@@ -615,14 +695,11 @@ class Consul(object):
 
                 *name* is the name of the check.
 
+                *check* is one of `Check.script`_, `Check.http`_, or
+                `Check.ttl`_ and is required.
+
                 If the optional *check_id* is not provided it is set to *name*.
                 *check_id* must be unique for this agent.
-
-                There are two ways to define a check, either with a *script*
-                and an *interval* or with a *ttl* timeout. If a *script* is
-                supplied then the *interval* is expected and the *ttl* should
-                be absent. For a *ttl* check, the *script* and *interval*
-                should not be supplied.
 
                 *notes* is not used by Consul, and is meant to be human
                 readable.
@@ -630,41 +707,31 @@ class Consul(object):
                 Optionally, a *service_id* can be specified to associate a
                 registered check with an existing service.
 
+                *script*, *interval*, *ttl*, *http*, and *timeout* arguments
+                are deprecated. use *check* instead.
+
                 Returns *True* on success.
                 """
                 payload = {'name': name}
+
+                assert check or script or ttl or http, \
+                    'check is required'
+
+                if check:
+                    payload.update(check)
+
+                else:
+                    payload.update(Check._compat(
+                        script=script,
+                        interval=interval,
+                        ttl=ttl,
+                        http=http,
+                        timeout=timeout)['check'])
+
                 if check_id:
                     payload['id'] = check_id
-
-                assert script or ttl or http, \
-                    'Either script, ttl, or http is required'
-
-                if script:
-                    assert interval, 'Interval required for script check'
-                    assert not (ttl or http), \
-                        'ttl and http not used with script based check'
-                    payload['script'] = script
-                    payload['interval'] = interval
-
-                if ttl:
-                    assert not (interval or script or http), \
-                        'Interval, script and http not required for ttl check'
-                    payload['ttl'] = ttl
-
-                if http:
-                    assert interval, 'Interval required for http check'
-                    assert not (script or ttl), \
-                        'Script and ttl not used with http based check'
-                    payload['http'] = http
-                    payload['interval'] = interval
-
-                if timeout:
-                    assert http, 'Timeout only required for http check'
-                    payload['timeout'] = timeout
-
                 if notes:
                     payload['notes'] = notes
-
                 if service_id:
                     payload['serviceid'] = service_id
 

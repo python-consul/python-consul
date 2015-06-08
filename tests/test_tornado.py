@@ -11,6 +11,9 @@ import consul
 import consul.tornado
 
 
+Check = consul.Check
+
+
 @pytest.fixture
 def loop():
     loop = ioloop.IOLoop()
@@ -189,9 +192,9 @@ class TestConsul(object):
 
             # register two nodes, one with a long ttl, the other shorter
             yield c.agent.service.register(
-                'foo', service_id='foo:1', ttl='10s')
+                'foo', service_id='foo:1', check=Check.ttl('10s'))
             yield c.agent.service.register(
-                'foo', service_id='foo:2', ttl='100ms')
+                'foo', service_id='foo:2', check=Check.ttl('100ms'))
 
             time.sleep(30/1000.0)
 
@@ -254,7 +257,7 @@ class TestConsul(object):
         @gen.coroutine
         def monitor():
             yield c.agent.service.register(
-                'foo', service_id='foo:1', ttl='40ms')
+                'foo', service_id='foo:1', check=Check.ttl('40ms'))
             index = None
             while True:
                 index, nodes = yield c.health.service(

@@ -165,17 +165,41 @@ ACLs
 API Documentation
 -----------------
 
+Check
+~~~~~
+
+.. autoclass:: consul.Check
+
+Check.script
+++++++++++++
+
+.. automethod:: consul.Check.script
+
+Check.http
+++++++++++
+
+.. automethod:: consul.Check.http
+
+Check.ttl
++++++++++
+
+.. automethod:: consul.Check.ttl
+
+
+Consul
+~~~~~~
+
 .. autoclass:: consul.Consul
 
-consul.kv
-~~~~~~~~~
+Consul.kv
++++++++++
 
 .. autoclass:: consul.base::Consul.KV()
    :members:
    :undoc-members:
 
-consul.agent
-~~~~~~~~~~~~
+Consul.agent
+++++++++++++
 
 .. autoclass:: consul.base::Consul.Agent()
    :members:
@@ -187,15 +211,15 @@ consul.agent
 .. autoclass:: consul.base::Consul.Agent.Check()
    :members:
 
-consul.catalog
-~~~~~~~~~~~~~~
+Consul.catalog
+++++++++++++++
 
 .. autoclass:: consul.base::Consul.Catalog()
    :members:
    :undoc-members:
 
-consul.health
-~~~~~~~~~~~~~
+Consul.health
++++++++++++++
 
 .. autoclass:: consul.base::Consul.Health()
    :members:
@@ -206,15 +230,15 @@ consul.health
    :members:
    :undoc-members:
 
-consul.session
-~~~~~~~~~~~~~~
+Consul.session
+++++++++++++++
 
 .. autoclass:: consul.base::Consul.Session()
    :members:
    :undoc-members:
 
-consul.acl
-~~~~~~~~~~
+Consul.acl
+++++++++++
 
 .. autoclass:: consul.base::Consul.ACL()
    :members:
@@ -235,8 +259,8 @@ consul.acl
 
 .. _ianitor: https://github.com/ClearcodeHQ/ianitor
 
-consul.event
-~~~~~~~~~~~~
+Consul.event
+++++++++++++
 
 .. autoclass:: consul.base::Consul.Event()
    :members:

@@ -1,6 +1,19 @@
 Change log
 ==========
 
+0.4.0
+-----
+
+API changes (backwards incompatible)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Deprecated old health.check.ttl_pass call has been removed
+
+* Deprecate loose parameters *script*, *interval*, *ttl*, *http* and *timeout*,
+  to configure checks via agent.service.register and agent.check.register. Both
+  methods now take a single argument to specify checks. A convenience
+  consul.Check has been added to create checks.
+
 0.3.20
 ------
 

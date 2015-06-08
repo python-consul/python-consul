@@ -1562,7 +1562,6 @@ class Consul(object):
             return self.agent.http.get(
                 lambda x: json.loads(x.body), '/v1/status/leader')
 
-
         def peers(self):
             '''
             This endpoint retrieves the Raft peers for the datacenter in which

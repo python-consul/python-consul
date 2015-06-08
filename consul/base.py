@@ -171,6 +171,7 @@ class Consul(object):
         self.health = Consul.Health(self)
         self.session = Consul.Session(self)
         self.acl = Consul.ACL(self)
+        self.status = Consul.Status(self)
 
     class Event(object):
         """

@@ -1,6 +1,14 @@
 Change log
 ==========
 
+0.4.1
+------
+
+Features
+~~~~~~~~
+
+* Add health.node (thanks @davidbirdsong!)
+
 0.4.0
 -----
 

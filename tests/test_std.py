@@ -560,6 +560,13 @@ class TestConsul(object):
         index, nodes = c.health.state('any')
         assert [node['ServiceID'] for node in nodes] == ['']
 
+    def test_health_node(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        # grab local node name
+        node = c.agent.self()['Config']['NodeName']
+        index, checks = c.health.node(node)
+        assert node in [check["Node"] for check in checks]
+
     def test_session(self, consul_port):
         c = consul.Consul(port=consul_port)
 

@@ -265,3 +265,10 @@ Consul.event
 .. autoclass:: consul.base::Consul.Event()
    :members:
    :undoc-members:
+
+Consul.status
+++++++++++++++
+
+.. autoclass:: consul.base::Consul.Status()
+   :members:
+   :undoc-members:

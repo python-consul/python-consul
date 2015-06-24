@@ -765,3 +765,32 @@ class TestConsul(object):
         acls = c.acl.list()
         assert set([x['ID'] for x in acls]) == \
             set(['anonymous', master_token])
+
+    def test_status_leader(self, consul_port):
+        c = consul.Consul(port=consul_port)
+
+        agent_self = c.agent.self()
+        port = agent_self['Config']['Ports']['Server']
+        addr = agent_self['Config']['AdvertiseAddr']
+
+        addr_port = "{0}:{1}".format(addr, port)
+        leader = c.status.leader()
+
+        assert leader == addr_port, \
+            "Leader value was {0}, expected value " \
+            "was {1}".format(leader, addr_port)
+
+    def test_status_peers(self, consul_port):
+
+        c = consul.Consul(port=consul_port)
+
+        agent_self = c.agent.self()
+        port = agent_self['Config']['Ports']['Server']
+        addr = agent_self['Config']['AdvertiseAddr']
+
+        addr_port = "{0}:{1}".format(addr, port)
+        peers = c.status.peers()
+
+        assert addr_port in peers, \
+            "Expected value '{0}' " \
+            "in peer list but it was not present".format(addr_port)

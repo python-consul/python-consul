@@ -1,6 +1,14 @@
 Change log
 ==========
 
+0.4.2
+------
+
+Features
+~~~~~~~~
+
+* Add status endpoints (thanks @cruatta!)
+
 0.4.1
 ------
 

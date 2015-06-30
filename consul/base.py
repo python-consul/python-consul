@@ -1086,7 +1086,7 @@ class Consul(object):
         def __init__(self, agent):
             self.agent = agent
 
-        def service(self, service, index=None, passing=None, tag=None):
+        def service(self, service, index=None, passing=None, tag=None, dc=None):
             """
             Returns a tuple of (*index*, *nodes*)
 
@@ -1107,6 +1107,9 @@ class Consul(object):
                 params['passing'] = '1'
             if tag is not None:
                 params['tag'] = tag
+            dc = dc or self.agent.dc
+            if dc:
+                params['dc'] = dc
 
             def callback(response):
                 data = json.loads(response.body)
@@ -1116,7 +1119,7 @@ class Consul(object):
                 callback,
                 '/v1/health/service/%s' % service, params=params)
 
-        def state(self, name, index=None):
+        def state(self, name, index=None, dc=None):
             """
             Returns a tuple of (*index*, *nodes*)
 
@@ -1135,6 +1138,9 @@ class Consul(object):
             params = {}
             if index:
                 params['index'] = index
+            dc = dc or self.agent.dc
+            if dc:
+                params['dc'] = dc
 
             def callback(response):
                 data = json.loads(response.body)
@@ -1144,7 +1150,7 @@ class Consul(object):
                 callback,
                 '/v1/health/state/%s' % name, params=params)
 
-        def node(self, node, index=None):
+        def node(self, node, index=None, dc=None):
             """
             Returns a tuple of (*index*, *checks*)
 
@@ -1156,6 +1162,9 @@ class Consul(object):
             params = {}
             if index:
                 params['index'] = index
+            dc = dc or self.agent.dc
+            if dc:
+                params['dc'] = dc
 
             def callback(response):
                 data = json.loads(response.body)

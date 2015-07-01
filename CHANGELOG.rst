@@ -1,6 +1,14 @@
 Change log
 ==========
 
+0.4.3
+------
+
+Features
+~~~~~~~~
+
+* Support 'dc' argument to health endpoints (thanks @etuttle!)
+
 0.4.2
 ------
 

@@ -1,6 +1,14 @@
 Change log
 ==========
 
+0.4.4
+------
+
+Features
+~~~~~~~~
+
+* Support creation of ALCs with explicit ID. (thanks @KyleJamesWalker)
+
 0.4.3
 ------
 

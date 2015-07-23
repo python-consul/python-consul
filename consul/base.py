@@ -1429,7 +1429,12 @@ class Consul(object):
             return self.agent.http.get(
                 callback, '/v1/acl/info/%s' % acl_id, params=params)
 
-        def create(self, name=None, type='client', rules=None, token=None):
+        def create(self,
+                   name=None,
+                   type='client',
+                   rules=None,
+                   acl_id=None,
+                   token=None):
             """
             Creates a new ACL token. This is a privileged endpoint, and
             requires a management token. *token* will override this client's
@@ -1478,6 +1483,8 @@ class Consul(object):
                 assert isinstance(rules, str), \
                     'Only HCL encoded strings supported for the moment'
                 payload['Rules'] = rules
+            if acl_id:
+                payload['ID'] = acl_id
 
             if payload:
                 data = json.dumps(payload)

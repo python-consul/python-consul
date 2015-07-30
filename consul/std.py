@@ -35,7 +35,7 @@ class HTTPClient(object):
 
     def delete(self, callback, path, params=None):
         uri = self.uri(path, params)
-        return callback(self.response(requests.delete(uri, params=params)))
+        return callback(self.response(requests.delete(uri)))
 
 
 class Consul(base.Consul):

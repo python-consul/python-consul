@@ -15,13 +15,15 @@ PY_341 = sys.version_info >= (3, 4, 1)
 class HTTPClient:
     """Asyncio adapter for python consul using aiohttp library"""
 
-    def __init__(self, host='127.0.0.1', port=8500, scheme='http', loop=None):
+    def __init__(self, host='127.0.0.1', port=8500, scheme='http', loop=None,
+                verify=True):
         self.host = host
         self.port = port
         self.scheme = scheme
         self.base_uri = '%s://%s:%s' % (self.scheme, self.host, self.port)
         self._loop = loop or asyncio.get_event_loop()
-        self._connector = aiohttp.TCPConnector(loop=self._loop)
+        self._connector = aiohttp.TCPConnector(loop=self._loop,
+                                               verify_ssl=verify)
 
     def _uri(self, path, params=None):
         uri = self.base_uri + path
@@ -70,8 +72,8 @@ class Consul(base.Consul):
         self._loop = loop or asyncio.get_event_loop()
         super().__init__(*args, **kwargs)
 
-    def connect(self, host, port, scheme):
-        return HTTPClient(host, port, scheme, loop=self._loop)
+    def connect(self, host, port, scheme, verify=True):
+        return HTTPClient(host, port, scheme, loop=self._loop, verify=verify)
 
     def close(self):
         """Close all opened http connections"""

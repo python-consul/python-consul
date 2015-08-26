@@ -14,6 +14,7 @@ class HTTPClient(object):
         self.port = port
         self.scheme = scheme
         self.base_uri = '%s://%s:%s' % (self.scheme, self.host, self.port)
+        self.session = requests.session()
 
     def response(self, response):
         return base.Response(
@@ -27,15 +28,15 @@ class HTTPClient(object):
 
     def get(self, callback, path, params=None):
         uri = self.uri(path, params)
-        return callback(self.response(requests.get(uri)))
+        return callback(self.response(self.session.get(uri)))
 
     def put(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
-        return callback(self.response(requests.put(uri, data=data)))
+        return callback(self.response(self.session.put(uri, data=data)))
 
     def delete(self, callback, path, params=None):
         uri = self.uri(path, params)
-        return callback(self.response(requests.delete(uri, params=params)))
+        return callback(self.response(self.session.delete(uri, params=params)))
 
 
 class Consul(base.Consul):

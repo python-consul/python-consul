@@ -30,7 +30,8 @@ class HTTPClient(object):
 
     def get(self, callback, path, params=None):
         uri = self.uri(path, params)
-        return callback(self.response(self.session.get(uri, verify=self.verify)))
+        return callback(self.response(
+            self.session.get(uri, verify=self.verify)))
 
     def put(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)

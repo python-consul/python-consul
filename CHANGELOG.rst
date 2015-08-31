@@ -9,6 +9,7 @@ Features
 
 * Allow SSL certificate verification to be disabled (thanks @jgadling!)
 * Use requests.session for performance (thanks @msabramo!)
+# Support 'wait' param for all blocking queries (thanks @rmt!)
 
 0.4.4
 ------

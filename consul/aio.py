@@ -15,8 +15,13 @@ PY_341 = sys.version_info >= (3, 4, 1)
 class HTTPClient:
     """Asyncio adapter for python consul using aiohttp library"""
 
-    def __init__(self, host='127.0.0.1', port=8500, scheme='http', loop=None,
-                verify=True):
+    def __init__(
+            self,
+            host='127.0.0.1',
+            port=8500,
+            scheme='http',
+            loop=None,
+            verify=True):
         self.host = host
         self.port = port
         self.scheme = scheme

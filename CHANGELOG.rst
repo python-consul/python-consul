@@ -9,7 +9,9 @@ Features
 
 * Allow SSL certificate verification to be disabled (thanks @jgadling!)
 * Use requests.session for performance (thanks @msabramo!)
-# Support 'wait' param for all blocking queries (thanks @rmt!)
+* Support 'wait' param for all blocking queries (thanks @rmt!)
+* deduplicate query string when doing deletes with the std (requests) library
+  (thanks @sduthil!)
 
 0.4.4
 ------

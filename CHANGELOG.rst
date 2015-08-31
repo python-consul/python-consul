@@ -1,6 +1,14 @@
 Change log
 ==========
 
+0.4.5
+------
+
+Features
+~~~~~~~~
+
+* Allow SSL certificate verification to be disabled (thanks @jgadling!)
+
 0.4.4
 ------
 

@@ -301,9 +301,9 @@ class Consul(object):
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
 
-            *wait* the maximum duration to wait (e.g. '10ms') to retrieve
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
             a given index. this parameter is only applied if *index* is also
-            specified. the wait time by default is 10 minutes.
+            specified. the wait time by default is 5 minutes.
 
             *token* is an optional `ACL token`_ to apply to this request.
 
@@ -900,7 +900,7 @@ class Consul(object):
             return self.agent.http.get(
                 lambda x: json.loads(x.body), '/v1/catalog/datacenters')
 
-        def nodes(self, index=None, consistency=None, dc=None):
+        def nodes(self, index=None, wait=None, consistency=None, dc=None):
             """
             Returns a tuple of (*index*, *nodes*) of all nodes known
             about in the *dc* datacenter. *dc* defaults to the current
@@ -908,6 +908,10 @@ class Consul(object):
 
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
+
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
 
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
@@ -932,6 +936,8 @@ class Consul(object):
                 params['dc'] = dc
             if index:
                 params['index'] = index
+                if wait:
+                    params['wait'] = wait
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -939,7 +945,7 @@ class Consul(object):
                 callback(is_json=True, index=True),
                 '/v1/catalog/nodes', params=params)
 
-        def services(self, index=None, consistency=None, dc=None):
+        def services(self, index=None, wait=None, consistency=None, dc=None):
             """
             Returns a tuple of (*index*, *services*) of all services known
             about in the *dc* datacenter. *dc* defaults to the current
@@ -947,6 +953,10 @@ class Consul(object):
 
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
+
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
 
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
@@ -972,6 +982,8 @@ class Consul(object):
                 params['dc'] = dc
             if index:
                 params['index'] = index
+                if wait:
+                    params['wait'] = wait
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -979,13 +991,17 @@ class Consul(object):
                 callback(is_json=True, index=True),
                 '/v1/catalog/services', params=params)
 
-        def node(self, node, index=None, consistency=None, dc=None):
+        def node(self, node, index=None, wait=None, consistency=None, dc=None):
             """
             Returns a tuple of (*index*, *services*) of all services provided
             by *node*.
 
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
+
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
 
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
@@ -1025,6 +1041,8 @@ class Consul(object):
                 params['dc'] = dc
             if index:
                 params['index'] = index
+                if wait:
+                    params['wait'] = wait
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -1036,6 +1054,7 @@ class Consul(object):
                 self,
                 service,
                 index=None,
+                wait=None,
                 tag=None,
                 consistency=None,
                 dc=None):
@@ -1046,6 +1065,10 @@ class Consul(object):
 
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
+
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
 
             If *tag* is provided, the list of nodes returned will be filtered
             by that tag.
@@ -1075,6 +1098,8 @@ class Consul(object):
                 params['tag'] = tag
             if index:
                 params['index'] = index
+                if wait:
+                    params['wait'] = wait
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -1092,6 +1117,7 @@ class Consul(object):
         def service(self,
                     service,
                     index=None,
+                    wait=None,
                     passing=None,
                     tag=None,
                     dc=None):
@@ -1100,6 +1126,10 @@ class Consul(object):
 
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
+
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
 
             *nodes* are the nodes providing the given service.
 
@@ -1112,8 +1142,10 @@ class Consul(object):
             datacenter.
             """
             params = {}
-            if index is not None:
+            if index:
                 params['index'] = index
+                if wait:
+                    params['wait'] = wait
             if passing:
                 params['passing'] = '1'
             if tag is not None:
@@ -1130,7 +1162,7 @@ class Consul(object):
                 callback,
                 '/v1/health/service/%s' % service, params=params)
 
-        def state(self, name, index=None, dc=None):
+        def state(self, name, index=None, wait=None, dc=None):
             """
             Returns a tuple of (*index*, *nodes*)
 
@@ -1143,6 +1175,10 @@ class Consul(object):
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
 
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
+
             *dc* is the datacenter of the node and defaults to this agents
             datacenter.
 
@@ -1152,6 +1188,8 @@ class Consul(object):
             params = {}
             if index:
                 params['index'] = index
+                if wait:
+                    params['wait'] = wait
             dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
@@ -1164,12 +1202,16 @@ class Consul(object):
                 callback,
                 '/v1/health/state/%s' % name, params=params)
 
-        def node(self, node, index=None, dc=None):
+        def node(self, node, index=None, wait=None, dc=None):
             """
             Returns a tuple of (*index*, *checks*)
 
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
+
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
 
             *dc* is the datacenter of the node and defaults to this agents
             datacenter.
@@ -1179,6 +1221,8 @@ class Consul(object):
             params = {}
             if index:
                 params['index'] = index
+                if wait:
+                    params['wait'] = wait
             dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
@@ -1278,7 +1322,7 @@ class Consul(object):
                 callback(is_200=True),
                 '/v1/session/destroy/%s' % session_id, params=params)
 
-        def list(self, index=None, consistency=None, dc=None):
+        def list(self, index=None, wait=None, consistency=None, dc=None):
             """
             Returns a tuple of (*index*, *sessions*) of all active sessions in
             the *dc* datacenter. *dc* defaults to the current datacenter of
@@ -1286,6 +1330,10 @@ class Consul(object):
 
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
+
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
 
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
@@ -1312,6 +1360,8 @@ class Consul(object):
                 params['dc'] = dc
             if index:
                 params['index'] = index
+                if wait:
+                    params['wait'] = wait
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -1319,13 +1369,17 @@ class Consul(object):
                 callback(is_json=True, index=True),
                 '/v1/session/list', params=params)
 
-        def node(self, node, index=None, consistency=None, dc=None):
+        def node(self, node, index=None, wait=None, consistency=None, dc=None):
             """
             Returns a tuple of (*index*, *sessions*) as per *session.list*, but
             filters the sessions returned to only those active for *node*.
 
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
+
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
 
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
@@ -1337,6 +1391,8 @@ class Consul(object):
                 params['dc'] = dc
             if index:
                 params['index'] = index
+                if wait:
+                    params['wait'] = wait
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -1344,7 +1400,12 @@ class Consul(object):
                 callback(is_json=True, index=True),
                 '/v1/session/node/%s' % node, params=params)
 
-        def info(self, session_id, index=None, consistency=None, dc=None):
+        def info(self,
+                 session_id,
+                 index=None,
+                 wait=None,
+                 consistency=None,
+                 dc=None):
             """
             Returns a tuple of (*index*, *session*) for the session
             *session_id* in the *dc* datacenter. *dc* defaults to the current
@@ -1353,6 +1414,10 @@ class Consul(object):
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
 
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
+
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
             was configured with.
@@ -1363,6 +1428,8 @@ class Consul(object):
                 params['dc'] = dc
             if index:
                 params['index'] = index
+                if wait:
+                    params['wait'] = wait
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'

@@ -8,6 +8,7 @@ Features
 ~~~~~~~~
 
 * Allow SSL certificate verification to be disabled (thanks @jgadling!)
+* Use requests.session for performance (thanks @msabramo!)
 
 0.4.4
 ------

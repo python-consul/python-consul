@@ -107,8 +107,8 @@ def callback(
         allow_404=True):
 
     def cb(response):
-        if response.code == 500:
-            raise ConsulException(response.body)
+        if response.code >= 500 and response.code < 600:
+            raise ConsulException("%d %s" % (response.code, response.body))
         if response.code == 403:
             raise ACLPermissionDenied(response.body)
         if response.code == 404 and not allow_404:

@@ -1108,9 +1108,7 @@ class Consul(object):
                 '/v1/catalog/service/%s' % service, params=params)
 
     class Health(object):
-        # TODO: All of the health endpoints support blocking queries and all
-        # consistency modes
-        # TODO: still need to add node and checks endpoints
+        # TODO: All of the health endpoints support all consistency modes
         def __init__(self, agent):
             self.agent = agent
 
@@ -1161,6 +1159,47 @@ class Consul(object):
             return self.agent.http.get(
                 callback,
                 '/v1/health/service/%s' % service, params=params)
+
+        def checks(self,
+                    service,
+                    index=None,
+                    wait=None,
+                    dc=None):
+            """
+            Returns a tuple of (*index*, *checks*) with *checks* being the
+            checks associated with the service.
+
+            *service* is the name of the service being checked.
+
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
+
+            *dc* is the datacenter of the node and defaults to this agents
+            datacenter.
+
+            """
+            params = {}
+            if index:
+                params['index'] = index
+                if wait:
+                    params['wait'] = wait
+            dc = dc or self.agent.dc
+            if dc:
+                params['dc'] = dc
+
+            def callback(response):
+                data = json.loads(response.body)
+                return response.headers['X-Consul-Index'], data
+
+            return self.agent.http.get(
+                callback,
+                '/v1/health/checks/%s' % service, params=params)
+
 
         def state(self, name, index=None, wait=None, dc=None):
             """

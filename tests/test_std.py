@@ -567,6 +567,22 @@ class TestConsul(object):
         index, checks = c.health.node(node)
         assert node in [check["Node"] for check in checks]
 
+    def test_health_checks(self, consul_port):
+        c = consul.Consul(self, consul_port)
+
+        # Assert there are no services except the Serf Health check
+        index, nodes = c.health.state('any')
+        assert [node['ServiceID'] for node in nodes] == ['']
+
+        c.agent.service.register(
+            'foo', service_id='foobar', check=Check.ttl('9999s'))
+
+        time.sleep(40/1000.00)
+
+        index, checks = c.health.checks('foobar')
+
+        assert len(checks) == 1
+
     def test_session(self, consul_port):
         c = consul.Consul(port=consul_port)
 

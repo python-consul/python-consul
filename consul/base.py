@@ -1160,11 +1160,7 @@ class Consul(object):
                 callback,
                 '/v1/health/service/%s' % service, params=params)
 
-        def checks(self,
-                    service,
-                    index=None,
-                    wait=None,
-                    dc=None):
+        def checks(self, service, index=None, wait=None, dc=None):
             """
             Returns a tuple of (*index*, *checks*) with *checks* being the
             checks associated with the service.
@@ -1199,7 +1195,6 @@ class Consul(object):
             return self.agent.http.get(
                 callback,
                 '/v1/health/checks/%s' % service, params=params)
-
 
         def state(self, name, index=None, wait=None, dc=None):
             """

@@ -1,6 +1,17 @@
 Change log
 ==========
 
+0.4.6
+------
+
+Features
+~~~~~~~~
+
+* Add health.checks endpoint, update health TODOs (thanks @cruatta!)
+* Improve error when a HTTP 503 status code is returned (thanks @raboof!)
+* Added index and wait parameter to event.list (thanks @max0d41!)
+
+
 0.4.5
 ------
 

@@ -234,7 +234,9 @@ class Consul(object):
 
         def list(
                 self,
-                name=None):
+                name=None,
+                index=None,
+                wait=None):
             """
             Returns a tuple of (*index*, *events*)
                 Note: Since Consul's event protocol uses gossip, there is no
@@ -242,6 +244,15 @@ class Consul(object):
                 matches the query.
 
             *name* is the type of events to list, if None, lists all available.
+
+            *index* is the current event Consul index, suitable for making
+            subsequent calls to wait for changes since this query was last run.
+            Check https://consul.io/docs/agent/http/event.html#event_list for
+            more infos about indexes on events.
+
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. This parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
 
             Consul agents only buffer the most recent entries. The current
             buffer size is 256, but this value could change in the future.
@@ -264,6 +275,10 @@ class Consul(object):
             params = {}
             if name is not None:
                 params['name'] = name
+            if index:
+                params['index'] = index
+                if wait:
+                    params['wait'] = wait
 
             def callback(response):
                 data = json.loads(response.body)

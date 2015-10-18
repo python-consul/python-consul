@@ -1182,7 +1182,6 @@ class Consul(object):
 
             *service* is the name of the service being checked.
 
-
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
 

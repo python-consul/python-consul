@@ -680,6 +680,12 @@ class TestConsul(object):
             key "private/" {
                 policy = "deny"
             }
+            service "foo-" {
+                policy = "write"
+            }
+            service "bar-" {
+                policy = "read"
+            }
         """
 
         token = c.acl.create(rules=rules, token=master_token)
@@ -712,7 +718,17 @@ class TestConsul(object):
             consul.ACLPermissionDenied,
             c.kv.delete, 'private/foo', token=token)
 
+        # test token pass through for service registration
+        c.agent.service.register("bar-1", token=token)
+        c.agent.service.register("foo-1", token=token)
+        index, data = c.health.service('foo-1')
+        assert data
+        index, data = c.health.service('bar-1')
+        assert not data
+
         # clean up
+        assert c.agent.service.deregister('foo-1') is True
+        assert c.agent.service.deregister('bar-1') is True
         c.acl.destroy(token, token=master_token)
         acls = c.acl.list(token=master_token)
         assert set([x['ID'] for x in acls]) == \

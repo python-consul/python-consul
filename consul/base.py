@@ -602,6 +602,7 @@ class Consul(object):
                     port=None,
                     tags=None,
                     check=None,
+                    token=None,
                     # *deprecated* use check parameter
                     script=None,
                     interval=None,
@@ -624,6 +625,10 @@ class Consul(object):
 
                 An optional health *check* can be created for this service is
                 one of `Check.script`_, `Check.http`_, or `Check.ttl`_.
+
+                *token* is an optional `ACL token`_ to apply to this request.
+                Note this call will return successful even if the token doesn't
+                have permissions to register this service.
 
                 *script*, *interval*, *ttl*, *http*, and *timeout* arguments
                 are deprecated. use *check* instead.
@@ -649,9 +654,15 @@ class Consul(object):
                         http=http,
                         timeout=timeout))
 
+                params = {}
+                token = token or self.agent.token
+                if token:
+                    params['token'] = token
+
                 return self.agent.http.put(
                     lambda x: x.code == 200,
                     '/v1/agent/service/register',
+                    params=params,
                     data=json.dumps(payload))
 
             def deregister(self, service_id):
@@ -701,6 +712,7 @@ class Consul(object):
                     check_id=None,
                     notes=None,
                     service_id=None,
+                    token=None,
                     # *deprecated* use check parameter
                     script=None,
                     interval=None,
@@ -725,6 +737,10 @@ class Consul(object):
 
                 Optionally, a *service_id* can be specified to associate a
                 registered check with an existing service.
+
+                *token* is an optional `ACL token`_ to apply to this request.
+                Note this call will return successful even if the token doesn't
+                have permissions to register this check.
 
                 *script*, *interval*, *ttl*, *http*, and *timeout* arguments
                 are deprecated. use *check* instead.
@@ -754,9 +770,15 @@ class Consul(object):
                 if service_id:
                     payload['serviceid'] = service_id
 
+                params = {}
+                token = token or self.agent.token
+                if token:
+                    params['token'] = token
+
                 return self.agent.http.put(
                     lambda x: x.code == 200,
                     '/v1/agent/check/register',
+                    params=params,
                     data=json.dumps(payload))
 
             def deregister(self, check_id):

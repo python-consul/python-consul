@@ -1,6 +1,14 @@
 Change log
 ==========
 
+0.4.7
+------
+
+Features
+~~~~~~~~
+
+* Add ACL token support to agent.service.register and agent.check.register
+
 0.4.6
 ------
 

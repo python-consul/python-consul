@@ -2,6 +2,7 @@ import collections
 import logging
 import base64
 import json
+import os
 
 import six
 
@@ -159,6 +160,8 @@ class Consul(object):
 
         # TODO: Status
 
+        if os.getenv('CONSUL_HTTP_ADDR'):
+            host, port = os.getenv('CONSUL_HTTP_ADDR').split(':')
         self.http = self.connect(host, port, scheme, verify)
         self.token = token
         self.scheme = scheme

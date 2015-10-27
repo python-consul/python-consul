@@ -164,6 +164,8 @@ class Consul(object):
             host, port = os.getenv('CONSUL_HTTP_ADDR').split(':')
         if os.getenv('CONSUL_HTTP_SSL') != None:
             scheme = 'https' if os.getenv('CONSUL_HTTP_SSL') else 'http'
+        if os.getenv('CONSUL_HTTP_SSL_VERIFY') != None:
+            verify = os.getenv('CONSUL_HTTP_SSL_VERIFY')
 
         self.http = self.connect(host, port, scheme, verify)
         self.token = os.getenv('CONSUL_HTTP_TOKEN', token)

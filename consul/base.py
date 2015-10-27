@@ -162,8 +162,9 @@ class Consul(object):
 
         if os.getenv('CONSUL_HTTP_ADDR'):
             host, port = os.getenv('CONSUL_HTTP_ADDR').split(':')
+
         self.http = self.connect(host, port, scheme, verify)
-        self.token = token
+        self.token = os.getenv('CONSUL_HTTP_TOKEN', token)
         self.scheme = scheme
         self.dc = dc
         assert consistency in ('default', 'consistent', 'stale'), \

@@ -55,6 +55,20 @@ class Check(object):
         return ret
 
     @classmethod
+    def tcp(klass, host, port, interval, timeout=None):
+        """
+        Attempt to establish a tcp connection to the specified *host* and
+        *port* at a specified *interval* with optional *timeout*
+        """
+        ret = {
+            'tcp': '{host:s}:{port:d}'.format(host=host, port=port),
+            'interval': interval
+        }
+        if timeout:
+            ret['timeout'] = timeout
+        return ret
+
+    @classmethod
     def ttl(klass, ttl):
         """
         Set check to be marked as critical after *ttl* (e.g. "10s") unless the

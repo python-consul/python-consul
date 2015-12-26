@@ -653,7 +653,8 @@ class Consul(object):
                 provided.
 
                 An optional health *check* can be created for this service is
-                one of `Check.script`_, `Check.http`_, or `Check.ttl`_.
+                one of `Check.script`_, `Check.http`_, `Check.tcp`_,
+                `Check.ttl`_ or `Check.docker`_.
 
                 *token* is an optional `ACL token`_ to apply to this request.
                 Note this call will return successful even if the token doesn't
@@ -755,8 +756,8 @@ class Consul(object):
 
                 *name* is the name of the check.
 
-                *check* is one of `Check.script`_, `Check.http`_, or
-                `Check.ttl`_ and is required.
+                *check* is one of `Check.script`_, `Check.http`_, `Check.tcp`_
+                `Check.ttl`_ or `Check.docker`_ and is required.
 
                 If the optional *check_id* is not provided it is set to *name*.
                 *check_id* must be unique for this agent.

@@ -507,7 +507,6 @@ class Consul(object):
         takes on the burden of registering with the Catalog and performing
         anti-entropy to recover from outages.
         """
-        # TODO: join, force-leave
         def __init__(self, agent):
             self.agent = agent
             self.service = Consul.Agent.Service(agent)
@@ -589,6 +588,44 @@ class Consul(object):
                 lambda x: x.code == 200,
                 '/v1/agent/maintenance',
                 params=params)
+
+        def join(self, address, wan=False):
+            """
+            This endpoint instructs the agent to attempt to connect to a
+            given address.
+
+            *address* is the ip to connect to.
+
+            *wan* is either 'true' or 'false'. For agents running in server
+            mode, 'true' causes the agent to attempt to join using the WAN
+            pool. Default is 'false'.
+            """
+
+            params = {}
+
+            if wan:
+                params['wan'] = 1
+
+            return self.agent.http.get(
+                lambda x: x.code == 200,
+                '/v1/agent/join/%s' % address,
+                params=params)
+
+        def force_leave(self, node):
+            """
+            This endpoint instructs the agent to force a node into the left
+            state. If a node fails unexpectedly, then it will be in a failed
+            state. Once in the failed state, Consul will attempt to reconnect,
+            and the services and checks belonging to that node will not be
+            cleaned up. Forcing a node into the left state allows its old
+            entries to be removed.
+
+            *node* is the node to change state for.
+            """
+
+            return self.agent.http.get(
+                lambda x: x.code == 200,
+                '/v1/agent/force-leave/%s' % node)
 
         class Service(object):
             def __init__(self, agent):

@@ -77,6 +77,21 @@ class Check(object):
         return {'ttl': ttl}
 
     @classmethod
+    def docker(klass, container_id, shell, script, interval):
+        """
+        Invoke *script* packaged within a running docker container with
+        *container_id* at a specified specified *interval* on the configured
+        *shell* using the Docker Exec API
+        """
+        ret = {
+            'docker_container_id': container_id,
+            'shell': shell,
+            'script': script,
+            'interval': interval
+        }
+        return ret
+
+    @classmethod
     def _compat(
             self,
             script=None,

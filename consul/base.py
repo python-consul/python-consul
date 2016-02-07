@@ -149,6 +149,8 @@ def callback(
         else:
             data = response
         if one:
+            if data == []:
+                data = None
             if data is not None:
                 data = data[0]
         if map:

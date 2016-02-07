@@ -141,6 +141,9 @@ class TestConsul(object):
                 'foo': {
                     'Port': 0,
                     'ID': 'foo',
+                    'CreateIndex': 0,
+                    'ModifyIndex': 0,
+                    'EnableTagOverride': False,
                     'Service': 'foo',
                     'Tags': None,
                     'Address': ''}, }

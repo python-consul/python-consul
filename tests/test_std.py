@@ -92,9 +92,9 @@ class TestConsul(object):
         c.kv.put('foo/bar3', '3')
         index, data = c.kv.get('foo/', recurse=True)
         assert [x['Key'] for x in data] == [
-            'foo/bar1', 'foo/bar2', 'foo/bar3', 'foo/']
+            'foo/', 'foo/bar1', 'foo/bar2', 'foo/bar3']
         assert [x['Value'] for x in data] == [
-            six.b('1'), six.b('2'), six.b('3'), None]
+            None, six.b('1'), six.b('2'), six.b('3')]
 
     def test_kv_delete(self, consul_port):
         c = consul.Consul(port=consul_port)
@@ -135,7 +135,7 @@ class TestConsul(object):
 
         assert c.kv.put('foo', '1', acquire=s1) is True
         assert c.kv.put('foo', '2', acquire=s2) is False
-        assert c.kv.put('foo', '1', acquire=s1) is False
+        assert c.kv.put('foo', '1', acquire=s1) is True
         assert c.kv.put('foo', '1', release='foo') is False
         assert c.kv.put('foo', '2', release=s2) is False
         assert c.kv.put('foo', '2', release=s1) is True
@@ -346,7 +346,7 @@ class TestConsul(object):
 
     def test_agent_self(self, consul_port):
         c = consul.Consul(port=consul_port)
-        assert set(c.agent.self().keys()) == set(['Member', 'Config'])
+        assert set(c.agent.self().keys()) == set(['Member', 'Coord', 'Config'])
 
     def test_agent_services(self, consul_port):
         c = consul.Consul(port=consul_port)
@@ -519,7 +519,8 @@ class TestConsul(object):
 
         # check the nodes show for the /health/state/any endpoint
         index, nodes = c.health.state('any')
-        assert [node['ServiceID'] for node in nodes] == ['', 'foo:1', 'foo:2']
+        assert set([node['ServiceID'] for node in nodes]) == set(
+            ['', 'foo:1', 'foo:2'])
 
         # but that they aren't passing their health check
         index, nodes = c.health.state('passing')
@@ -533,14 +534,16 @@ class TestConsul(object):
 
         # both nodes are now available
         index, nodes = c.health.state('passing')
-        assert [node['ServiceID'] for node in nodes] == ['', 'foo:1', 'foo:2']
+        assert set([node['ServiceID'] for node in nodes]) == set(
+            ['', 'foo:1', 'foo:2'])
 
         # wait until the short ttl node fails
-        time.sleep(120/1000.0)
+        time.sleep(2200/1000.0)
 
         # only one node available
         index, nodes = c.health.state('passing')
-        assert [node['ServiceID'] for node in nodes] == ['', 'foo:1']
+        assert set([node['ServiceID'] for node in nodes]) == set(
+            ['', 'foo:1'])
 
         # ping the failed node's health check
         c.agent.check.ttl_pass('service:foo:2')
@@ -549,7 +552,8 @@ class TestConsul(object):
 
         # check both nodes are available
         index, nodes = c.health.state('passing')
-        assert [node['ServiceID'] for node in nodes] == ['', 'foo:1', 'foo:2']
+        assert set([node['ServiceID'] for node in nodes]) == set(
+            ['', 'foo:1', 'foo:2'])
 
         # deregister the nodes
         c.agent.service.deregister('foo:1')
@@ -603,7 +607,7 @@ class TestConsul(object):
         # session.info
         pytest.raises(
             consul.ConsulException, c.session.info, session_id, dc='dc2')
-        index, session = c.session.info('foo')
+        index, session = c.session.info('1'*36)
         assert session is None
         index, session = c.session.info(session_id)
         assert session['Name'] == 'my-session'
@@ -628,7 +632,7 @@ class TestConsul(object):
         s = c.session.create(behavior='delete', ttl=20)
 
         # attempt to renew an unknown session
-        pytest.raises(consul.NotFound, c.session.renew, 'foo')
+        pytest.raises(consul.NotFound, c.session.renew, '1'*36)
 
         session = c.session.renew(s)
         assert session['Behavior'] == 'delete'
@@ -646,7 +650,7 @@ class TestConsul(object):
     def test_acl_disabled(self, consul_port):
         c = consul.Consul(port=consul_port)
         pytest.raises(consul.ACLDisabled, c.acl.list)
-        pytest.raises(consul.ACLDisabled, c.acl.info, 'foo')
+        pytest.raises(consul.ACLDisabled, c.acl.info, '1'*36)
         pytest.raises(consul.ACLDisabled, c.acl.create)
         pytest.raises(consul.ACLDisabled, c.acl.update, 'foo')
         pytest.raises(consul.ACLDisabled, c.acl.clone, 'foo')
@@ -668,7 +672,7 @@ class TestConsul(object):
         assert set([x['ID'] for x in acls]) == \
             set(['anonymous', master_token])
 
-        assert c.acl.info('foo') is None
+        assert c.acl.info('1'*36) is None
         compare = [c.acl.info(master_token), c.acl.info('anonymous')]
         compare.sort(key=operator.itemgetter('ID'))
         assert acls == compare

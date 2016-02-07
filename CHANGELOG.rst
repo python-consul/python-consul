@@ -1,6 +1,23 @@
 Change log
 ==========
 
+0.6.0
+------
+
+Features
+~~~~~~~~
+
+* Add support for the new TCP and Docker health checks (thanks @abn)
+* Add support for join and force-leave (thanks @abn)
+* Use standard consul environment variables to override configuration (thanks
+  @amayausky)
+
+Maintenance
+~~~~~~~~~~~
+
+* Test binaries updated to Consul 0.6.3
+* Tweaks to fix small updates to Consul's API
+
 0.4.7
 ------
 

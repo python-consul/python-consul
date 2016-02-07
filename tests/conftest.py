@@ -14,6 +14,8 @@ import requests
 import pytest
 import py
 
+# configure plugins
+pytest_plugins = "pytest_twisted"
 
 collect_ignore = []
 if sys.version_info[0] < 3:

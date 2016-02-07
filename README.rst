@@ -48,5 +48,5 @@ Status
 ------
 
 There's a few API endpoints still to go to expose all features available in
-Consul v0.5.0. If you need an endpoint that's not in the documentation, just
+Consul v0.6.0. If you need an endpoint that's not in the documentation, just
 open an issue and I'll try and add it straight away.

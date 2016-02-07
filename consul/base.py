@@ -55,12 +55,41 @@ class Check(object):
         return ret
 
     @classmethod
+    def tcp(klass, host, port, interval, timeout=None):
+        """
+        Attempt to establish a tcp connection to the specified *host* and
+        *port* at a specified *interval* with optional *timeout*
+        """
+        ret = {
+            'tcp': '{host:s}:{port:d}'.format(host=host, port=port),
+            'interval': interval
+        }
+        if timeout:
+            ret['timeout'] = timeout
+        return ret
+
+    @classmethod
     def ttl(klass, ttl):
         """
         Set check to be marked as critical after *ttl* (e.g. "10s") unless the
         check is periodically marked as passing.
         """
         return {'ttl': ttl}
+
+    @classmethod
+    def docker(klass, container_id, shell, script, interval):
+        """
+        Invoke *script* packaged within a running docker container with
+        *container_id* at a specified specified *interval* on the configured
+        *shell* using the Docker Exec API
+        """
+        ret = {
+            'docker_container_id': container_id,
+            'shell': shell,
+            'script': script,
+            'interval': interval
+        }
+        return ret
 
     @classmethod
     def _compat(
@@ -624,7 +653,8 @@ class Consul(object):
                 provided.
 
                 An optional health *check* can be created for this service is
-                one of `Check.script`_, `Check.http`_, or `Check.ttl`_.
+                one of `Check.script`_, `Check.http`_, `Check.tcp`_,
+                `Check.ttl`_ or `Check.docker`_.
 
                 *token* is an optional `ACL token`_ to apply to this request.
                 Note this call will return successful even if the token doesn't
@@ -726,8 +756,8 @@ class Consul(object):
 
                 *name* is the name of the check.
 
-                *check* is one of `Check.script`_, `Check.http`_, or
-                `Check.ttl`_ and is required.
+                *check* is one of `Check.script`_, `Check.http`_, `Check.tcp`_
+                `Check.ttl`_ or `Check.docker`_ and is required.
 
                 If the optional *check_id* is not provided it is set to *name*.
                 *check_id* must be unique for this agent.

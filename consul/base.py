@@ -2,6 +2,7 @@ import collections
 import logging
 import base64
 import json
+import os
 
 import six
 
@@ -190,8 +191,16 @@ class Consul(object):
 
         # TODO: Status
 
+        if os.getenv('CONSUL_HTTP_ADDR'):
+            host, port = os.getenv('CONSUL_HTTP_ADDR').split(':')
+        use_ssl = os.getenv('CONSUL_HTTP_SSL')
+        if use_ssl is not None:
+            scheme = 'https' if use_ssl == 'true' else 'http'
+        if os.getenv('CONSUL_HTTP_SSL_VERIFY') is not None:
+            verify = os.getenv('CONSUL_HTTP_SSL_VERIFY') == 'true'
+
         self.http = self.connect(host, port, scheme, verify)
-        self.token = token
+        self.token = os.getenv('CONSUL_HTTP_TOKEN', token)
         self.scheme = scheme
         self.dc = dc
         assert consistency in ('default', 'consistent', 'stale'), \

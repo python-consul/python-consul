@@ -50,3 +50,17 @@ Status
 There's a few API endpoints still to go to expose all features available in
 Consul v0.6.0. If you need an endpoint that's not in the documentation, just
 open an issue and I'll try and add it straight away.
+
+Releases
+--------
+
+.. code:: bash
+
+    # release the current version, eg: 0.6.1-dev -> 0.6.1
+    bumpversion release
+
+    # prepare the next patch (z-stream) version, eg: 0.6.1 -> 0.6.2-dev
+    bumpversion --no-tag patch
+
+    # else, prepare the next minor (y-stream) version, eg: 0.6.1 -> 0.7.0-dev
+    bumpversion --no-tag minor

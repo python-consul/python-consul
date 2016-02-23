@@ -1233,7 +1233,8 @@ class Consul(object):
                     wait=None,
                     passing=None,
                     tag=None,
-                    dc=None):
+                    dc=None,
+                    token=None):
             """
             Returns a tuple of (*index*, *nodes*)
 
@@ -1253,6 +1254,8 @@ class Consul(object):
 
             *dc* is the datacenter of the node and defaults to this agents
             datacenter.
+
+            *token* is an optional `ACL token`_ to apply to this request.
             """
             params = {}
             if index:
@@ -1266,6 +1269,9 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
+            token = token or self.agent.token
+            if token:
+                params['token'] = token
 
             def callback(response):
                 data = json.loads(response.body)
@@ -1275,7 +1281,7 @@ class Consul(object):
                 callback,
                 '/v1/health/service/%s' % service, params=params)
 
-        def checks(self, service, index=None, wait=None, dc=None):
+        def checks(self, service, index=None, wait=None, dc=None, token=None):
             """
             Returns a tuple of (*index*, *checks*) with *checks* being the
             checks associated with the service.
@@ -1292,6 +1298,7 @@ class Consul(object):
             *dc* is the datacenter of the node and defaults to this agents
             datacenter.
 
+            *token* is an optional `ACL token`_ to apply to this request.
             """
             params = {}
             if index:
@@ -1301,6 +1308,9 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
+            token = token or self.agent.token
+            if token:
+                params['token'] = token
 
             def callback(response):
                 data = json.loads(response.body)
@@ -1310,7 +1320,7 @@ class Consul(object):
                 callback,
                 '/v1/health/checks/%s' % service, params=params)
 
-        def state(self, name, index=None, wait=None, dc=None):
+        def state(self, name, index=None, wait=None, dc=None, token=None):
             """
             Returns a tuple of (*index*, *nodes*)
 
@@ -1330,6 +1340,8 @@ class Consul(object):
             *dc* is the datacenter of the node and defaults to this agents
             datacenter.
 
+            *token* is an optional `ACL token`_ to apply to this request.
+
             *nodes* are the nodes providing the given service.
             """
             assert name in ['any', 'unknown', 'passing', 'warning', 'critical']
@@ -1341,6 +1353,9 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
+            token = token or self.agent.token
+            if token:
+                params['token'] = token
 
             def callback(response):
                 data = json.loads(response.body)
@@ -1350,7 +1365,7 @@ class Consul(object):
                 callback,
                 '/v1/health/state/%s' % name, params=params)
 
-        def node(self, node, index=None, wait=None, dc=None):
+        def node(self, node, index=None, wait=None, dc=None, token=None):
             """
             Returns a tuple of (*index*, *checks*)
 
@@ -1364,6 +1379,8 @@ class Consul(object):
             *dc* is the datacenter of the node and defaults to this agents
             datacenter.
 
+            *token* is an optional `ACL token`_ to apply to this request.
+
             *nodes* are the nodes providing the given service.
             """
             params = {}
@@ -1374,6 +1391,9 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
+            token = token or self.agent.token
+            if token:
+                params['token'] = token
 
             def callback(response):
                 data = json.loads(response.body)

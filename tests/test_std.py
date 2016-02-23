@@ -725,9 +725,11 @@ class TestConsul(object):
         # test token pass through for service registration
         c.agent.service.register("bar-1", token=token)
         c.agent.service.register("foo-1", token=token)
-        index, data = c.health.service('foo-1')
-        assert data
-        index, data = c.health.service('bar-1')
+        index, data = c.health.service('foo-1', token=token)
+        assert data[0]['Service']['ID'] == "foo-1"
+        index, data = c.health.checks('foo-1', token=token)
+        assert data == []
+        index, data = c.health.service('bar-1', token=token)
         assert not data
 
         # clean up

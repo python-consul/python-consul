@@ -19,6 +19,7 @@ class HTTPClient(object):
         self.session = requests.session()
 
     def response(self, response):
+        response.encoding = 'utf-8'
         return base.Response(
             response.status_code, response.headers, response.text)
 

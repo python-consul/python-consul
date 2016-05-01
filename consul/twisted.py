@@ -166,7 +166,7 @@ class ConsulHTTPClient(HTTPClient):
         self.base_uri = '%s://%s:%s' % (self.scheme, self.host, self.port)
         self.verify = SSLSpec.CERT_NONE if not verify else SSLSpec.CERT_REQUIRED
         agent = Agent(reactor=reactor, pool=HTTPConnectionPool(reactor),
-                      contextFactory=AsyncClientSSLContextFactory(self.verify))
+                      contextFactory=AsyncClientSSLContextFactory(verify=self.verify))
         super(ConsulHTTPClient, self).__init__(agent)
 
     def uri(self, path, params=None):

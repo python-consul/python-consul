@@ -61,7 +61,7 @@ setup(
     extras_require={
         'tornado': ['tornado'],
         'asyncio': ['aiohttp'],
-        'twisted': ['twisted'],
+        'twisted': ['twisted', 'treq'],
     },
     tests_require=['pytest'],
     cmdclass={'test': PyTest,

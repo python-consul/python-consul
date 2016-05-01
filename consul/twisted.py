@@ -190,8 +190,13 @@ class ConsulHTTPClient(HTTPClient):
 
     @inlineCallbacks
     def _get_resp(self, response):
+        # Merge multiple header values as per RFC2616
+        # http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
+        headers = {
+            k: ','.join(v)
+            for k, v in dict(response.headers.getAllRawHeaders()).items()
+        }
         body = yield response.text(encoding='utf-8')
-        headers = dict(response.headers.getAllRawHeaders())
         returnValue((response.code, headers, body))
 
     @inlineCallbacks

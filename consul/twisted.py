@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from twisted.internet import reactor
 from twisted.internet.defer import inlineCallbacks, returnValue, log
+from twisted.internet.error import ConnectError
 from twisted.internet.ssl import ClientContextFactory
 from twisted.web.client import Agent, HTTPConnectionPool, SSL
 
@@ -11,6 +12,8 @@ from consul import base
 from six.moves import urllib
 
 from treq.client import HTTPClient
+
+from consul.base import ConsulException
 
 __all__ = ['Consul']
 
@@ -74,7 +77,7 @@ class AsyncClientSSLContextFactory(ClientContextFactory):
     validSSLOptions = set([x for x in dir(SSL) if x.startswith('OP_')])
 
     _ssl_to_openssl_verify_mapping = {
-        SSLSpec.CERT_NONE    : SSL.VERIFY_NONE,
+        SSLSpec.CERT_NONE: SSL.VERIFY_NONE,
         SSLSpec.CERT_OPTIONAL: SSL.VERIFY_PEER,
         SSLSpec.CERT_REQUIRED: SSL.VERIFY_PEER + SSL.VERIFY_FAIL_IF_NO_PEER_CERT,
     }
@@ -182,25 +185,31 @@ class ConsulHTTPClient(HTTPClient):
         returnValue((response.code, headers, body))
 
     @inlineCallbacks
+    def request(self, callback, method, url, **kwargs):
+        try:
+            response = yield super(ConsulHTTPClient, self).request(method, url, **kwargs)
+            parsed = yield self._get_resp(response)
+            returnValue(callback(self.response(*parsed)))
+        except ConnectError as e:
+            raise ConsulException('{}: {}'.format(e.__class__.__name__, e.message))
+
+    @inlineCallbacks
     def get(self, callback, path, params=None):
         uri = self.uri(path, params)
-        response = yield super(ConsulHTTPClient, self).get(uri)
-        parsed = yield self._get_resp(response)
-        returnValue(callback(self.response(*parsed)))
+        response = yield self.request(callback, 'get', uri, params=params)
+        returnValue(response)
 
     @inlineCallbacks
     def put(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
-        response = yield super(ConsulHTTPClient, self).put(uri, data=data)
-        parsed = yield self._get_resp(response)
-        returnValue(callback(self.response(*parsed)))
+        response = yield self.request(callback, 'put', uri, data=data)
+        returnValue(response)
 
     @inlineCallbacks
     def delete(self, callback, path, params=None):
         uri = self.uri(path, params)
-        response = yield super(ConsulHTTPClient, self).delete(uri)
-        parsed = yield self._get_resp(response)
-        returnValue(callback(self.response(*parsed)))
+        response = yield self.request(callback, 'delete', uri, params=params)
+        returnValue(response)
 
 
 class Consul(base.Consul):

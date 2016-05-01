@@ -1,5 +1,10 @@
 from __future__ import absolute_import
 
+from ssl import CERT_REQUIRED, CERT_OPTIONAL, CERT_NONE
+
+# noinspection PyUnresolvedReferences
+from six.moves import urllib
+from treq.client import HTTPClient
 from twisted.internet import reactor
 from twisted.internet.defer import inlineCallbacks, returnValue, log
 from twisted.internet.error import ConnectError
@@ -7,25 +12,17 @@ from twisted.internet.ssl import ClientContextFactory
 from twisted.web.client import Agent, HTTPConnectionPool, SSL
 
 from consul import base
-
-# noinspection PyUnresolvedReferences
-from six.moves import urllib
-
-from treq.client import HTTPClient
-
 from consul.base import ConsulException
 
 __all__ = ['Consul']
-
-from ssl import CERT_REQUIRED, CERT_OPTIONAL, CERT_NONE
 
 try:
     from ssl import _DEFAULT_CIPHERS as DEFAULT_CIPHERS
 except ImportError:
     DEFAULT_CIPHERS = (
-        'ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+HIGH:'
-        'DH+HIGH:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+HIGH:RSA+3DES:!aNULL:'
-        '!eNULL:!MD5'
+        'ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:'
+        'ECDH+HIGH:DH+HIGH:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+HIGH:'
+        'RSA+3DES:!aNULL:!eNULL:!MD5'
     )
 
 
@@ -49,8 +46,11 @@ class SSLSpec(object):
     OP_SINGLE_DH_USE = 'OP_SINGLE_DH_USE'
     OP_SINGLE_ECDH_USE = 'OP_SINGLE_ECDH_USE'
 
-    SSL_OPTIONS = {OP_CIPHER_SERVER_PREFERENCE, OP_NO_COMPRESSION, OP_NO_SSLv2, OP_NO_SSLv3, OP_NO_TLSv1, OP_NO_TLSv1_1,
-                   OP_NO_TLSv1_2, OP_SINGLE_DH_USE, OP_SINGLE_ECDH_USE}
+    SSL_OPTIONS = {
+        OP_CIPHER_SERVER_PREFERENCE, OP_NO_COMPRESSION, OP_NO_SSLv2,
+        OP_NO_SSLv3, OP_NO_TLSv1, OP_NO_TLSv1_1, OP_NO_TLSv1_2,
+        OP_SINGLE_DH_USE, OP_SINGLE_ECDH_USE
+    }
 
     DEFAULT_SSL_OPTIONS = [
         OP_NO_SSLv2,
@@ -79,11 +79,13 @@ class AsyncClientSSLContextFactory(ClientContextFactory):
     _ssl_to_openssl_verify_mapping = {
         SSLSpec.CERT_NONE: SSL.VERIFY_NONE,
         SSLSpec.CERT_OPTIONAL: SSL.VERIFY_PEER,
-        SSLSpec.CERT_REQUIRED: SSL.VERIFY_PEER + SSL.VERIFY_FAIL_IF_NO_PEER_CERT,
+        SSLSpec.CERT_REQUIRED:
+            SSL.VERIFY_PEER + SSL.VERIFY_FAIL_IF_NO_PEER_CERT,
     }
 
-    def __init__(self, method=SSLSpec.SSLv23, verify=SSLSpec.CERT_REQUIRED, options=None, ciphers=None,
-                 certFile=None, keyFile=None, keyFilePassword=None, caFile=None, caPath=None):
+    def __init__(self, method=SSLSpec.SSLv23, verify=SSLSpec.CERT_REQUIRED,
+                 options=None, ciphers=None, certFile=None, keyFile=None,
+                 keyFilePassword=None, caFile=None, caPath=None):
         self.method = self._parseSSLMethod(method)
         self.options = self._parseSSLOptions(options)
         self.verify = verify
@@ -99,18 +101,17 @@ class AsyncClientSSLContextFactory(ClientContextFactory):
             if method in self.validSSLVersionInt:
                 return method
             else:
-                raise ValueError('Invalid sslVersion {}, Valid values for sslVersion are {}'.format(
-                    method, self.validSSLVersionStrings
-                )
+                raise ValueError(
+                    'Invalid sslVersion {}, Valid values for sslVersion are {}'
+                    .format(method, self.validSSLVersionStrings)
                 )
         else:
             try:
                 return getattr(SSL, "{}_METHOD".format(method))
             except AttributeError:
                 raise ValueError(
-                    'Invalid sslVersion (method) "{}". Valid versions are {}'.format(
-                        method, self.validSSLVersionStrings
-                    )
+                    'Invalid sslVersion (method) "{}". Valid versions are {}'
+                    .format(method, self.validSSLVersionStrings)
                 )
 
     def _parseSSLOptions(self, options):
@@ -120,7 +121,10 @@ class AsyncClientSSLContextFactory(ClientContextFactory):
                 try:
                     result.append(getattr(SSL, option))
                 except AttributeError:
-                    log.debug('Invalid SSL option for this system: "{}", ignoring...'.format(option))
+                    log.debug(
+                        'Invalid SSL option for this system: "{}", ignoring...'
+                        .format(option)
+                    )
         return result
 
     @staticmethod
@@ -139,7 +143,8 @@ class AsyncClientSSLContextFactory(ClientContextFactory):
             ctx = self._contextFactory(self.method)
         except AttributeError:
             raise ValueError(
-                'Invalid sslVersion (method). Valid versions are {}'.format(self.validSSLVersionStrings)
+                'Invalid sslVersion (method). Valid versions are {}'.format(
+                    self.validSSLVersionStrings)
             )
         for op in self.options:
             ctx.set_options(op)
@@ -148,25 +153,30 @@ class AsyncClientSSLContextFactory(ClientContextFactory):
         if self.ciphers is not None:
             ctx.set_cipher_list(self.ciphers)
         if self.certFile is not None:
-            self.keyFile = self.keyFile if self.keyFile is not None else self.certFile
+            self.keyFile = self.keyFile \
+                if self.keyFile is not None else self.certFile
             ctx.use_certificate_file(self.certFile)
         if self.keyFile is not None:
             ctx.use_privatekey_file(self.keyFile)
         if self.keyFilePassword is not None:
             ctx.set_passwd_cb(self._getKeyPassword)
-        ctx.set_verify(self._ssl_to_openssl_verify_mapping[self.verify], self._verifyCallback)
+        ctx.set_verify(self._ssl_to_openssl_verify_mapping[self.verify],
+                       self._verifyCallback)
         return ctx
 
 
 class ConsulHTTPClient(HTTPClient):
-    def __init__(self, host='127.0.0.1', port=8500, scheme='http', verify=True):
+    def __init__(self, host='127.0.0.1', port=8500, scheme='http',
+                 verify=True):
         self.host = host
         self.port = port
         self.scheme = scheme
         self.base_uri = '%s://%s:%s' % (self.scheme, self.host, self.port)
-        self.verify = SSLSpec.CERT_NONE if not verify else SSLSpec.CERT_REQUIRED
+        self.verify = SSLSpec.CERT_NONE \
+            if not verify else SSLSpec.CERT_REQUIRED
         agent = Agent(reactor=reactor, pool=HTTPConnectionPool(reactor),
-                      contextFactory=AsyncClientSSLContextFactory(verify=self.verify))
+                      contextFactory=AsyncClientSSLContextFactory(
+                          verify=self.verify))
         super(ConsulHTTPClient, self).__init__(agent)
 
     def uri(self, path, params=None):
@@ -187,11 +197,13 @@ class ConsulHTTPClient(HTTPClient):
     @inlineCallbacks
     def request(self, callback, method, url, **kwargs):
         try:
-            response = yield super(ConsulHTTPClient, self).request(method, url, **kwargs)
+            response = yield super(ConsulHTTPClient, self).request(method, url,
+                                                                   **kwargs)
             parsed = yield self._get_resp(response)
             returnValue(callback(self.response(*parsed)))
         except ConnectError as e:
-            raise ConsulException('{}: {}'.format(e.__class__.__name__, e.message))
+            raise ConsulException(
+                '{}: {}'.format(e.__class__.__name__, e.message))
 
     @inlineCallbacks
     def get(self, callback, path, params=None):

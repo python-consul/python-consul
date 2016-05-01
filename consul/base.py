@@ -30,6 +30,10 @@ class Timeout(ConsulException):
     pass
 
 
+class BadRequest(ConsulException):
+    pass
+
+
 #
 # Convenience to define checks
 
@@ -139,6 +143,8 @@ def callback(
     def cb(response):
         if response.code >= 500 and response.code < 600:
             raise ConsulException("%d %s" % (response.code, response.body))
+        if response.code == 400:
+            raise BadRequest('%d %s' % (response.code, response.body))
         if response.code == 403:
             raise ACLPermissionDenied(response.body)
         if response.code == 404 and not allow_404:

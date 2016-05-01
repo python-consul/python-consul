@@ -63,7 +63,7 @@ setup(
         'asyncio': ['aiohttp'],
         'twisted': ['twisted', 'treq'],
     },
-    tests_require=['pytest'],
+    tests_require=['pytest', 'pytest-twisted'],
     cmdclass={'test': PyTest,
               'install': Install},
     classifiers=[

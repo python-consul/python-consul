@@ -4,7 +4,7 @@ from ssl import CERT_REQUIRED, CERT_OPTIONAL, CERT_NONE
 
 # noinspection PyUnresolvedReferences
 from six.moves import urllib
-from treq.client import HTTPClient
+from treq.client import HTTPClient as TreqHTTPClient
 from twisted.internet import reactor
 from twisted.internet.defer import inlineCallbacks, returnValue, log
 from twisted.internet.error import ConnectError
@@ -165,7 +165,7 @@ class AsyncClientSSLContextFactory(ClientContextFactory):
         return ctx
 
 
-class ConsulHTTPClient(HTTPClient):
+class HTTPClient(object):
     def __init__(self, host='127.0.0.1', port=8500, scheme='http',
                  verify=True):
         self.host = host
@@ -177,7 +177,7 @@ class ConsulHTTPClient(HTTPClient):
         agent = Agent(reactor=reactor, pool=HTTPConnectionPool(reactor),
                       contextFactory=AsyncClientSSLContextFactory(
                           verify=self.verify))
-        super(ConsulHTTPClient, self).__init__(agent)
+        self.client = TreqHTTPClient(agent)
 
     def uri(self, path, params=None):
         uri = self.base_uri + path
@@ -202,8 +202,7 @@ class ConsulHTTPClient(HTTPClient):
     @inlineCallbacks
     def request(self, callback, method, url, **kwargs):
         try:
-            response = yield super(ConsulHTTPClient, self).request(method, url,
-                                                                   **kwargs)
+            response = yield self.client.request(method, url, **kwargs)
             parsed = yield self._get_resp(response)
             returnValue(callback(self.response(*parsed)))
         except ConnectError as e:
@@ -231,4 +230,4 @@ class ConsulHTTPClient(HTTPClient):
 
 class Consul(base.Consul):
     def connect(self, host, port, scheme, verify=True):
-        return ConsulHTTPClient(host, port, scheme, verify=verify)
+        return HTTPClient(host, port, scheme, verify=verify)

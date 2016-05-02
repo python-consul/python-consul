@@ -218,6 +218,9 @@ class HTTPClient(object):
     @inlineCallbacks
     def put(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
+        # handle unicode data failure in the zope interface
+        # twisted.web.iweb.IBodyProducer
+        data = str(data)
         response = yield self.request(callback, 'put', uri, data=data)
         returnValue(response)
 

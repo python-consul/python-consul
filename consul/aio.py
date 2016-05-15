@@ -67,6 +67,10 @@ class HTTPClient:
         uri = self._uri(path, params)
         return self._request(callback, 'DELETE', uri)
 
+    def post(self, callback, path, params=None, data=''):
+        uri = self._uri(path, params)
+        return self._request(callback, 'POST', uri, data=data)
+
     def close(self):
         self._connector.close()
 

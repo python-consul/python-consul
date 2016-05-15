@@ -2029,7 +2029,8 @@ class Consul(object):
                 params['near'] = near
             if limit:
                 params['limit'] = limit
-            return self.agent.http.get(callback(is_json=True), '/v1/query/%s/execute'
+            return self.agent.http.get(callback(is_json=True),
+                                       '/v1/query/%s/execute'
                                        % query, params=params)
 
         def explain(self,
@@ -2042,5 +2043,6 @@ class Consul(object):
                 params['token'] = token
             if dc:
                 params['dc'] = dc
-            return self.agent.http.get(callback(is_json=True), '/v1/query/%s/explain'
+            return self.agent.http.get(callback(is_json=True),
+                                       '/v1/query/%s/explain'
                                        % query, params=params)

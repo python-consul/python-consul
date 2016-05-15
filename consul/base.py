@@ -1846,9 +1846,9 @@ class Consul(object):
 
         def list(self, dc=None, token=None):
             """
-            Lists all the active  queries. This is a privileged endpoint, therefore
-            you will only be able to get the prepared queries which the token supplied
-            has read privileges to.
+            Lists all the active  queries. This is a privileged endpoint,
+            therefore you will only be able to get the prepared queries
+            which the token supplied has read privileges to.
             """
             params = {}
             token = token or self.agent.token
@@ -1881,9 +1881,10 @@ class Consul(object):
 
             *name* is an optional name for this query.
 
-            *regexp* is optional for template this option is only supported in
-            Consul 0.6.4 or later. The only option for type is name_prefix_match
-            so if you want a query template with no regexp enter an empty string
+            *regexp* is optional for template this option is only supported
+            in Consul 0.6.4 or later. The only option for type is
+            name_prefix_match so if you want a query template with no regexp
+            enter an empty string
 
             for more information about query
             https://www.consul.io/docs/agent/http/query.html
@@ -1900,7 +1901,8 @@ class Consul(object):
             if token:
                 data['token'] = token
             if regexp:
-                data['template'] = {'type': 'name_prefix_match', 'regexp': regexp}
+                data['template'] = {'type': 'name_prefix_match',
+                                    'regexp': regexp}
             service_body = {}
             service_body['service'] = service
             service_body['failover'] = {}
@@ -1916,7 +1918,8 @@ class Consul(object):
                 data['dns'] = {'ttl': ttl}
             data['service'] = service_body
             data = json.dumps(data)
-            return self.agent.http.post(callback(is_json=True), '/v1/query', params=params, data=data)
+            return self.agent.http.post(callback(is_json=True), '/v1/query',
+                                        params=params, data=data)
 
         def update(self, query_id,
                    service=None,
@@ -1949,7 +1952,8 @@ class Consul(object):
             if token:
                 data['token'] = token
             if regexp:
-                data['template'] = {'type': 'name_prefix_match', 'regexp': regexp}
+                data['template'] = {'type': 'name_prefix_match',
+                                    'regexp': regexp}
             service_body = {}
             service_body['service'] = service
             service_body['failover'] = {}
@@ -1965,7 +1969,8 @@ class Consul(object):
                 data['dns'] = {'ttl': ttl}
             data['service'] = service_body
             data = json.dumps(data)
-            return self.agent.http.put(callback(is_200=True), '/v1/query/%s' % query_id, params=params, data=data)
+            return self.agent.http.put(callback(is_200=True), '/v1/query/%s'
+                                       % query_id, params=params, data=data)
 
         def get(self,
                 query_id,
@@ -1983,7 +1988,8 @@ class Consul(object):
                 params['token'] = token
             if dc:
                 params['dc'] = dc
-            return self.agent.http.get(callback(is_json=True), '/v1/query/%s' % query_id, params=params)
+            return self.agent.http.get(callback(is_json=True), '/v1/query/%s'
+                                       % query_id, params=params)
 
         def delete(self, query_id, token=None, dc=None):
             """
@@ -1998,7 +2004,8 @@ class Consul(object):
                 params['token'] = token
             if dc:
                 params['dc'] = dc
-            return self.agent.http.delete(callback(is_200=True), '/v1/query/%s' % query_id, params=params)
+            return self.agent.http.delete(callback(is_200=True), '/v1/query/%s'
+                                          % query_id, params=params)
 
         def execute(self,
                     query,
@@ -2022,7 +2029,8 @@ class Consul(object):
                 params['near'] = near
             if limit:
                 params['limit'] = limit
-            return self.agent.http.get(callback(is_json=True), '/v1/query/%s/execute' % query, params=params)
+            return self.agent.http.get(callback(is_json=True), '/v1/query/%s/execute'
+                                       % query, params=params)
 
         def explain(self,
                     query,
@@ -2034,4 +2042,5 @@ class Consul(object):
                 params['token'] = token
             if dc:
                 params['dc'] = dc
-            return self.agent.http.get(callback(is_json=True), '/v1/query/%s/explain' % query, params=params)
+            return self.agent.http.get(callback(is_json=True), '/v1/query/%s/explain'
+                                       % query, params=params)

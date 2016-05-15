@@ -57,6 +57,12 @@ class HTTPClient(object):
                                          validate_cert=self.verify)
         return self._request(callback, request)
 
+    def post(self, callback, path, params=None, data=''):
+        uri = self.uri(path, params)
+        request = httpclient.HTTPRequest(uri, method='POST', body=data,
+                                         validate_cert=self.verify)
+        return self._request(callback, request)
+
 
 class Consul(base.Consul):
     def connect(self, host, port, scheme, verify=True):

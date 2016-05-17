@@ -1,11 +1,9 @@
-import collections
-import logging
 import base64
+import collections
 import json
+import logging
 import os
-
 import six
-
 
 log = logging.getLogger(__name__)
 
@@ -171,7 +169,8 @@ class Consul(object):
             scheme='http',
             consistency='default',
             dc=None,
-            verify=True):
+            verify=True,
+            timeout=None):
         """
         *token* is an optional `ACL token`_. If supplied it will be used by
         default for all requests made with this client session. It's still
@@ -199,7 +198,7 @@ class Consul(object):
         if os.getenv('CONSUL_HTTP_SSL_VERIFY') is not None:
             verify = os.getenv('CONSUL_HTTP_SSL_VERIFY') == 'true'
 
-        self.http = self.connect(host, port, scheme, verify)
+        self.http = self.connect(host, port, scheme, verify, timeout=timeout)
         self.token = os.getenv('CONSUL_HTTP_TOKEN', token)
         self.scheme = scheme
         self.dc = dc

@@ -840,17 +840,16 @@ class TestConsul(object):
         c = consul.Consul(port=consul_port)
 
         # check that query list is empty
-        agent_self = c.agent.self()
-        queries = agent_self.query.list()
+        queries = c.query.list()
 
         assert queries == []
 
         # create a query
-        query = agent_self.query.create('foo')
+        query = c.query.create('foo')
 
         assert query['ID']
 
-        assert agent_self.query.explain(query['ID'])['Query']
+        assert c.query.explain(query['ID'])['Query']
 
         # check deletion of query
-        assert agent_self.query.delete(query['ID'])
+        assert c.query.delete(query['ID'])

@@ -838,8 +838,6 @@ class TestConsul(object):
     def test_query(self, consul_port):
 
         c = consul.Consul(port=consul_port)
-        c.agent.service.register(
-            'foo', service_id='foo:1', check=Check.ttl('10s'))
         # check that query list is empty
         queries = c.query.list()
 
@@ -854,4 +852,3 @@ class TestConsul(object):
 
         # check deletion of query
         assert c.query.delete(query['ID'])
-        c.agent.service.deregister('foo:1')

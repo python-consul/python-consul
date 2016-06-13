@@ -250,7 +250,7 @@ Consul.acl
 .. _Vanilla: https://github.com/cablehead/vanilla
 .. _gevent: http://www.gevent.org
 .. _Tornado: http://www.tornadoweb.org
-.. _gen.coroutine: http://tornado.readthedocs.org/en/latest/gen.html
+.. _gen.coroutine: https://tornado.readthedocs.io/en/latest/gen.html
 .. _asyncio.coroutine: https://docs.python.org/3/library/asyncio-task.html#coroutines
 .. _aiohttp: https://github.com/KeepSafe/aiohttp
 .. _asyncio: https://docs.python.org/3/library/asyncio.html

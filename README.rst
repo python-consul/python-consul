@@ -42,7 +42,7 @@ Installation
 .. |Coverage Status|
    image:: https://img.shields.io/coveralls/cablehead/python-consul.svg?style=flat-square
    :target: https://coveralls.io/r/cablehead/python-consul?branch=master
-.. _Read the Docs: http://python-consul.readthedocs.org/
+.. _Read the Docs: https://python-consul.readthedocs.io/
 
 Status
 ------

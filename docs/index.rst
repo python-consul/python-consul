@@ -170,6 +170,11 @@ Check
 
 .. autoclass:: consul.Check
 
+Check.docker
+++++++++++++
+
+.. automethod:: consul.Check.docker
+
 Check.script
 ++++++++++++
 
@@ -179,6 +184,11 @@ Check.http
 ++++++++++
 
 .. automethod:: consul.Check.http
+
+Check.tcp
++++++++++
+
+.. automethod:: consul.Check.tcp
 
 Check.ttl
 +++++++++
@@ -225,10 +235,6 @@ Consul.health
    :members:
    :undoc-members:
    :exclude-members: Check
-
-.. autoclass:: consul.base::Consul.Health.Check()
-   :members:
-   :undoc-members:
 
 Consul.session
 ++++++++++++++

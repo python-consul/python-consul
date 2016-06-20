@@ -44,6 +44,11 @@ class HTTPClient(object):
         return callback(self.response(
             self.session.delete(uri, verify=self.verify)))
 
+    def post(self, callback, path, params=None, data=''):
+        uri = self.uri(path, params)
+        return callback(self.response(
+            self.session.post(uri, data=data, verify=self.verify)))
+
 
 class Consul(base.Consul):
     def connect(self, host, port, scheme, verify=True):

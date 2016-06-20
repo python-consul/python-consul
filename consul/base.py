@@ -221,6 +221,7 @@ class Consul(object):
         self.session = Consul.Session(self)
         self.acl = Consul.ACL(self)
         self.status = Consul.Status(self)
+        self.query = Consul.Query(self)
 
     class Event(object):
         """
@@ -1864,3 +1865,210 @@ class Consul(object):
             """
             return self.agent.http.get(
                 lambda x: json.loads(x.body), '/v1/status/peers')
+
+    class Query(object):
+        def __init__(self, agent):
+            self.agent = agent
+
+        def list(self, dc=None, token=None):
+            """
+            Lists all the active  queries. This is a privileged endpoint,
+            therefore you will only be able to get the prepared queries
+            which the token supplied has read privileges to.
+            """
+            params = {}
+            token = token or self.agent.token
+            if token:
+                params['token'] = token
+            if dc:
+                params['dc'] = dc
+
+            return self.agent.http.get(
+                lambda x: json.loads(x.body), '/v1/query', params=params)
+
+        def create(self, service,
+                   name=None,
+                   dc=None,
+                   session=None,
+                   token=None,
+                   nearestn=None,
+                   datacenters=None,
+                   onlypassing=None,
+                   tags=None,
+                   ttl=None,
+                   regexp=None):
+            """
+            Creates a new query. This is a privileged endpoint, and
+            requires a management token for a certain query name.*token* will
+            override this client's default token.
+
+            *service* is mandatory for new query. represent service name to
+            query.
+
+            *name* is an optional name for this query.
+
+            *regexp* is optional for template this option is only supported
+            in Consul 0.6.4 or later. The only option for type is
+            name_prefix_match so if you want a query template with no regexp
+            enter an empty string
+
+            for more information about query
+            https://www.consul.io/docs/agent/http/query.html
+            """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            data = {}
+            if name:
+                data['name'] = name
+            if session:
+                data['session'] = session
+            token = token or self.agent.token
+            if token:
+                data['token'] = token
+            if regexp:
+                data['template'] = {'type': 'name_prefix_match',
+                                    'regexp': regexp}
+            service_body = {}
+            service_body['service'] = service
+            service_body['failover'] = {}
+            if nearestn:
+                service_body['failover']['nearestn'] = nearestn
+            if datacenters:
+                service_body['failover']['datacenters'] = datacenters
+            if onlypassing:
+                service_body['onlypassing'] = onlypassing
+            if tags:
+                service_body['tags'] = tags
+            if ttl:
+                data['dns'] = {'ttl': ttl}
+            data['service'] = service_body
+            data = json.dumps(data)
+            return self.agent.http.post(callback(is_json=True), '/v1/query',
+                                        params=params, data=data)
+
+        def update(self, query_id,
+                   service=None,
+                   name=None,
+                   dc=None,
+                   session=None,
+                   token=None,
+                   nearestn=None,
+                   datacenters=None,
+                   onlypassing=None,
+                   tags=None,
+                   ttl=None,
+                   regexp=None):
+            """
+            This endpoint will update a certain query
+
+            *query_id* is the query id for update
+
+            all the other setting remains the same as the query create method
+            """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            data = {}
+            if name:
+                data['name'] = name
+            if session:
+                data['session'] = session
+            token = token or self.agent.token
+            if token:
+                data['token'] = token
+            if regexp:
+                data['template'] = {'type': 'name_prefix_match',
+                                    'regexp': regexp}
+            service_body = {}
+            service_body['service'] = service
+            service_body['failover'] = {}
+            if nearestn:
+                service_body['failover']['nearestn'] = nearestn
+            if datacenters:
+                service_body['failover']['datacenters'] = datacenters
+            if onlypassing:
+                service_body['onlypassing'] = onlypassing
+            if tags:
+                service_body['tags'] = tags
+            if ttl:
+                data['dns'] = {'ttl': ttl}
+            data['service'] = service_body
+            data = json.dumps(data)
+            return self.agent.http.put(callback(is_200=True), '/v1/query/%s'
+                                       % query_id, params=params, data=data)
+
+        def get(self,
+                query_id,
+                token=None,
+                dc=None):
+            """
+            This endpoint will return information about a certain query
+
+            *query_id* the query id to retrieve information about
+
+            """
+            params = {}
+            token = token or self.agent.token
+            if token:
+                params['token'] = token
+            if dc:
+                params['dc'] = dc
+            return self.agent.http.get(callback(is_json=True), '/v1/query/%s'
+                                       % query_id, params=params)
+
+        def delete(self, query_id, token=None, dc=None):
+            """
+            This endpoint will delete certain query
+
+            *query_id* the query id delete
+
+            """
+            params = {}
+            token = token or self.agent.token
+            if token:
+                params['token'] = token
+            if dc:
+                params['dc'] = dc
+            return self.agent.http.delete(callback(is_200=True), '/v1/query/%s'
+                                          % query_id, params=params)
+
+        def execute(self,
+                    query,
+                    token=None,
+                    dc=None,
+                    near=None,
+                    limit=None):
+            """
+            This endpoint will execute certain query
+
+            *query* name or query id to execute
+
+            """
+            params = {}
+            token = token or self.agent.token
+            if token:
+                params['token'] = token
+            if dc:
+                params['dc'] = dc
+            if near:
+                params['near'] = near
+            if limit:
+                params['limit'] = limit
+            return self.agent.http.get(callback(is_json=True),
+                                       '/v1/query/%s/execute'
+                                       % query, params=params)
+
+        def explain(self,
+                    query,
+                    token=None,
+                    dc=None):
+            params = {}
+            token = token or self.agent.token
+            if token:
+                params['token'] = token
+            if dc:
+                params['dc'] = dc
+            return self.agent.http.get(callback(is_json=True),
+                                       '/v1/query/%s/explain'
+                                       % query, params=params)

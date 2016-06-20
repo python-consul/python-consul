@@ -836,3 +836,21 @@ class TestConsul(object):
         assert addr_port in peers, \
             "Expected value '{0}' " \
             "in peer list but it was not present".format(addr_port)
+
+    def test_query(self, consul_port):
+
+        c = consul.Consul(port=consul_port)
+        # check that query list is empty
+        queries = c.query.list()
+
+        assert queries == []
+
+        # create a query
+        query = c.query.create('foo')
+
+        assert query['ID']
+
+        assert c.query.explain(query['ID'])['Query']
+
+        # check deletion of query
+        assert c.query.delete(query['ID'])

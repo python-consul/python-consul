@@ -15,7 +15,7 @@ Features
 Maintenance
 ~~~~~~~~~~~
 
-* Test binaries updated to Consul 0.6.3
+* Test binaries updated to Consul 0.6.4
 * Tweaks to fix small updates to Consul's API
 
 0.4.7

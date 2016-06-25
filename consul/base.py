@@ -1672,7 +1672,8 @@ class Consul(object):
             if token:
                 params['token'] = token
 
-            return self.agent.http.get(callback(is_json=True), '/v1/acl/list', params=params)
+            return self.agent.http.get(callback(is_json=True),
+                                       '/v1/acl/list', params=params)
 
         def info(self, acl_id, token=None):
             """
@@ -1828,7 +1829,8 @@ class Consul(object):
                 params['token'] = token
 
             return self.agent.http.put(
-                callback(is_json=True), '/v1/acl/destroy/%s' % acl_id, params=params)
+                callback(is_json=True), '/v1/acl/destroy/%s' % acl_id,
+                params=params)
 
     class Status(object):
         """

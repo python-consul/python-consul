@@ -866,3 +866,10 @@ class TestConsul(object):
 
         # delete query
         assert c.query.delete(query['ID'])
+
+    def test_coordinate(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        c.coordinate.nodes()
+        c.coordinate.datacenters()
+        assert set(c.coordinate.datacenters()[0].keys()) == \
+            set(['Datacenter', 'Coordinates'])

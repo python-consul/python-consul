@@ -222,6 +222,7 @@ class Consul(object):
         self.acl = Consul.ACL(self)
         self.status = Consul.Status(self)
         self.query = Consul.Query(self)
+        self.coordinate = Consul.Coordinate(self)
 
     class Event(object):
         """
@@ -1022,7 +1023,13 @@ class Consul(object):
             return self.agent.http.get(
                 lambda x: json.loads(x.body), '/v1/catalog/datacenters')
 
-        def nodes(self, index=None, wait=None, consistency=None, dc=None):
+        def nodes(
+                self,
+                index=None,
+                wait=None,
+                consistency=None,
+                dc=None,
+                near=None):
             """
             Returns a tuple of (*index*, *nodes*) of all nodes known
             about in the *dc* datacenter. *dc* defaults to the current
@@ -1034,6 +1041,9 @@ class Consul(object):
             *wait* the maximum duration to wait (e.g. '10s') to retrieve
             a given index. this parameter is only applied if *index* is also
             specified. the wait time by default is 5 minutes.
+
+            *near* is a node name to sort the resulting list in ascending
+            order based on the estimated round trip time from that node
 
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
@@ -1060,6 +1070,8 @@ class Consul(object):
                 params['index'] = index
                 if wait:
                     params['wait'] = wait
+            if near:
+                params['near'] = near
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -1179,7 +1191,8 @@ class Consul(object):
                 wait=None,
                 tag=None,
                 consistency=None,
-                dc=None):
+                dc=None,
+                near=None):
             """
             Returns a tuple of (*index*, *nodes*) of the nodes providing
             *service* in the *dc* datacenter. *dc* defaults to the current
@@ -1194,6 +1207,9 @@ class Consul(object):
 
             If *tag* is provided, the list of nodes returned will be filtered
             by that tag.
+
+            *near* is a node name to sort the resulting list in ascending
+            order based on the estimated round trip time from that node
 
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
@@ -1222,6 +1238,8 @@ class Consul(object):
                 params['index'] = index
                 if wait:
                     params['wait'] = wait
+            if near:
+                params['near'] = near
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -1241,6 +1259,7 @@ class Consul(object):
                     passing=None,
                     tag=None,
                     dc=None,
+                    near=None,
                     token=None):
             """
             Returns a tuple of (*index*, *nodes*)
@@ -1262,6 +1281,9 @@ class Consul(object):
             *dc* is the datacenter of the node and defaults to this agents
             datacenter.
 
+            *near* is a node name to sort the resulting list in ascending
+            order based on the estimated round trip time from that node
+
             *token* is an optional `ACL token`_ to apply to this request.
             """
             params = {}
@@ -1276,6 +1298,8 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
+            if near:
+                params['near'] = near
             token = token or self.agent.token
             if token:
                 params['token'] = token
@@ -1288,7 +1312,14 @@ class Consul(object):
                 callback,
                 '/v1/health/service/%s' % service, params=params)
 
-        def checks(self, service, index=None, wait=None, dc=None, token=None):
+        def checks(
+                self,
+                service,
+                index=None,
+                wait=None,
+                dc=None,
+                near=None,
+                token=None):
             """
             Returns a tuple of (*index*, *checks*) with *checks* being the
             checks associated with the service.
@@ -1305,6 +1336,9 @@ class Consul(object):
             *dc* is the datacenter of the node and defaults to this agents
             datacenter.
 
+            *near* is a node name to sort the resulting list in ascending
+            order based on the estimated round trip time from that node
+
             *token* is an optional `ACL token`_ to apply to this request.
             """
             params = {}
@@ -1315,6 +1349,8 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
+            if near:
+                params['near'] = near
             token = token or self.agent.token
             if token:
                 params['token'] = token
@@ -1327,7 +1363,13 @@ class Consul(object):
                 callback,
                 '/v1/health/checks/%s' % service, params=params)
 
-        def state(self, name, index=None, wait=None, dc=None, token=None):
+        def state(self,
+                  name,
+                  index=None,
+                  wait=None,
+                  dc=None,
+                  near=None,
+                  token=None):
             """
             Returns a tuple of (*index*, *nodes*)
 
@@ -1347,6 +1389,9 @@ class Consul(object):
             *dc* is the datacenter of the node and defaults to this agents
             datacenter.
 
+            *near* is a node name to sort the resulting list in ascending
+            order based on the estimated round trip time from that node
+
             *token* is an optional `ACL token`_ to apply to this request.
 
             *nodes* are the nodes providing the given service.
@@ -1360,6 +1405,8 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
+            if near:
+                params['near'] = near
             token = token or self.agent.token
             if token:
                 params['token'] = token
@@ -2124,3 +2171,45 @@ class Consul(object):
             return self.agent.http.get(callback(is_json=True),
                                        '/v1/query/%s/explain'
                                        % query, params=params)
+
+    class Coordinate(object):
+        def __init__(self, agent):
+            self.agent = agent
+
+        def datacenters(self):
+            """
+            Returns the WAN network coordinates for all Consul servers,
+            organized by DCs.
+            """
+            return self.agent.http.get(
+                lambda x: json.loads(x.body), '/v1/coordinate/datacenters')
+
+        def nodes(self, dc=None, index=None, wait=None, consistency=None):
+            """
+            *dc* is the datacenter that this agent will communicate with. By
+            default the datacenter of the host is used.
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
+            """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            if index:
+                params['index'] = index
+                if wait:
+                    params['wait'] = wait
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params[consistency] = '1'
+            return self.agent.http.get(
+                callback(is_json=True, index=True),
+                '/v1/coordinate/nodes', params=params)

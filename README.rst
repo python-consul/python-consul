@@ -86,7 +86,7 @@ Pull requests are very much appreciated! When you create a PR please ensure:
    docstrings from the sphinx documentation
 
 Releases
---------
+~~~~~~~~
 
 .. code:: bash
 

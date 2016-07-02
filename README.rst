@@ -60,20 +60,20 @@ or Issue we'll try and respond as quickly as we're able.
 Issue Labels
 ~~~~~~~~~~~~
 
-:today!: some triaging is in progress and this issue should be taken care of in
+:today!: Some triaging is in progress and this issue should be taken care of in
          a couple of hours!
 
-:priority: there's a clear need to address this issue and it's likely a core
-           contributor will take it on. opening a PR for these is greatly
+:priority: There's a clear need to address this issue and it's likely a core
+           contributor will take it on. Opening a PR for these is greatly
            appreciated!
 
-:help wanted: this issue makes sense and would be useful. it's unlikely a core
-              contributor will get to this though, so if you'ld like to see it
+:help wanted: This issue makes sense and would be useful. It's unlikely a core
+              contributor will get to this though, so if you'd like to see it
               addressed, please open a PR.
 
-:question: the need for the issue isn't clear or needs clarification. please
-           respond. issues in this state for a few months without responses
-           will be closed.
+:question: The need for the issue isn't clear or needs clarification, so please
+           follow up.  Issues in this state for a few months, without
+           responses, will likely will be closed.
 
 Releases
 --------

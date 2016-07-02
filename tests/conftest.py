@@ -95,6 +95,7 @@ def start_consul_instance(acl_master_token=None):
 
     requests.get(base_uri + 'agent/service/deregister/foo')
     # phew
+    time.sleep(2)
     return p, ports['http']
 
 

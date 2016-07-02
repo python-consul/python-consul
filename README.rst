@@ -75,6 +75,16 @@ Issue Labels
            follow up.  Issues in this state for a few months, without
            responses, will likely will be closed.
 
+PRs
+~~~
+
+Pull requests are very much appreciated! When you create a PR, please ensure:
+
+0. All current tests pass, including flake8
+0. To add tests for your new features, if reasonable
+0. To add docstrings for new api features you add, and if needed link to this
+   docstrings form the sphinx documentation
+
 Releases
 --------
 

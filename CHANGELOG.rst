@@ -1,6 +1,26 @@
 Change log
 ==========
 
+0.6.1
+------
+
+Features
+~~~~~~~~
+
+* Add the coordinate endpoint and near support on Catalog and Health Checks
+  (thanks @shalev67!)
+* Rework all endpoints to use a common callback handler to help ensure
+  consistent handling of responses (thanks @shalev67)
+* Add Query api support (thanks @shalev67)
+* Add token support for the Health endpoints (thanks @morpheu!)
+* Force to use UTF-8 encoding for the response with the request's client
+  (thanks @maxnasonov)
+
+Maintenance
+~~~~~~~~~~~
+
+* Migrate readthedocs links from .org to .io (thanks @adamchainz)
+
 0.6.0
 ------
 

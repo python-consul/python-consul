@@ -138,13 +138,17 @@ def callback(
         is_json=False,
         index=False,
         one=False,
-        allow_404=True):
+        allow_404=True,
+        decode=None,
+        is_id=False):
 
     def cb(response):
         if response.code >= 500 and response.code < 600:
             raise ConsulException("%d %s" % (response.code, response.body))
         if response.code == 400:
             raise BadRequest('%d %s' % (response.code, response.body))
+        if response.code == 401:
+            raise ACLDisabled(response.body)
         if response.code == 403:
             raise ACLPermissionDenied(response.body)
         if response.code == 404 and not allow_404:
@@ -152,7 +156,15 @@ def callback(
         if is_200:
             data = response.code == 200
         elif is_json:
+            if response.code == 404:
+                return response.headers['X-Consul-Index'], None
             data = json.loads(response.body)
+            if decode:
+                for item in data:
+                    if item.get(decode) is not None:
+                        item[decode] = base64.b64decode(item[decode])
+            if is_id:
+                data = data['ID']
         else:
             data = response
         if one:
@@ -222,6 +234,7 @@ class Consul(object):
         self.acl = Consul.ACL(self)
         self.status = Consul.Status(self)
         self.query = Consul.Query(self)
+        self.coordinate = Consul.Coordinate(self)
 
     class Event(object):
         """
@@ -326,16 +339,9 @@ class Consul(object):
                 params['index'] = index
                 if wait:
                     params['wait'] = wait
-
-            def callback(response):
-                data = json.loads(response.body)
-                for item in data:
-                    if item.get('Payload') is not None:
-                        item['Payload'] = base64.b64decode(item['Payload'])
-                return response.headers['X-Consul-Index'], data
-
             return self.agent.http.get(
-                callback, '/v1/event/list', params=params)
+                callback(is_json=True, index=True, decode='Payload'),
+                '/v1/event/list', params=params)
 
     class KV(object):
         """
@@ -419,23 +425,16 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
 
-            def callback(response):
-                if response.code == 500:
-                    raise ConsulException(response.body)
-                elif response.code == 404:
-                    data = None
-                else:
-                    data = json.loads(response.body)
-                    if not keys:
-                        for item in data:
-                            if item.get('Value') is not None:
-                                item['Value'] = base64.b64decode(item['Value'])
-                        if not recurse:
-                            data = data[0]
-                return response.headers['X-Consul-Index'], data
+            one = False
+            decode = False
 
+            if not keys:
+                decode = 'Value'
+            if not recurse and not keys:
+                one = True
             return self.agent.http.get(
-                callback, '/v1/kv/%s' % key, params=params)
+                callback(is_json=True, index=True, decode=decode, one=one),
+                '/v1/kv/%s' % key, params=params)
 
         def put(
                 self,
@@ -539,13 +538,9 @@ class Consul(object):
             if dc:
                 params['dc'] = dc
 
-            def callback(response):
-                if response.code == 403:
-                    raise ACLPermissionDenied(response.body)
-                return json.loads(response.body)
-
             return self.agent.http.delete(
-                callback, '/v1/kv/%s' % key, params=params)
+                callback(is_json=True),
+                '/v1/kv/%s' % key, params=params)
 
     class Agent(object):
         """
@@ -564,7 +559,7 @@ class Consul(object):
             Returns configuration of the local agent and member information.
             """
             return self.agent.http.get(
-                lambda x: json.loads(x.body), '/v1/agent/self')
+                callback(is_json=True), '/v1/agent/self')
 
         def services(self):
             """
@@ -578,7 +573,7 @@ class Consul(object):
             within a few seconds.
             """
             return self.agent.http.get(
-                lambda x: json.loads(x.body), '/v1/agent/services')
+                callback(is_json=True), '/v1/agent/services')
 
         def checks(self):
             """
@@ -592,7 +587,7 @@ class Consul(object):
             within a few seconds.
             """
             return self.agent.http.get(
-                lambda x: json.loads(x.body), '/v1/agent/checks')
+                callback(is_json=True), '/v1/agent/checks')
 
         def members(self, wan=False):
             """
@@ -609,7 +604,7 @@ class Consul(object):
                 params['wan'] = 1
 
             return self.agent.http.get(
-                lambda x: json.loads(x.body),
+                callback(is_json=True),
                 '/v1/agent/members',
                 params=params)
 
@@ -632,7 +627,7 @@ class Consul(object):
                 params['reason'] = reason
 
             return self.agent.http.put(
-                lambda x: x.code == 200,
+                callback(is_200=True),
                 '/v1/agent/maintenance',
                 params=params)
 
@@ -654,7 +649,7 @@ class Consul(object):
                 params['wan'] = 1
 
             return self.agent.http.get(
-                lambda x: x.code == 200,
+                callback(is_200=True),
                 '/v1/agent/join/%s' % address,
                 params=params)
 
@@ -671,7 +666,7 @@ class Consul(object):
             """
 
             return self.agent.http.get(
-                lambda x: x.code == 200,
+                callback(is_200=True),
                 '/v1/agent/force-leave/%s' % node)
 
         class Service(object):
@@ -745,7 +740,7 @@ class Consul(object):
                     params['token'] = token
 
                 return self.agent.http.put(
-                    lambda x: x.code == 200,
+                    callback(is_200=True),
                     '/v1/agent/service/register',
                     params=params,
                     data=json.dumps(payload))
@@ -757,7 +752,7 @@ class Consul(object):
                 there is an associated check, that is also deregistered.
                 """
                 return self.agent.http.get(
-                    lambda x: x.code == 200,
+                    callback(is_200=True),
                     '/v1/agent/service/deregister/%s' % service_id)
 
             def maintenance(self, service_id, enable, reason=None):
@@ -782,7 +777,7 @@ class Consul(object):
                     params['reason'] = reason
 
                 return self.agent.http.put(
-                    lambda x: x.code == 200,
+                    callback(is_200=True),
                     '/v1/agent/service/maintenance/{0}'.format(service_id),
                     params=params)
 
@@ -861,7 +856,7 @@ class Consul(object):
                     params['token'] = token
 
                 return self.agent.http.put(
-                    lambda x: x.code == 200,
+                    callback(is_200=True),
                     '/v1/agent/check/register',
                     params=params,
                     data=json.dumps(payload))
@@ -871,7 +866,7 @@ class Consul(object):
                 Remove a check from the local agent.
                 """
                 return self.agent.http.get(
-                    lambda x: x.code == 200,
+                    callback(is_200=True),
                     '/v1/agent/check/deregister/%s' % check_id)
 
             def ttl_pass(self, check_id, notes=None):
@@ -884,7 +879,7 @@ class Consul(object):
                     params['note'] = notes
 
                 return self.agent.http.get(
-                    lambda x: x.code == 200,
+                    callback(is_200=True),
                     '/v1/agent/check/pass/%s' % check_id,
                     params=params)
 
@@ -899,7 +894,7 @@ class Consul(object):
                     params['note'] = notes
 
                 return self.agent.http.get(
-                    lambda x: x.code == 200,
+                    callback(is_200=True),
                     '/v1/agent/check/fail/%s' % check_id,
                     params=params)
 
@@ -914,7 +909,7 @@ class Consul(object):
                     params['note'] = notes
 
                 return self.agent.http.get(
-                    lambda x: x.code == 200,
+                    callback(is_200=True),
                     '/v1/agent/check/warn/%s' % check_id,
                     params=params)
 
@@ -1020,9 +1015,15 @@ class Consul(object):
             Returns all the datacenters that are known by the Consul server.
             """
             return self.agent.http.get(
-                lambda x: json.loads(x.body), '/v1/catalog/datacenters')
+                callback(is_json=True), '/v1/catalog/datacenters')
 
-        def nodes(self, index=None, wait=None, consistency=None, dc=None):
+        def nodes(
+                self,
+                index=None,
+                wait=None,
+                consistency=None,
+                dc=None,
+                near=None):
             """
             Returns a tuple of (*index*, *nodes*) of all nodes known
             about in the *dc* datacenter. *dc* defaults to the current
@@ -1034,6 +1035,9 @@ class Consul(object):
             *wait* the maximum duration to wait (e.g. '10s') to retrieve
             a given index. this parameter is only applied if *index* is also
             specified. the wait time by default is 5 minutes.
+
+            *near* is a node name to sort the resulting list in ascending
+            order based on the estimated round trip time from that node
 
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
@@ -1060,6 +1064,8 @@ class Consul(object):
                 params['index'] = index
                 if wait:
                     params['wait'] = wait
+            if near:
+                params['near'] = near
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -1179,7 +1185,8 @@ class Consul(object):
                 wait=None,
                 tag=None,
                 consistency=None,
-                dc=None):
+                dc=None,
+                near=None):
             """
             Returns a tuple of (*index*, *nodes*) of the nodes providing
             *service* in the *dc* datacenter. *dc* defaults to the current
@@ -1194,6 +1201,9 @@ class Consul(object):
 
             If *tag* is provided, the list of nodes returned will be filtered
             by that tag.
+
+            *near* is a node name to sort the resulting list in ascending
+            order based on the estimated round trip time from that node
 
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
@@ -1222,6 +1232,8 @@ class Consul(object):
                 params['index'] = index
                 if wait:
                     params['wait'] = wait
+            if near:
+                params['near'] = near
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -1241,6 +1253,7 @@ class Consul(object):
                     passing=None,
                     tag=None,
                     dc=None,
+                    near=None,
                     token=None):
             """
             Returns a tuple of (*index*, *nodes*)
@@ -1262,6 +1275,9 @@ class Consul(object):
             *dc* is the datacenter of the node and defaults to this agents
             datacenter.
 
+            *near* is a node name to sort the resulting list in ascending
+            order based on the estimated round trip time from that node
+
             *token* is an optional `ACL token`_ to apply to this request.
             """
             params = {}
@@ -1276,19 +1292,24 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
+            if near:
+                params['near'] = near
             token = token or self.agent.token
             if token:
                 params['token'] = token
 
-            def callback(response):
-                data = json.loads(response.body)
-                return response.headers['X-Consul-Index'], data
-
             return self.agent.http.get(
-                callback,
+                callback(is_json=True, index=True),
                 '/v1/health/service/%s' % service, params=params)
 
-        def checks(self, service, index=None, wait=None, dc=None, token=None):
+        def checks(
+                self,
+                service,
+                index=None,
+                wait=None,
+                dc=None,
+                near=None,
+                token=None):
             """
             Returns a tuple of (*index*, *checks*) with *checks* being the
             checks associated with the service.
@@ -1305,6 +1326,9 @@ class Consul(object):
             *dc* is the datacenter of the node and defaults to this agents
             datacenter.
 
+            *near* is a node name to sort the resulting list in ascending
+            order based on the estimated round trip time from that node
+
             *token* is an optional `ACL token`_ to apply to this request.
             """
             params = {}
@@ -1315,19 +1339,23 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
+            if near:
+                params['near'] = near
             token = token or self.agent.token
             if token:
                 params['token'] = token
 
-            def callback(response):
-                data = json.loads(response.body)
-                return response.headers['X-Consul-Index'], data
-
             return self.agent.http.get(
-                callback,
+                callback(is_json=True, index=True),
                 '/v1/health/checks/%s' % service, params=params)
 
-        def state(self, name, index=None, wait=None, dc=None, token=None):
+        def state(self,
+                  name,
+                  index=None,
+                  wait=None,
+                  dc=None,
+                  near=None,
+                  token=None):
             """
             Returns a tuple of (*index*, *nodes*)
 
@@ -1347,6 +1375,9 @@ class Consul(object):
             *dc* is the datacenter of the node and defaults to this agents
             datacenter.
 
+            *near* is a node name to sort the resulting list in ascending
+            order based on the estimated round trip time from that node
+
             *token* is an optional `ACL token`_ to apply to this request.
 
             *nodes* are the nodes providing the given service.
@@ -1360,16 +1391,14 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
+            if near:
+                params['near'] = near
             token = token or self.agent.token
             if token:
                 params['token'] = token
 
-            def callback(response):
-                data = json.loads(response.body)
-                return response.headers['X-Consul-Index'], data
-
             return self.agent.http.get(
-                callback,
+                callback(is_json=True, index=True),
                 '/v1/health/state/%s' % name, params=params)
 
         def node(self, node, index=None, wait=None, dc=None, token=None):
@@ -1402,12 +1431,8 @@ class Consul(object):
             if token:
                 params['token'] = token
 
-            def callback(response):
-                data = json.loads(response.body)
-                return response.headers['X-Consul-Index'], data
-
             return self.agent.http.get(
-                callback,
+                callback(is_json=True, index=True),
                 '/v1/health/node/%s' % node, params=params)
 
     class Session(object):
@@ -1479,8 +1504,9 @@ class Consul(object):
                 data = json.dumps(data)
             else:
                 data = ''
+
             return self.agent.http.put(
-                callback(lambda x: json.loads(x.body)['ID']),
+                callback(is_json=True, is_id=True),
                 '/v1/session/create', params=params, data=data)
 
         def destroy(self, session_id, dc=None):
@@ -1646,14 +1672,8 @@ class Consul(object):
             if token:
                 params['token'] = token
 
-            def callback(response):
-                if response.code == 401:
-                    raise ACLDisabled(response.body)
-                if response.code == 403:
-                    raise ACLPermissionDenied(response.body)
-                return json.loads(response.body)
-
-            return self.agent.http.get(callback, '/v1/acl/list', params=params)
+            return self.agent.http.get(callback(is_json=True),
+                                       '/v1/acl/list', params=params)
 
         def info(self, acl_id, token=None):
             """
@@ -1664,15 +1684,9 @@ class Consul(object):
             if token:
                 params['token'] = token
 
-            def callback(response):
-                if response.code == 401:
-                    raise ACLDisabled(response.body)
-                response = json.loads(response.body)
-                if response:
-                    return response[0]
-
             return self.agent.http.get(
-                callback, '/v1/acl/info/%s' % acl_id, params=params)
+                callback(is_json=True, one=True),
+                '/v1/acl/info/%s' % acl_id, params=params)
 
         def create(self,
                    name=None,
@@ -1736,15 +1750,9 @@ class Consul(object):
             else:
                 data = ''
 
-            def callback(response):
-                if response.code == 401:
-                    raise ACLDisabled(response.body)
-                if response.code == 403:
-                    raise ACLPermissionDenied(response.body)
-                return json.loads(response.body)['ID']
-
             return self.agent.http.put(
-                callback, '/v1/acl/create', params=params, data=data)
+                callback(is_json=True, is_id=True),
+                '/v1/acl/create', params=params, data=data)
 
         def update(self, acl_id, name=None, type=None, rules=None, token=None):
             """
@@ -1784,15 +1792,9 @@ class Consul(object):
 
             data = json.dumps(payload)
 
-            def callback(response):
-                if response.code == 401:
-                    raise ACLDisabled(response.body)
-                if response.code == 403:
-                    raise ACLPermissionDenied(response.body)
-                return json.loads(response.body)['ID']
-
             return self.agent.http.put(
-                callback, '/v1/acl/update', params=params, data=data)
+                callback(is_json=True, is_id=True),
+                '/v1/acl/update', params=params, data=data)
 
         def clone(self, acl_id, token=None):
             """
@@ -1808,15 +1810,9 @@ class Consul(object):
             if token:
                 params['token'] = token
 
-            def callback(response):
-                if response.code == 401:
-                    raise ACLDisabled(response.body)
-                if response.code == 403:
-                    raise ACLPermissionDenied(response.body)
-                return json.loads(response.body)['ID']
-
             return self.agent.http.put(
-                callback, '/v1/acl/clone/%s' % acl_id, params=params)
+                callback(is_json=True, is_id=True),
+                '/v1/acl/clone/%s' % acl_id, params=params)
 
         def destroy(self, acl_id, token=None):
             """
@@ -1832,15 +1828,9 @@ class Consul(object):
             if token:
                 params['token'] = token
 
-            def callback(response):
-                if response.code == 401:
-                    raise ACLDisabled(response.body)
-                if response.code == 403:
-                    raise ACLPermissionDenied(response.body)
-                return json.loads(response.body)
-
             return self.agent.http.put(
-                callback, '/v1/acl/destroy/%s' % acl_id, params=params)
+                callback(is_json=True), '/v1/acl/destroy/%s' % acl_id,
+                params=params)
 
     class Status(object):
         """
@@ -1856,7 +1846,7 @@ class Consul(object):
             in which the agent is running.
             """
             return self.agent.http.get(
-                lambda x: json.loads(x.body), '/v1/status/leader')
+                callback(is_json=True), '/v1/status/leader')
 
         def peers(self):
             """
@@ -1864,7 +1854,7 @@ class Consul(object):
             the the agent is running.
             """
             return self.agent.http.get(
-                lambda x: json.loads(x.body), '/v1/status/peers')
+                callback(is_json=True), '/v1/status/peers')
 
     class Query(object):
         def __init__(self, agent):
@@ -1889,7 +1879,7 @@ class Consul(object):
                 params['dc'] = dc
 
             return self.agent.http.get(
-                lambda x: json.loads(x.body), '/v1/query', params=params)
+                callback(is_json=True), '/v1/query', params=params)
 
         def _query_data(self, service=None,
                         name=None,
@@ -2124,3 +2114,45 @@ class Consul(object):
             return self.agent.http.get(callback(is_json=True),
                                        '/v1/query/%s/explain'
                                        % query, params=params)
+
+    class Coordinate(object):
+        def __init__(self, agent):
+            self.agent = agent
+
+        def datacenters(self):
+            """
+            Returns the WAN network coordinates for all Consul servers,
+            organized by DCs.
+            """
+            return self.agent.http.get(
+                callback(is_json=True), '/v1/coordinate/datacenters')
+
+        def nodes(self, dc=None, index=None, wait=None, consistency=None):
+            """
+            *dc* is the datacenter that this agent will communicate with. By
+            default the datacenter of the host is used.
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
+            """
+            params = {}
+            if dc:
+                params['dc'] = dc
+            if index:
+                params['index'] = index
+                if wait:
+                    params['wait'] = wait
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params[consistency] = '1'
+            return self.agent.http.get(
+                callback(is_json=True, index=True),
+                '/v1/coordinate/nodes', params=params)

@@ -274,8 +274,10 @@ class TestConsul(object):
         index, nodes = c.health.service("foo1")
         assert nodes == []
 
-        assert c.agent.check.register(
-            'foo', Check.ttl('100ms'), service_id='foo1') is False
+        pytest.raises(consul.std.base.ConsulException,
+                      c.agent.check.register,
+                      'foo', Check.ttl('100ms'),
+                      service_id='foo1')
 
         time.sleep(40/1000.0)
 
@@ -866,3 +868,10 @@ class TestConsul(object):
 
         # delete query
         assert c.query.delete(query['ID'])
+
+    def test_coordinate(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        c.coordinate.nodes()
+        c.coordinate.datacenters()
+        assert set(c.coordinate.datacenters()[0].keys()) == \
+            set(['Datacenter', 'Coordinates'])

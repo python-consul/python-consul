@@ -69,21 +69,21 @@ Issue Labels
 
 :help wanted: This issue makes sense and would be useful. It's unlikely a core
               contributor will get to this though, so if you'd like to see it
-              addressed, please open a PR.
+              addressed please open a PR.
 
 :question: The need for the issue isn't clear or needs clarification, so please
            follow up.  Issues in this state for a few months, without
-           responses, will likely will be closed.
+           responses will likely will be closed.
 
 PRs
 ~~~
 
-Pull requests are very much appreciated! When you create a PR, please ensure:
+Pull requests are very much appreciated! When you create a PR please ensure:
 
 #. All current tests pass, including flake8
 #. To add tests for your new features, if reasonable
-#. To add docstrings for new api features you add, and if needed link to this
-   docstrings form the sphinx documentation
+#. To add docstrings for new api features you add and if needed link to these
+   docstrings from the sphinx documentation
 
 Releases
 --------

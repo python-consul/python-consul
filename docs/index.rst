@@ -201,10 +201,10 @@ Consul
 
 .. autoclass:: consul.Consul
 
-Consul.kv
-+++++++++
+Consul.acl
+++++++++++
 
-.. autoclass:: consul.base::Consul.KV()
+.. autoclass:: consul.base::Consul.ACL()
    :members:
    :undoc-members:
 
@@ -228,6 +228,20 @@ Consul.catalog
    :members:
    :undoc-members:
 
+Consul.event
+++++++++++++
+
+.. autoclass:: consul.base::Consul.Event()
+   :members:
+   :undoc-members:
+
+Consul.coordinate
++++++++++++++++++
+
+.. autoclass:: consul.base::Consul.Coordinate()
+   :members:
+   :undoc-members:
+
 Consul.health
 +++++++++++++
 
@@ -236,6 +250,20 @@ Consul.health
    :undoc-members:
    :exclude-members: Check
 
+Consul.kv
++++++++++
+
+.. autoclass:: consul.base::Consul.KV()
+   :members:
+   :undoc-members:
+
+Consul.query
+++++++++++++
+
+.. autoclass:: consul.base::Consul.Query()
+   :members:
+   :undoc-members:
+
 Consul.session
 ++++++++++++++
 
@@ -243,10 +271,10 @@ Consul.session
    :members:
    :undoc-members:
 
-Consul.acl
-++++++++++
+Consul.status
+++++++++++++
 
-.. autoclass:: consul.base::Consul.ACL()
+.. autoclass:: consul.base::Consul.Status()
    :members:
    :undoc-members:
 

@@ -738,9 +738,12 @@ class Consul(object):
                 for more information
                 https://www.consul.io/docs/agent/services.html
                 """
+
                 payload = {}
+
                 payload['name'] = name
-                payload['enabletagoverride'] = enable_tag_override
+                if enable_tag_override:
+                    payload['enabletagoverride'] = enable_tag_override
                 if service_id:
                     payload['id'] = service_id
                 if address:

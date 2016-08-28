@@ -1293,7 +1293,7 @@ class Consul(object):
 
             *token* is an optional `ACL token`_ to apply to this request.
             """
-            
+
             params = [] 
             dc = dc or self.agent.dc
             if passing: passing = '1'
@@ -1301,13 +1301,13 @@ class Consul(object):
 
             pos_params = [ 'index', 'wait', 'passing', 'dc', 'near', 'token', 'tags' ]
             for pos_par in pos_params:
-              if (pos_par is 'tags' and eval(pos_par) is not None):
-                for tag in eval(pos_par): params.append((pos_par,tag))
-              else:
-                if eval(pos_par) is not None:
-                  tup = (pos_par, eval(pos_par))
-                  params.append(tup)                
-                
+                if (pos_par is 'tags' and eval(pos_par) is not None):
+                    for tag in eval(pos_par): params.append((pos_par,tag))
+                else:
+                    if eval(pos_par) is not None:
+                    tup = (pos_par, eval(pos_par))
+                    params.append(tup)                
+
             return self.agent.http.get(
                 CB.json(index=True),
                 '/v1/health/service/%s' % service,

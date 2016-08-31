@@ -1758,7 +1758,7 @@ class Consul(object):
                 payload['Type'] = type
             if rules:
                 assert isinstance(rules, str), \
-                    'Only HCL encoded strings supported for the moment'
+                    'Only HCL or JSON encoded strings supported for the moment'
                 payload['Rules'] = rules
             if acl_id:
                 payload['ID'] = acl_id
@@ -1807,7 +1807,7 @@ class Consul(object):
                 payload['Type'] = type
             if rules:
                 assert isinstance(rules, str), \
-                    'Only HCL encoded strings supported for the moment'
+                    'Only HCL or JSON encoded strings supported for the moment'
                 payload['Rules'] = rules
 
             data = json.dumps(payload)

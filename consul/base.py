@@ -1004,7 +1004,7 @@ class Consul(object):
                 data['check'] = check
             token = token or self.agent.token
             if token:
-                data['token'] = token
+                data['WriteRequest'] = {'Token': token}
             return self.agent.http.put(
                 CB.bool(), '/v1/catalog/register', data=json.dumps(data))
 
@@ -1040,7 +1040,7 @@ class Consul(object):
                 data['checkid'] = check_id
             token = token or self.agent.token
             if token:
-                data['token'] = token
+                data['WriteRequest'] = {'Token': token}
             return self.agent.http.put(
                 CB.bool(), '/v1/catalog/deregister', data=json.dumps(data))
 

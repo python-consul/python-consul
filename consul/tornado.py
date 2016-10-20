@@ -47,7 +47,7 @@ class HTTPClient(object):
 
     def put(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
-        request = httpclient.HTTPRequest(uri, method='PUT', body=data,
+        request = httpclient.HTTPRequest(uri, method='PUT', body='' if data is None else data,
                                          validate_cert=self.verify)
         return self._request(callback, request)
 

@@ -143,6 +143,12 @@ class TestConsul(object):
             index, data = yield c.kv.get('foo')
             assert data['Value'] == six.b('bar')
 
+            # test empty-string comes back as `None`
+            response = yield c.kv.put('foo', '')
+            assert response is True
+            index, data = yield c.kv.get('foo')
+            assert data['Value'] == None
+
             # test None
             response = yield c.kv.put('foo', None)
             assert response is True

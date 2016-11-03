@@ -263,6 +263,7 @@ class Consul(object):
         self.status = Consul.Status(self)
         self.query = Consul.Query(self)
         self.coordinate = Consul.Coordinate(self)
+        self.operator = Consul.Operator(self)
 
     class Event(object):
         """
@@ -2171,3 +2172,13 @@ class Consul(object):
                 params[consistency] = '1'
             return self.agent.http.get(
                 CB.json(index=True), '/v1/coordinate/nodes', params=params)
+    
+    class Operator(object):
+        def __init__(self, agent):
+            self.agent = agent
+
+        def raft_config(self):
+            """
+            Returns raft configuration.
+            """
+            return self.agent.http.get(CB.json(), '/v1/operator/raft/configuration')

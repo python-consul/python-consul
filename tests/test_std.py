@@ -348,7 +348,7 @@ class TestConsul(object):
 
     def test_agent_self(self, consul_port):
         c = consul.Consul(port=consul_port)
-        assert set(c.agent.self().keys()) == set(['Member', 'Coord', 'Config'])
+        assert set(c.agent.self().keys()) == set(['Member', 'Coord', 'Config', 'Stats'])
 
     def test_agent_services(self, consul_port):
         c = consul.Consul(port=consul_port)
@@ -875,3 +875,16 @@ class TestConsul(object):
         c.coordinate.datacenters()
         assert set(c.coordinate.datacenters()[0].keys()) == \
             set(['Datacenter', 'Coordinates'])
+
+    def test_operator(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        config = c.operator.raft_config()
+        assert config["Index"] == 1
+        leader = False
+        voter = False
+        for server in config["Servers"]:
+            if server["Leader"]:
+                leader = True
+            if server["Voter"]:
+                voter = True
+        assert leader

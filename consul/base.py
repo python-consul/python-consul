@@ -2172,7 +2172,7 @@ class Consul(object):
                 params[consistency] = '1'
             return self.agent.http.get(
                 CB.json(index=True), '/v1/coordinate/nodes', params=params)
-    
+
     class Operator(object):
         def __init__(self, agent):
             self.agent = agent
@@ -2181,4 +2181,5 @@ class Consul(object):
             """
             Returns raft configuration.
             """
-            return self.agent.http.get(CB.json(), '/v1/operator/raft/configuration')
+            return self.agent.http.get(
+                CB.json(), '/v1/operator/raft/configuration')

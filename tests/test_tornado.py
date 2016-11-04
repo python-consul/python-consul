@@ -147,7 +147,7 @@ class TestConsul(object):
             response = yield c.kv.put('foo', '')
             assert response is True
             index, data = yield c.kv.get('foo')
-            assert data['Value'] == None
+            assert data['Value'] is None
 
             # test None
             response = yield c.kv.put('foo', None)
@@ -158,7 +158,7 @@ class TestConsul(object):
             # check unencoded values raises assert
             try:
                 yield c.kv.put('foo', {1: 2})
-            except AssertionError as e:
+            except AssertionError:
                 raised = True
             assert raised
 

@@ -1490,7 +1490,7 @@ class Consul(object):
 
             when *ttl* is provided, the session is invalidated if it is not
             renewed before the TTL expires.  If specified, it is an integer of
-            seconds.  Currently it must be between 10 and 3600 seconds.
+            seconds.  Currently it must be between 10 and 86400 seconds.
 
             By default the session will be created in the current datacenter
             but an optional *dc* can be provided.
@@ -1515,7 +1515,7 @@ class Consul(object):
             if behavior != 'release':
                 data['behavior'] = behavior
             if ttl:
-                assert 10 <= ttl <= 3600
+                assert 10 <= ttl <= 86400
                 data['ttl'] = '%ss' % ttl
             if data:
                 data = json.dumps(data)

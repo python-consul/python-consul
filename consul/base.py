@@ -211,7 +211,9 @@ class CB(object):
 class Consul(object):
     def __init__(
             self,
+            cert=None,
             host='127.0.0.1',
+            key=None,
             port=8500,
             token=None,
             scheme='http',
@@ -233,6 +235,13 @@ class Consul(object):
         By default the datacenter of the host is used.
 
         *verify* is whether to verify the SSL certificate for HTTPS requests
+
+        *cert* is a path to a TLS client certificate file which may optionally
+        contain a certificate key as well.
+
+        *key* is a path to a TLS client certificate key file which is needed
+        in case the file used for cert does not contain a key. Must be
+        unencrypted.
         """
 
         # TODO: Status
@@ -245,7 +254,7 @@ class Consul(object):
         if os.getenv('CONSUL_HTTP_SSL_VERIFY') is not None:
             verify = os.getenv('CONSUL_HTTP_SSL_VERIFY') == 'true'
 
-        self.http = self.connect(host, port, scheme, verify)
+        self.http = self.connect(cert, host, key, port, scheme, verify)
         self.token = os.getenv('CONSUL_HTTP_TOKEN', token)
         self.scheme = scheme
         self.dc = dc

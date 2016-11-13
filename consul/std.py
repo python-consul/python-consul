@@ -9,9 +9,11 @@ __all__ = ['Consul']
 
 
 class HTTPClient(object):
-    def __init__(self, host='127.0.0.1', port=8500, scheme='http',
-                 verify=True):
+    def __init__(self, cert=None, host='127.0.0.1', key=None,
+                 port=8500, scheme='http', verify=True):
+        self.cert = cert
         self.host = host
+        self.key = key
         self.port = port
         self.scheme = scheme
         self.verify = verify
@@ -32,24 +34,28 @@ class HTTPClient(object):
     def get(self, callback, path, params=None):
         uri = self.uri(path, params)
         return callback(self.response(
-            self.session.get(uri, verify=self.verify)))
+            self.session.get(uri, cert=(self.cert, self.key),
+                             verify=self.verify)))
 
     def put(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
         return callback(self.response(
-            self.session.put(uri, data=data, verify=self.verify)))
+            self.session.put(uri, cert=(self.cert, self.key),
+                             data=data, verify=self.verify)))
 
     def delete(self, callback, path, params=None):
         uri = self.uri(path, params)
         return callback(self.response(
-            self.session.delete(uri, verify=self.verify)))
+            self.session.delete(uri, cert=(self.cert, self.key),
+                                verify=self.verify)))
 
     def post(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
         return callback(self.response(
-            self.session.post(uri, data=data, verify=self.verify)))
+            self.session.post(uri, cert=(self.cert, self.key),
+                              data=data, verify=self.verify)))
 
 
 class Consul(base.Consul):
-    def connect(self, host, port, scheme, verify=True):
-        return HTTPClient(host, port, scheme, verify)
+    def connect(self, cert, host, key, port, scheme, verify=True):
+        return HTTPClient(cert, host, key, port, scheme, verify)

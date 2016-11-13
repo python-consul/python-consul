@@ -34,7 +34,9 @@ class InsecureContextFactory(ClientContextFactory):
 
 class HTTPClient(object):
     def __init__(self,
+                 cert=None,
                  host='127.0.0.1',
+                 key=None,
                  port=8500,
                  scheme='http',
                  verify=True,
@@ -142,12 +144,14 @@ class HTTPClient(object):
 
 class Consul(base.Consul):
     @staticmethod
-    def connect(host,
+    def connect(cert,
+                host,
+                key,
                 port,
                 scheme,
                 verify=True,
                 contextFactory=None,
                 **kwargs):
         return HTTPClient(
-            host, port, scheme, verify=verify,
+            cert, host, key, port, scheme, verify=verify,
             contextFactory=contextFactory, **kwargs)

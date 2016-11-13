@@ -237,11 +237,12 @@ class Consul(object):
         *verify* is whether to verify the SSL certificate for HTTPS requests
 
         *cert* is a path to a TLS client certificate file which may optionally
-        contain a certificate key as well.
+        contain a certificate key as well. This has no effect when using
+        asyncio or Twisted.
 
         *key* is a path to a TLS client certificate key file which is needed
         in case the file used for cert does not contain a key. Must be
-        unencrypted.
+        unencrypted. This has no effect when using asyncio or Twisted.
         """
 
         # TODO: Status

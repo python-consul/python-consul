@@ -12,9 +12,11 @@ __all__ = ['Consul']
 
 
 class HTTPClient(object):
-    def __init__(self, host='127.0.0.1', port=8500, scheme='http',
-                 verify=True):
+    def __init__(self, cert=None, host='127.0.0.1', key=None,
+                 port=8500, scheme='http', verify=True):
+        self.cert = cert
         self.host = host
+        self.key = key
         self.port = port
         self.scheme = scheme
         self.verify = verify
@@ -48,22 +50,28 @@ class HTTPClient(object):
     def put(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
         request = httpclient.HTTPRequest(uri, method='PUT', body=data,
-                                         validate_cert=self.verify)
+                                         validate_cert=self.verify,
+                                         client_cert=self.cert,
+                                         client_key=self.key)
         return self._request(callback, request)
 
     def delete(self, callback, path, params=None):
         uri = self.uri(path, params)
         request = httpclient.HTTPRequest(uri, method='DELETE',
-                                         validate_cert=self.verify)
+                                         validate_cert=self.verify,
+                                         client_cert=self.cert,
+                                         client_key=self.key)
         return self._request(callback, request)
 
     def post(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
         request = httpclient.HTTPRequest(uri, method='POST', body=data,
-                                         validate_cert=self.verify)
+                                         validate_cert=self.verify,
+                                         client_cert=self.cert,
+                                         client_key=self.key)
         return self._request(callback, request)
 
 
 class Consul(base.Consul):
-    def connect(self, host, port, scheme, verify=True):
-        return HTTPClient(host, port, scheme, verify=verify)
+    def connect(self, cert, host, key, port, scheme, verify=True):
+        return HTTPClient(cert, host, key, port, scheme, verify=verify)

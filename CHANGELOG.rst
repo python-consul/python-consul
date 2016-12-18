@@ -9,7 +9,6 @@ Bug Fix
 
 * Tornado backend encoding bug related to None values (thanks @plredmond)
 
-
 Maintenance
 ~~~~~~~~~~~
 
@@ -20,6 +19,7 @@ Features
 ~~~~~~~~
 
 * Catalog API should support tokens (thanks @racktear!)
+* Allow enable tag override (thanks @shalev67!)
 
 0.6.1
 ------

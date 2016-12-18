@@ -14,13 +14,19 @@ import requests
 import pytest
 import py
 
-# configure plugins
-pytest_plugins = "pytest_twisted"
-
+pytest_plugins = None
 collect_ignore = []
-if sys.version_info[0] < 3:
+
+if sys.version_info.major < 3:
     p = os.path.join(os.path.dirname(__file__), 'test_aio.py')
     collect_ignore.append(p)
+
+
+if sys.version_info.major == 2 and sys.version_info.minor < 7:
+    p = os.path.join(os.path.dirname(__file__), 'test_aio.py')
+    collect_ignore.append(p)
+else:
+    pytest_plugins = "pytest_twisted"
 
 
 def get_free_ports(num, host=None):

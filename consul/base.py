@@ -932,7 +932,13 @@ class Consul(object):
         def __init__(self, agent):
             self.agent = agent
 
-        def register(self, node, address, service=None, check=None, dc=None):
+        def register(self,
+                     node,
+                     address,
+                     service=None,
+                     check=None,
+                     dc=None,
+                     token=None):
             """
             A low level mechanism for directly registering or updating entries
             in the catalog. It is usually recommended to use
@@ -980,6 +986,8 @@ class Consul(object):
             *dc* is the datacenter of the node and defaults to this agents
             datacenter.
 
+            *token* is an optional `ACL token`_ to apply to this request.
+
             This manipulates the health check entry, but does not setup a
             script or TTL to actually update the status. The full documentation
             is `here <https://consul.io/docs/agent/http.html#catalog>`_.
@@ -994,10 +1002,18 @@ class Consul(object):
                 data['service'] = service
             if check:
                 data['check'] = check
+            token = token or self.agent.token
+            if token:
+                data['WriteRequest'] = {'Token': token}
             return self.agent.http.put(
                 CB.bool(), '/v1/catalog/register', data=json.dumps(data))
 
-        def deregister(self, node, service_id=None, check_id=None, dc=None):
+        def deregister(self,
+                       node,
+                       service_id=None,
+                       check_id=None,
+                       dc=None,
+                       token=None):
             """
             A low level mechanism for directly removing entries in the catalog.
             It is usually recommended to use the agent APIs, as they are
@@ -1008,6 +1024,8 @@ class Consul(object):
             services and checks are deleted. Otherwise only one of *service_id*
             and *check_id* should be provided and only that service or check
             will be removed.
+
+            *token* is an optional `ACL token`_ to apply to this request.
 
             Returns *True* on success.
             """
@@ -1020,6 +1038,9 @@ class Consul(object):
                 data['serviceid'] = service_id
             if check_id:
                 data['checkid'] = check_id
+            token = token or self.agent.token
+            if token:
+                data['WriteRequest'] = {'Token': token}
             return self.agent.http.put(
                 CB.bool(), '/v1/catalog/deregister', data=json.dumps(data))
 
@@ -1036,7 +1057,8 @@ class Consul(object):
                 wait=None,
                 consistency=None,
                 dc=None,
-                near=None):
+                near=None,
+                token=None):
             """
             Returns a tuple of (*index*, *nodes*) of all nodes known
             about in the *dc* datacenter. *dc* defaults to the current
@@ -1055,6 +1077,8 @@ class Consul(object):
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
             was configured with.
+
+            *token* is an optional `ACL token`_ to apply to this request.
 
             The response looks like this::
 
@@ -1079,13 +1103,21 @@ class Consul(object):
                     params['wait'] = wait
             if near:
                 params['near'] = near
+            token = token or self.agent.token
+            if token:
+                params['token'] = token
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
             return self.agent.http.get(
                 CB.json(index=True), '/v1/catalog/nodes', params=params)
 
-        def services(self, index=None, wait=None, consistency=None, dc=None):
+        def services(self,
+                     index=None,
+                     wait=None,
+                     consistency=None,
+                     dc=None,
+                     token=None):
             """
             Returns a tuple of (*index*, *services*) of all services known
             about in the *dc* datacenter. *dc* defaults to the current
@@ -1101,6 +1133,8 @@ class Consul(object):
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
             was configured with.
+
+            *token* is an optional `ACL token`_ to apply to this request.
 
             The response looks like this::
 
@@ -1124,13 +1158,22 @@ class Consul(object):
                 params['index'] = index
                 if wait:
                     params['wait'] = wait
+            token = token or self.agent.token
+            if token:
+                params['token'] = token
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
             return self.agent.http.get(
                 CB.json(index=True), '/v1/catalog/services', params=params)
 
-        def node(self, node, index=None, wait=None, consistency=None, dc=None):
+        def node(self,
+                 node,
+                 index=None,
+                 wait=None,
+                 consistency=None,
+                 dc=None,
+                 token=None):
             """
             Returns a tuple of (*index*, *services*) of all services provided
             by *node*.
@@ -1148,6 +1191,8 @@ class Consul(object):
 
             *dc* is the datacenter of the node and defaults to this agents
             datacenter.
+
+            *token* is an optional `ACL token`_ to apply to this request.
 
             The response looks like this::
 
@@ -1182,6 +1227,9 @@ class Consul(object):
                 params['index'] = index
                 if wait:
                     params['wait'] = wait
+            token = token or self.agent.token
+            if token:
+                params['token'] = token
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
@@ -1198,7 +1246,8 @@ class Consul(object):
                 tag=None,
                 consistency=None,
                 dc=None,
-                near=None):
+                near=None,
+                token=None):
             """
             Returns a tuple of (*index*, *nodes*) of the nodes providing
             *service* in the *dc* datacenter. *dc* defaults to the current
@@ -1220,6 +1269,8 @@ class Consul(object):
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
             was configured with.
+
+            *token* is an optional `ACL token`_ to apply to this request.
 
             The response looks like this::
 
@@ -1246,6 +1297,9 @@ class Consul(object):
                     params['wait'] = wait
             if near:
                 params['near'] = near
+            token = token or self.agent.token
+            if token:
+                params['token'] = token
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'

@@ -1,8 +1,16 @@
 Change log
 ==========
 
-0.6.2-dev
----------
+0.7.0
+-----
+
+Features
+~~~~~~~~
+
+* Add Operator endpoint (thanks @bantonj!)
+
+0.6.2
+-----
 
 Bug Fix
 ~~~~~~~

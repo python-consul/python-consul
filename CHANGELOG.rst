@@ -8,6 +8,7 @@ Bug Fix
 ~~~~~~~
 
 * Tornado backend encoding bug related to None values (thanks @plredmond)
+* python-consul doesn't support python 2.6 (thanks @lowzj)
 
 Maintenance
 ~~~~~~~~~~~

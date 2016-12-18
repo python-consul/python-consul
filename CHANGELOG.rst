@@ -14,6 +14,7 @@ Maintenance
 ~~~~~~~~~~~
 
 * update max ttl to 86400 to conform to consul (thanks @philloooo)
+* Correct error message in ACL create/update (thanks @Crypto89)
 
 Features
 ~~~~~~~~

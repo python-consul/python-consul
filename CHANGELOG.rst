@@ -4,6 +4,12 @@ Change log
 0.6.2-dev
 ---------
 
+Bug Fix
+~~~~~~~
+
+* Tornado backend encoding bug related to None values (thanks @plredmond)
+
+
 Maintenance
 ~~~~~~~~~~~
 

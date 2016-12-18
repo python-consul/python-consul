@@ -1515,7 +1515,7 @@ class Consul(object):
                 name=None,
                 node=None,
                 checks=None,
-                lock_delay=15,
+                lock_delay='15s',
                 behavior='release',
                 ttl=None,
                 dc=None):
@@ -1562,15 +1562,14 @@ class Consul(object):
                 data['node'] = node
             if checks is not None:
                 data['checks'] = checks
-            if lock_delay != 15:
-                data['lockdelay'] = '%ss' % lock_delay
+            if lock_delay != '15s':
+                data['lockdelay'] = lock_delay
             assert behavior in ('release', 'delete'), \
                 'behavior must be release or delete'
             if behavior != 'release':
                 data['behavior'] = behavior
             if ttl:
-                assert 10 <= ttl <= 3600
-                data['ttl'] = '%ss' % ttl
+                data['ttl'] = ttl
             if data:
                 data = json.dumps(data)
             else:

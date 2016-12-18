@@ -4,6 +4,11 @@ Change log
 0.6.2-dev
 ---------
 
+Maintenance
+~~~~~~~~~~~
+
+* update max ttl to 86400 to conform to consul (thanks @philloooo)
+
 Features
 ~~~~~~~~
 

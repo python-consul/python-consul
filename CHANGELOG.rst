@@ -7,6 +7,8 @@ Change log
 Features
 ~~~~~~~~
 
+* Catalog API should support tokens (thanks @racktear!)
+
 0.6.1
 ------
 

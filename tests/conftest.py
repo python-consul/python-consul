@@ -17,12 +17,12 @@ import py
 pytest_plugins = None
 collect_ignore = []
 
-if sys.version_info.major < 3:
+if sys.version_info[0] < 3:
     p = os.path.join(os.path.dirname(__file__), 'test_aio.py')
     collect_ignore.append(p)
 
 
-if sys.version_info.major == 2 and sys.version_info.minor < 7:
+if sys.version_info[0] == 2 and sys.version_info[1] < 7:
     p = os.path.join(os.path.dirname(__file__), 'test_aio.py')
     collect_ignore.append(p)
 else:

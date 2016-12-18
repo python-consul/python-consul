@@ -293,6 +293,17 @@ class TestConsul(object):
 
         time.sleep(40/1000.0)
 
+    def test_agent_register_enable_tag_override(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        index, nodes = c.health.service("foo1")
+        assert nodes == []
+
+        c.agent.service.register('foo', enable_tag_override=True)
+
+        assert c.agent.services()['foo']['EnableTagOverride']
+        # Cleanup tasks
+        c.agent.check.deregister('foo')
+
     def test_agent_service_maintenance(self, consul_port):
         c = consul.Consul(port=consul_port)
 

@@ -703,7 +703,8 @@ class Consul(object):
                     interval=None,
                     ttl=None,
                     http=None,
-                    timeout=None):
+                    timeout=None,
+                    enable_tag_override=False):
                 """
                 Add a new service to the local agent. There is more
                 documentation on services
@@ -728,8 +729,21 @@ class Consul(object):
 
                 *script*, *interval*, *ttl*, *http*, and *timeout* arguments
                 are deprecated. use *check* instead.
+
+                *enable_tag_override* is an optional bool that enable you
+                to modify a service tags from servers(consul agent role server)
+                Default is set to False.
+                This option is only for >=v0.6.0 version on both agent and
+                servers.
+                for more information
+                https://www.consul.io/docs/agent/services.html
                 """
-                payload = {'name': name}
+
+                payload = {}
+
+                payload['name'] = name
+                if enable_tag_override:
+                    payload['enabletagoverride'] = enable_tag_override
                 if service_id:
                     payload['id'] = service_id
                 if address:

@@ -1978,37 +1978,37 @@ class Consul(object):
                         tags=None,
                         ttl=None,
                         regexp=None):
-            service_body = {
-                k: v for k, v in {
+            service_body = dict([
+                (k, v) for k, v in {
                     'service': service,
                     'onlypassing': onlypassing,
                     'tags': tags,
-                    'failover': {
-                        k: v for k, v in {
+                    'failover': dict([
+                        (k, v) for k, v in {
                             'nearestn': nearestn,
                             'datacenters': datacenters
                         }.items() if v is not None
-                    }
+                    ])
                 }.items() if v is not None
-            }
+            ])
 
-            data = {
-                k: v for k, v in {
+            data = dict([
+                (k, v) for k, v in {
                     'name': name,
                     'session': session,
                     'token': token or self.agent.token,
                     'dns': {
                         'ttl': ttl
                     } if ttl is not None else None,
-                    'template': {
-                        k: v for k, v in {
+                    'template': dict([
+                        (k, v) for k, v in {
                             'type': 'name_prefix_match',
                             'regexp': regexp
                         }.items() if v is not None
-                    },
+                    ]),
                     'service': service_body
                 }.items() if v is not None
-            }
+            ])
             return json.dumps(data)
 
         def create(self, service,

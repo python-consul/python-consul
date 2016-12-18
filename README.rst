@@ -54,8 +54,9 @@ open an issue and I'll try and add it straight away.
 Contributing
 ------------
 
-python-consul is currently maintained by @abn and @cablehead. If you open a PR
-or Issue we'll try and respond as quickly as we're able.
+python-consul is currently maintained by @abn and @cablehead. Please reach out
+if you're interested in being a maintainer as well. Otherwise, open a PR or
+Issue we'll try and respond as quickly as we're able.
 
 Issue Labels
 ~~~~~~~~~~~~

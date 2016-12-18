@@ -49,6 +49,11 @@ class TestConsul(object):
         index, data = c.kv.get('foo')
         assert data['Value'] == six.b('bar')
 
+        # test empty-string comes back as `None`
+        c.kv.put('foo', '')
+        index, data = c.kv.get('foo')
+        assert data['Value'] is None
+
         # test None
         c.kv.put('foo', None)
         index, data = c.kv.get('foo')

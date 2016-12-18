@@ -126,6 +126,45 @@ class TestConsul(object):
         loop.add_timeout(time.time()+(1.0/100), put)
         loop.run_sync(get)
 
+    def test_kv_encoding(self, loop, consul_port):
+        @gen.coroutine
+        def main():
+            c = consul.tornado.Consul(port=consul_port)
+
+            # test binary
+            response = yield c.kv.put('foo', struct.pack('i', 1000))
+            assert response is True
+            index, data = yield c.kv.get('foo')
+            assert struct.unpack('i', data['Value']) == (1000,)
+
+            # test unicode
+            response = yield c.kv.put('foo', u'bar')
+            assert response is True
+            index, data = yield c.kv.get('foo')
+            assert data['Value'] == six.b('bar')
+
+            # test empty-string comes back as `None`
+            response = yield c.kv.put('foo', '')
+            assert response is True
+            index, data = yield c.kv.get('foo')
+            assert data['Value'] is None
+
+            # test None
+            response = yield c.kv.put('foo', None)
+            assert response is True
+            index, data = yield c.kv.get('foo')
+            assert data['Value'] is None
+
+            # check unencoded values raises assert
+            try:
+                yield c.kv.put('foo', {1: 2})
+            except AssertionError:
+                raised = True
+            assert raised
+
+            loop.stop()
+        loop.run_sync(main)
+
     def test_agent_services(self, loop, consul_port):
         @gen.coroutine
         def main():

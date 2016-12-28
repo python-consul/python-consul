@@ -85,7 +85,7 @@ class Check(object):
     def docker(klass, container_id, shell, script, interval):
         """
         Invoke *script* packaged within a running docker container with
-        *container_id* at a specified specified *interval* on the configured
+        *container_id* at a specified *interval* on the configured
         *shell* using the Docker Exec API
         """
         ret = {

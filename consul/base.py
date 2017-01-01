@@ -1352,7 +1352,7 @@ class Consul(object):
             Calling with *passing* set to True will filter results to only
             those nodes whose checks are currently passing.
 
-            Calling with *tag* will filter the results by tag.
+            Calling with list *tags* will filter the results by tags.
 
             *dc* is the datacenter of the node and defaults to this agents
             datacenter.
@@ -1362,23 +1362,21 @@ class Consul(object):
 
             *token* is an optional `ACL token`_ to apply to this request.
             """
-            params = {}
-            if index:
-                params['index'] = index
-                if wait:
-                    params['wait'] = wait
-            if passing:
-                params['passing'] = '1'
-            if tag is not None:
-                params['tag'] = tag
+
+            params = []
             dc = dc or self.agent.dc
-            if dc:
-                params['dc'] = dc
-            if near:
-                params['near'] = near
+            if passing:
+                passing = '1'
             token = token or self.agent.token
-            if token:
-                params['token'] = token
+
+            pos_params = ['index','wait','passing','dc','near','token','tags']
+            for pos_par in pos_params:
+                if (pos_par is 'tags') and (eval(pos_par) is not None):
+                    for tag in eval(pos_par): params.append((pos_par,tag))
+                else:
+                    if eval(pos_par) is not None:
+                        tup = (pos_par, eval(pos_par))
+                        params.append(tup)
 
             return self.agent.http.get(
                 CB.json(index=True),

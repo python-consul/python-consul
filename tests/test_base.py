@@ -1,5 +1,7 @@
 import collections
 
+import pytest
+
 import consul.base
 
 
@@ -72,3 +74,92 @@ class TestConsistency(object):
             assert r(consistency='default').params == {}
             assert r(consistency='consistent').params == {'consistent': '1'}
             assert r(consistency='stale').params == {'stale': '1'}
+
+
+class TestChecks(object):
+    """
+    Check constructor helpers return valid check configurations.
+    """
+    @pytest.mark.parametrize(
+        'url, interval, timeout, deregister, want', [
+            ('http://example.com', '10s', None, None, {
+                'http': 'http://example.com',
+                'interval': '10s',
+            }),
+            ('http://example.com', '10s', '1s', None, {
+                'http': 'http://example.com',
+                'interval': '10s',
+                'timeout': '1s',
+            }),
+            ('http://example.com', '10s', None, '1m', {
+                'http': 'http://example.com',
+                'interval': '10s',
+                'DeregisterCriticalServiceAfter': '1m',
+            }),
+            ('http://example.com', '10s', '1s', '1m', {
+                'http': 'http://example.com',
+                'interval': '10s',
+                'timeout': '1s',
+                'DeregisterCriticalServiceAfter': '1m',
+            }),
+        ])
+    def test_http_check(self, url, interval, timeout, deregister, want):
+        ch = consul.base.Check.http(url, interval, timeout=timeout,
+                                    deregister=deregister)
+        assert ch == want
+
+    @pytest.mark.parametrize(
+        'host, port, interval, timeout, deregister, want',
+        [
+            ('localhost', 1234, '10s', None, None, {
+                'tcp': 'localhost:1234',
+                'interval': '10s',
+            }),
+            ('localhost', 1234, '10s', '1s', None, {
+                'tcp': 'localhost:1234',
+                'interval': '10s',
+                'timeout': '1s',
+            }),
+            ('localhost', 1234, '10s', None, '1m', {
+                'tcp': 'localhost:1234',
+                'interval': '10s',
+                'DeregisterCriticalServiceAfter': '1m',
+            }),
+            ('localhost', 1234, '10s', '1s', '1m', {
+                'tcp': 'localhost:1234',
+                'interval': '10s',
+                'timeout': '1s',
+                'DeregisterCriticalServiceAfter': '1m',
+            }),
+        ])
+    def test_tcp_check(self, host, port, interval, timeout, deregister, want):
+        ch = consul.base.Check.tcp(host, port, interval, timeout=timeout,
+                                   deregister=deregister)
+        assert ch == want
+
+    @pytest.mark.parametrize(
+        'container_id, shell, script, interval, deregister, want',
+        [
+            ('wandering_bose', '/bin/sh', '/bin/true', '10s', None, {
+                'docker_container_id': 'wandering_bose',
+                'shell': '/bin/sh',
+                'script': '/bin/true',
+                'interval': '10s',
+            }),
+            ('wandering_bose', '/bin/sh', '/bin/true', '10s', '1m', {
+                'docker_container_id': 'wandering_bose',
+                'shell': '/bin/sh',
+                'script': '/bin/true',
+                'interval': '10s',
+                'DeregisterCriticalServiceAfter': '1m',
+            }),
+        ])
+    def test_docker_check(self, container_id, shell, script, interval,
+                          deregister, want):
+        ch = consul.base.Check.docker(container_id, shell, script, interval,
+                                      deregister=deregister)
+        assert ch == want
+
+    def test_ttl_check(self):
+        ch = consul.base.Check.ttl('1m')
+        assert ch == {'ttl': '1m'}

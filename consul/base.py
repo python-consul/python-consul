@@ -238,6 +238,10 @@ class Consul(object):
         # TODO: Status
 
         if os.getenv('CONSUL_HTTP_ADDR'):
+            # Checking if the environment variable contains exactly one ':'
+            colon_count = os.getenv('CONSUL_HTTP_ADDR').count(':')
+            assert colon_count == 1, 'The environment variable CONSUL_HTTP_ADDR is not setup according to the standards.'
+            # Splitting the host and port based on the colon
             host, port = os.getenv('CONSUL_HTTP_ADDR').split(':')
         use_ssl = os.getenv('CONSUL_HTTP_SSL')
         if use_ssl is not None:

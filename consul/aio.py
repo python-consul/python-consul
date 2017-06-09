@@ -81,8 +81,8 @@ class Consul(base.Consul):
         self._loop = loop or asyncio.get_event_loop()
         super().__init__(*args, **kwargs)
 
-    def connect(self, host, port, scheme, verify=True):
-        return HTTPClient(host, port, scheme, loop=self._loop, verify=verify)
+    def connect(self, host, port, scheme, verify=True, cert=None):
+        return HTTPClient(host, port, scheme, loop=self._loop, verify=verify, cert=None)
 
     def close(self):
         """Close all opened http connections"""

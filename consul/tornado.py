@@ -13,7 +13,7 @@ __all__ = ['Consul']
 
 class HTTPClient(object):
     def __init__(self, host='127.0.0.1', port=8500, scheme='http',
-                 verify=True):
+                 verify=True, cert=None):
         self.host = host
         self.port = port
         self.scheme = scheme
@@ -66,5 +66,5 @@ class HTTPClient(object):
 
 
 class Consul(base.Consul):
-    def connect(self, host, port, scheme, verify=True):
-        return HTTPClient(host, port, scheme, verify=verify)
+    def connect(self, host, port, scheme, verify=True, cert=None):
+        return HTTPClient(host, port, scheme, verify=verify, cert=cert)

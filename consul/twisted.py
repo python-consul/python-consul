@@ -38,6 +38,7 @@ class HTTPClient(object):
                  port=8500,
                  scheme='http',
                  verify=True,
+                 cert=None,
                  contextFactory=None,
                  **kwargs):
         self.host = host
@@ -146,8 +147,9 @@ class Consul(base.Consul):
                 port,
                 scheme,
                 verify=True,
+                cert=None,
                 contextFactory=None,
                 **kwargs):
         return HTTPClient(
-            host, port, scheme, verify=verify,
+            host, port, scheme, verify=verify, cert=cert,
             contextFactory=contextFactory, **kwargs)

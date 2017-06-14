@@ -288,7 +288,8 @@ class Consul(object):
                 body="",
                 node=None,
                 service=None,
-                tag=None):
+                tag=None,
+                token=None):
             """
             Sends an event to Consul's gossip protocol.
 
@@ -306,6 +307,10 @@ class Consul(object):
             *node*, *service*, and *tag* are regular expressions which remote
             agents will filter against to determine if they should store the
             event
+
+            *token* is an optional `ACL token`_ to apply to this request. If
+            the token's policy is not allowed to fire an event of this *name*
+            an *ACLPermissionDenied* exception will be raised.
             """
             assert not name.startswith('/'), \
                 'keys should not start with a forward slash'
@@ -316,6 +321,9 @@ class Consul(object):
                 params['service'] = service
             if tag is not None:
                 params['tag'] = tag
+            token = token or self.agent.token
+            if token:
+                params['token'] = token
 
             return self.agent.http.put(
                 CB.json(),

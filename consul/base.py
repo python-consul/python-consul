@@ -841,6 +841,7 @@ class Consul(object):
                     script=None,
                     interval=None,
                     ttl=None,
+                    deregister_critical_service_after=None,
                     http=None,
                     timeout=None):
                 """
@@ -869,6 +870,13 @@ class Consul(object):
                 *script*, *interval*, *ttl*, *http*, and *timeout* arguments
                 are deprecated. use *check* instead.
 
+                *deregister_critical_service_after* is an optional timeout, that
+                will degregister the service and all of its checks if a check is
+                in a critical state for the configured value.
+                This option is only for >=v0.7.0 version.
+                for more information
+                https://www.consul.io/docs/agent/checks.html
+
                 Returns *True* on success.
                 """
                 payload = {'name': name}
@@ -893,6 +901,8 @@ class Consul(object):
                     payload['notes'] = notes
                 if service_id:
                     payload['serviceid'] = service_id
+                if deregister_critical_service_after:
+                    payload['deregister_critical_service_after'] = deregister_critical_service_after
 
                 params = {}
                 token = token or self.agent.token

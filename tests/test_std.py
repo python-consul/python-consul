@@ -304,6 +304,17 @@ class TestConsul(object):
         # Cleanup tasks
         c.agent.check.deregister('foo')
 
+    def test_agent_register_deregister_critical_service_after(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        index, nodes = c.health.service("foo1")
+        assert nodes == []
+
+        c.agent.service.register('foo', deregister_critical_service_after='90m')
+
+        assert c.agent.services()['foo']['DeregisterCriticalServiceAfter']
+        # Cleanup tasks
+        c.agent.check.deregister('foo')
+
     def test_agent_service_maintenance(self, consul_port):
         c = consul.Consul(port=consul_port)
 

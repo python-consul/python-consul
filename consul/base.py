@@ -49,21 +49,26 @@ class Check(object):
         return {'script': script, 'interval': interval}
 
     @classmethod
-    def http(klass, url, interval, timeout=None):
+    def http(klass, url, interval, timeout=None, deregister=None):
         """
         Peform a HTTP GET against *url* every *interval* (e.g. "10s") to peform
-        health check with an option *timeout*
+        health check with an optional *timeout* and optional *deregister* after
+        which a failing service will be automatically deregistered.
         """
         ret = {'http': url, 'interval': interval}
         if timeout:
             ret['timeout'] = timeout
+        if deregister:
+            ret['DeregisterCriticalServiceAfter'] = deregister
         return ret
 
     @classmethod
-    def tcp(klass, host, port, interval, timeout=None):
+    def tcp(klass, host, port, interval, timeout=None, deregister=None):
         """
         Attempt to establish a tcp connection to the specified *host* and
-        *port* at a specified *interval* with optional *timeout*
+        *port* at a specified *interval* with optional *timeout* and optional
+        *deregister* after which a failing service will be automatically
+        deregistered.
         """
         ret = {
             'tcp': '{host:s}:{port:d}'.format(host=host, port=port),
@@ -71,6 +76,8 @@ class Check(object):
         }
         if timeout:
             ret['timeout'] = timeout
+        if deregister:
+            ret['DeregisterCriticalServiceAfter'] = deregister
         return ret
 
     @classmethod
@@ -82,11 +89,12 @@ class Check(object):
         return {'ttl': ttl}
 
     @classmethod
-    def docker(klass, container_id, shell, script, interval):
+    def docker(klass, container_id, shell, script, interval, deregister=None):
         """
         Invoke *script* packaged within a running docker container with
         *container_id* at a specified *interval* on the configured
-        *shell* using the Docker Exec API
+        *shell* using the Docker Exec API.  Optional *register* after which a
+        failing service will be automatically deregistered.
         """
         ret = {
             'docker_container_id': container_id,
@@ -94,6 +102,8 @@ class Check(object):
             'script': script,
             'interval': interval
         }
+        if deregister:
+            ret['DeregisterCriticalServiceAfter'] = deregister
         return ret
 
     @classmethod
@@ -103,7 +113,8 @@ class Check(object):
             interval=None,
             ttl=None,
             http=None,
-            timeout=None):
+            timeout=None,
+            deregister=None):
 
         if not script and not http and not ttl:
             return {}
@@ -125,6 +136,9 @@ class Check(object):
         if timeout:
             assert http
             ret['check']['timeout'] = timeout
+
+        if deregister:
+            ret['check']['DeregisterCriticalServiceAfter'] = deregister
 
         return ret
 

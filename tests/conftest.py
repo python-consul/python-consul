@@ -56,7 +56,7 @@ def start_consul_instance(acl_master_token=None):
         ['http', 'rpc', 'serf_lan', 'serf_wan', 'server', 'dns'],
         get_free_ports(5) + [-1]))
 
-    config = {'ports': ports}
+    config = {'ports': ports, 'performance': {'raft_multiplier': 1}}
     if acl_master_token:
         config['acl_datacenter'] = 'dc1'
         config['acl_master_token'] = acl_master_token

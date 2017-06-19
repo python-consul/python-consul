@@ -8,7 +8,8 @@ Request = collections.namedtuple(
 
 
 class HTTPClient(object):
-    def __init__(self, host=None, port=None, scheme=None, verify=True, cert=None):
+    def __init__(self, host=None, port=None, scheme=None,
+                 verify=True, cert=None):
         pass
 
     def get(self, callback, path, params=None):

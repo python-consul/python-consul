@@ -235,7 +235,7 @@ class Consul(object):
 
         *verify* is whether to verify the SSL certificate for HTTPS requests
 
-        *cert* client side certs for HTTPS requests
+        *cert* client side certificates for HTTPS requests
         """
 
         # TODO: Status

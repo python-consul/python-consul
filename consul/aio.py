@@ -21,7 +21,8 @@ class HTTPClient:
             port=8500,
             scheme='http',
             loop=None,
-            verify=True):
+            verify=True,
+            cert=None):
         self.host = host
         self.port = port
         self.scheme = scheme

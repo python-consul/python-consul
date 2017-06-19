@@ -10,7 +10,7 @@ __all__ = ['Consul']
 
 class HTTPClient(object):
     def __init__(self, host='127.0.0.1', port=8500, scheme='http',
-                 verify=True,cert=None):
+                 verify=True, cert=None):
         self.host = host
         self.port = port
         self.scheme = scheme
@@ -38,7 +38,8 @@ class HTTPClient(object):
     def put(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
         return callback(self.response(
-            self.session.put(uri, data=data, verify=self.verify, cert=self.cert)))
+            self.session.put(uri, data=data, verify=self.verify, 
+            cert=self.cert)))
 
     def delete(self, callback, path, params=None):
         uri = self.uri(path, params)
@@ -48,7 +49,8 @@ class HTTPClient(object):
     def post(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
         return callback(self.response(
-            self.session.post(uri, data=data, verify=self.verify, cert=self.cert)))
+            self.session.post(uri, data=data, verify=self.verify, 
+            cert=self.cert)))
 
 
 class Consul(base.Consul):

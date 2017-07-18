@@ -54,12 +54,16 @@ need to *yield* the result of each API call. This client is available in
 
 .. code:: python
 
+    import tornado
+    from tornado import ioloop
     import consul.tornado
 
     class Config(object):
         def __init__(self):
             self.foo = None
-            loop.add_callback(self.watch)
+            self.loop = ioloop.IOLoop()
+            self.loop.add_callback(self.watch)
+            self.loop.start()
 
         @tornado.gen.coroutine
         def watch(self):
@@ -69,7 +73,8 @@ need to *yield* the result of each API call. This client is available in
             index = None
             while True:
                 index, data = yield c.kv.get('foo', index=index)
-                self.foo = data['Value']
+                if data is not None:
+                    self.foo = data['Value']
 
 asyncio
 ~~~~~~~

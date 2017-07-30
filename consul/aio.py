@@ -28,8 +28,8 @@ class HTTPClient:
         self.scheme = scheme
         self.base_uri = '%s://%s:%s' % (self.scheme, self.host, self.port)
         self._loop = loop or asyncio.get_event_loop()
-        self._connector = aiohttp.TCPConnector(loop=self._loop,
-                                               verify_ssl=verify)
+        connector = aiohttp.TCPConnector(loop=self._loop, verify_ssl=verify)
+        self._session = aiohttp.ClientSession(connector=connector)
 
     def _uri(self, path, params=None):
         uri = self.base_uri + path
@@ -39,9 +39,7 @@ class HTTPClient:
 
     @asyncio.coroutine
     def _request(self, callback, method, uri, data=None):
-        resp = yield from aiohttp.request(method, uri,
-                                          connector=self._connector,
-                                          data=data, loop=self._loop)
+        resp = yield from self._session.request(method, uri, data=data)
         body = yield from resp.text(encoding='utf-8')
         if resp.status == 599:
             raise base.Timeout
@@ -51,7 +49,7 @@ class HTTPClient:
     # python prior 3.4.1 does not play nice with __del__ method
     if PY_341:  # pragma: no branch
         def __del__(self):
-            if not self._connector.closed:
+            if not self._session.closed:
                 warnings.warn("Unclosed connector in aio.Consul.HTTPClient",
                               ResourceWarning)
                 self.close()
@@ -73,7 +71,7 @@ class HTTPClient:
         return self._request(callback, 'POST', uri, data=data)
 
     def close(self):
-        self._connector.close()
+        self._session.close()
 
 
 class Consul(base.Consul):

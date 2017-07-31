@@ -235,10 +235,10 @@ class HTTPClient(six.with_metaclass(abc.ABCMeta, object)):
         self.cert = cert
 
     def uri(self, path, params=None):
-        uri = self.base_uri + path
-        if not params:
-            return uri
-        return '%s?%s' % (uri, urllib.parse.urlencode(params))
+        uri = urllib.parse.quote(self.base_uri + path, safe='/:')
+        if params:
+            uri = '%s?%s' % (uri, urllib.parse.urlencode(params))
+        return uri
 
     @abc.abstractmethod
     def get(self, callback, path, params=None):

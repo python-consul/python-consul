@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 from six import b
 # noinspection PyUnresolvedReferences
-from six.moves import urllib
 from treq.client import HTTPClient as TreqHTTPClient
 from twisted.internet import reactor
 from twisted.internet.defer import inlineCallbacks, returnValue
@@ -32,37 +31,20 @@ class InsecureContextFactory(ClientContextFactory):
         return ClientContextFactory.getContext(self)
 
 
-class HTTPClient(object):
-    def __init__(self,
-                 host='127.0.0.1',
-                 port=8500,
-                 scheme='http',
-                 verify=True,
-                 cert=None,
-                 contextFactory=None,
-                 **kwargs):
-        self.host = host
-        self.port = port
-        self.scheme = scheme
-        self.base_uri = '%s://%s:%s' % (self.scheme, self.host, self.port)
-
+class HTTPClient(base.HTTPClient):
+    def __init__(self, contextFactory, *args, **kwargs):
+        super(HTTPClient, self).__init__(*args, **kwargs)
         agent_kwargs = dict(
-            reactor=reactor, pool=HTTPConnectionPool(reactor), **kwargs)
+            reactor=reactor, pool=HTTPConnectionPool(reactor))
         if contextFactory is not None:
             # use the provided context factory
             agent_kwargs['contextFactory'] = contextFactory
-        elif not verify:
+        elif not self.verify:
             # if no context is provided and verify is set to false, use the
             # insecure context factory implementation
             agent_kwargs['contextFactory'] = InsecureContextFactory()
 
         self.client = TreqHTTPClient(Agent(**agent_kwargs))
-
-    def uri(self, path, params=None):
-        uri = self.base_uri + path
-        if not params:
-            return uri
-        return '%s?%s' % (uri, urllib.parse.urlencode(params))
 
     @staticmethod
     def response(code, headers, text):
@@ -151,5 +133,5 @@ class Consul(base.Consul):
                 contextFactory=None,
                 **kwargs):
         return HTTPClient(
-            host, port, scheme, verify=verify, cert=cert,
-            contextFactory=contextFactory, **kwargs)
+            contextFactory, host, port, scheme, verify=verify, cert=cert,
+            **kwargs)

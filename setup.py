@@ -25,10 +25,9 @@ py_modules = [os.path.splitext(x)[0] for x in glob.glob('consul/*.py')]
 
 class Install(install):
     def run(self):
-        try:
-            import asyncio
-            del asyncio
-        except:
+        # Issue #123: skip installation of consul.aio if python version < 3.4.2
+        # as this version or later is required by aiohttp
+        if sys.version_info < (3, 4, 2):
             if 'consul/aio' in self.distribution.py_modules:
                 self.distribution.py_modules.remove('consul/aio')
         install.run(self)

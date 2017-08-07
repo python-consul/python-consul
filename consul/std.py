@@ -1,5 +1,3 @@
-from six.moves import urllib
-
 import requests
 
 from consul import base
@@ -8,27 +6,15 @@ from consul import base
 __all__ = ['Consul']
 
 
-class HTTPClient(object):
-    def __init__(self, host='127.0.0.1', port=8500, scheme='http',
-                 verify=True, cert=None):
-        self.host = host
-        self.port = port
-        self.scheme = scheme
-        self.verify = verify
-        self.base_uri = '%s://%s:%s' % (self.scheme, self.host, self.port)
-        self.cert = cert
+class HTTPClient(base.HTTPClient):
+    def __init__(self, *args, **kwargs):
+        super(HTTPClient, self).__init__(*args, **kwargs)
         self.session = requests.session()
 
     def response(self, response):
         response.encoding = 'utf-8'
         return base.Response(
             response.status_code, response.headers, response.text)
-
-    def uri(self, path, params=None):
-        uri = self.base_uri + path
-        if not params:
-            return uri
-        return '%s?%s' % (uri, urllib.parse.urlencode(params))
 
     def get(self, callback, path, params=None):
         uri = self.uri(path, params)

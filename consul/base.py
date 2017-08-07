@@ -1,3 +1,4 @@
+import abc
 import collections
 import logging
 import base64
@@ -5,6 +6,7 @@ import json
 import os
 
 import six
+from six.moves import urllib
 
 
 log = logging.getLogger(__name__)
@@ -220,6 +222,39 @@ class CB(object):
                 return response.headers['X-Consul-Index'], data
             return data
         return cb
+
+
+class HTTPClient(six.with_metaclass(abc.ABCMeta, object)):
+    def __init__(self, host='127.0.0.1', port=8500, scheme='http',
+                 verify=True, cert=None):
+        self.host = host
+        self.port = port
+        self.scheme = scheme
+        self.verify = verify
+        self.base_uri = '%s://%s:%s' % (self.scheme, self.host, self.port)
+        self.cert = cert
+
+    def uri(self, path, params=None):
+        uri = urllib.parse.quote(self.base_uri + path, safe='/:')
+        if params:
+            uri = '%s?%s' % (uri, urllib.parse.urlencode(params))
+        return uri
+
+    @abc.abstractmethod
+    def get(self, callback, path, params=None):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def put(self, callback, path, params=None, data=''):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def delete(self, callback, path, params=None):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def post(self, callback, path, params=None, data=''):
+        raise NotImplementedError
 
 
 class Consul(object):

@@ -4,7 +4,6 @@ import asyncio
 import warnings
 
 import aiohttp
-from six.moves import urllib
 from consul import base
 
 
@@ -12,30 +11,15 @@ __all__ = ['Consul']
 PY_341 = sys.version_info >= (3, 4, 1)
 
 
-class HTTPClient:
+class HTTPClient(base.HTTPClient):
     """Asyncio adapter for python consul using aiohttp library"""
 
-    def __init__(
-            self,
-            host='127.0.0.1',
-            port=8500,
-            scheme='http',
-            loop=None,
-            verify=True,
-            cert=None):
-        self.host = host
-        self.port = port
-        self.scheme = scheme
-        self.base_uri = '%s://%s:%s' % (self.scheme, self.host, self.port)
+    def __init__(self, *args, loop=None, **kwargs):
+        super(HTTPClient, self).__init__(*args, **kwargs)
         self._loop = loop or asyncio.get_event_loop()
-        connector = aiohttp.TCPConnector(loop=self._loop, verify_ssl=verify)
+        connector = aiohttp.TCPConnector(loop=self._loop,
+                                         verify_ssl=self.verify)
         self._session = aiohttp.ClientSession(connector=connector)
-
-    def _uri(self, path, params=None):
-        uri = self.base_uri + path
-        if not params:
-            return uri
-        return '%s?%s' % (uri, urllib.parse.urlencode(params))
 
     @asyncio.coroutine
     def _request(self, callback, method, uri, data=None):
@@ -55,19 +39,19 @@ class HTTPClient:
                 self.close()
 
     def get(self, callback, path, params=None):
-        uri = self._uri(path, params)
+        uri = self.uri(path, params)
         return self._request(callback, 'GET', uri)
 
     def put(self, callback, path, params=None, data=''):
-        uri = self._uri(path, params)
+        uri = self.uri(path, params)
         return self._request(callback, 'PUT', uri, data=data)
 
     def delete(self, callback, path, params=None):
-        uri = self._uri(path, params)
+        uri = self.uri(path, params)
         return self._request(callback, 'DELETE', uri)
 
     def post(self, callback, path, params=None, data=''):
-        uri = self._uri(path, params)
+        uri = self.uri(path, params)
         return self._request(callback, 'POST', uri, data=data)
 
     def close(self):

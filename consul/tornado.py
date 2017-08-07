@@ -1,7 +1,5 @@
 from __future__ import absolute_import
 
-from six.moves import urllib
-
 from tornado import httpclient
 from tornado import gen
 
@@ -11,21 +9,10 @@ from consul import base
 __all__ = ['Consul']
 
 
-class HTTPClient(object):
-    def __init__(self, host='127.0.0.1', port=8500, scheme='http',
-                 verify=True, cert=None):
-        self.host = host
-        self.port = port
-        self.scheme = scheme
-        self.verify = verify
-        self.base_uri = '%s://%s:%s' % (self.scheme, self.host, self.port)
+class HTTPClient(base.HTTPClient):
+    def __init__(self, *args, **kwargs):
+        super(HTTPClient, self).__init__(*args, **kwargs)
         self.client = httpclient.AsyncHTTPClient()
-
-    def uri(self, path, params=None):
-        uri = self.base_uri + path
-        if not params:
-            return uri
-        return '%s?%s' % (uri, urllib.parse.urlencode(params))
 
     def response(self, response):
         return base.Response(

@@ -244,6 +244,25 @@ class TestConsul(object):
         verify_check_status('ttl_check', 'critical')
         verify_and_dereg_check('ttl_check')
 
+    def test_service_dereg_issue_156(self, consul_port):
+        # https://github.com/cablehead/python-consul/issues/156
+        service_name = 'app#127.0.0.1#3000'
+        c = consul.Consul(port=consul_port)
+        c.agent.service.register(service_name)
+
+        time.sleep(80/1000.0)
+
+        index, nodes = c.health.service(service_name)
+        assert [node['Service']['ID'] for node in nodes] == [service_name]
+
+        # Clean up tasks
+        assert c.agent.service.deregister(service_name) is True
+
+        time.sleep(40/1000.0)
+
+        index, nodes = c.health.service(service_name)
+        assert [node['Service']['ID'] for node in nodes] == []
+
     def test_agent_checks_service_id(self, consul_port):
         c = consul.Consul(port=consul_port)
         c.agent.service.register('foo1')

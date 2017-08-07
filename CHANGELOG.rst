@@ -1,10 +1,25 @@
 Change log
 ==========
 
-0.7.1-dev
+0.7.2-dev
 ---------
 
 * TBD
+
+0.7.1
+-----
+
+* Add a common base client for shared functionality between different HTTP clients (thanks @abn!)
+* Fix request quoting issue (thanks @abn)
+* Fix installation issue due to aiohttp only being available for Python>=3.4.2 (thanks @abn)
+* Added support for current release of aiohttp (thanks @eaterek)
+* Improved Tornado example (thanks @chriswue)
+* Add and use ACL token in Event.fire (thanks @illenseer)
+* Add client side cert support (thanks @brocade-craig)
+* Add token params to catalog register (thanks @gregdurham)
+* Add support for DeregisterCriticalServiceAfter (thanks @daroot)
+* Improve reliability of test suite (thanks @daroot!)
+* Update CI: Add py35 and py36 to tests (thanks @Poogles)
 
 0.7.0
 -----

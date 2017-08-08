@@ -22,7 +22,8 @@ jobs:
       script:
         - tox -e flake8
     - stage: sonar
-      python: 3.6
+      dist: trusty
+      language: java
       addons:
         sonarcloud:
           organization: "python-consul"
@@ -30,7 +31,12 @@ jobs:
             secure: "lTtnh4/Tm/5vRckFzh5uF/HotBO+lWX/Vx41hc+wS5eFQe9WTsWZlY/hhKtL24rHBdUr3JVBDTBhEtDR5FAv/XwlX2kAOjqcuxOhW0eQP+1NyuMklbV7zGup3T8aNY1vHh0k0mhO5kUwHw3iNLKxO73BvP7/tlrLg+DTeFLtgx8="
           branches:
             - master
-      script: sonar-scanner
+      install: ignore
+      script:
+        - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
+      branches:
+        only:
+          - master
     - stage: deploy
       python: 3.6
       script: ignore

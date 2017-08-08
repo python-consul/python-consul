@@ -1,27 +1,44 @@
 language: python
 
-
-matrix:
-  include:
-    - python: "2.6"
-      env: TOX_ENV=py26
-    - python: "2.7"
-      env: TOX_ENV=py27
-    - python: "pypy-5.3.1"
-      env: TOX_ENV=pypy
-    - python: "2.7"
-      env: TOX_ENV=flake8
-    - python: "3.4"
-      env: TOX_ENV=py34
-    - python: "3.5"
-      env: TOX_ENV=py35
-    - python: "3.6"
-      env: TOX_ENV=py36
-
+python:
+  - 2.6
+  - 2.7
+  - pypy-5.3.1
+  - 3.4
+  - 3.5
+  - 3.6
 
 install:
-    - pip install tox
-
+  - pip install tox
+  - pip install tox-travis
 
 script:
-  - tox -e $TOX_ENV
+  - tox
+
+jobs:
+  include:
+    - stage: flake
+      python: 3.6
+      script:
+        - tox -e flake8
+    - stage: sonar
+      python: 3.6
+      addons:
+        sonarcloud:
+          organization: "python-consul"
+          token:
+            secure: "lTtnh4/Tm/5vRckFzh5uF/HotBO+lWX/Vx41hc+wS5eFQe9WTsWZlY/hhKtL24rHBdUr3JVBDTBhEtDR5FAv/XwlX2kAOjqcuxOhW0eQP+1NyuMklbV7zGup3T8aNY1vHh0k0mhO5kUwHw3iNLKxO73BvP7/tlrLg+DTeFLtgx8="
+          branches:
+            - master
+      script: sonar-scanner
+    - stage: deploy
+      python: 3.6
+      script: ignore
+      deploy:
+        provider: pypi
+        user: python-consul-admin
+        password:
+          secure: "HmLBvgjd5WB8nNBI/KbgvVPKUy1Wsb4TwLL2aEA4IrZHW0/8JHbwwo71zEX+ep+CvqCRTZDMfXtWbckpAJUhjGuqeFqiQGzxwU+SffJsdqy4mVl8NSUJ3WkWItYhPAhnbPYLTOg3QPAEY8KW0RrW1WW3X4wpwEe1+F+o3BDIvvw="
+        distributions: "sdist bdist_wheel"
+        on:
+          tags: true

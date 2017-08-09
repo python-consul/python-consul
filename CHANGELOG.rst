@@ -4,7 +4,7 @@ Change log
 0.7.2-dev
 ---------
 
-* TBD
+* added header parameter to http check (thanks @matusvalo)
 
 0.7.1
 -----

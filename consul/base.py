@@ -51,17 +51,22 @@ class Check(object):
         return {'script': script, 'interval': interval}
 
     @classmethod
-    def http(klass, url, interval, timeout=None, deregister=None):
+    def http(klass, url, interval, timeout=None, deregister=None, header=None):
         """
         Peform a HTTP GET against *url* every *interval* (e.g. "10s") to peform
         health check with an optional *timeout* and optional *deregister* after
-        which a failing service will be automatically deregistered.
+        which a failing service will be automatically deregistered. Optional
+        parameter *header* specifies headers sent in HTTP request. *header*
+        paramater is in form of map of lists of strings,
+        e.g. {"x-foo": ["bar", "baz"]}.
         """
         ret = {'http': url, 'interval': interval}
         if timeout:
             ret['timeout'] = timeout
         if deregister:
             ret['DeregisterCriticalServiceAfter'] = deregister
+        if header:
+            ret['header'] = header
         return ret
 
     @classmethod

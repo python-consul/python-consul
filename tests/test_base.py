@@ -82,31 +82,42 @@ class TestChecks(object):
     Check constructor helpers return valid check configurations.
     """
     @pytest.mark.parametrize(
-        'url, interval, timeout, deregister, want', [
-            ('http://example.com', '10s', None, None, {
+        'url, interval, timeout, deregister, header, want', [
+            ('http://example.com', '10s', None, None, None, {
                 'http': 'http://example.com',
                 'interval': '10s',
             }),
-            ('http://example.com', '10s', '1s', None, {
+            ('http://example.com', '10s', '1s', None, None, {
                 'http': 'http://example.com',
                 'interval': '10s',
                 'timeout': '1s',
             }),
-            ('http://example.com', '10s', None, '1m', {
+            ('http://example.com', '10s', None, '1m', None, {
                 'http': 'http://example.com',
                 'interval': '10s',
                 'DeregisterCriticalServiceAfter': '1m',
             }),
-            ('http://example.com', '10s', '1s', '1m', {
+            ('http://example.com', '10s', '1s', '1m', None, {
                 'http': 'http://example.com',
                 'interval': '10s',
                 'timeout': '1s',
                 'DeregisterCriticalServiceAfter': '1m',
             }),
+            ('http://example.com', '10s', '1s', '1m',
+                {'X-Test-Header': ['TestHeaderValue']},
+                {
+                    'http': 'http://example.com',
+                    'interval': '10s',
+                    'timeout': '1s',
+                    'DeregisterCriticalServiceAfter': '1m',
+                    'header': {'X-Test-Header': ['TestHeaderValue']}
+                }
+             ),
         ])
-    def test_http_check(self, url, interval, timeout, deregister, want):
+    def test_http_check(self, url, interval, timeout, deregister, header,
+                        want):
         ch = consul.base.Check.http(url, interval, timeout=timeout,
-                                    deregister=deregister)
+                                    deregister=deregister, header=header)
         assert ch == want
 
     @pytest.mark.parametrize(

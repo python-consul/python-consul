@@ -1,3 +1,4 @@
+import base64
 import struct
 
 import pytest
@@ -23,6 +24,19 @@ def sleep(seconds):
 
 
 class TestConsul(object):
+
+    @pytest.inlineCallbacks
+    def test_transaction(self, consul_port):
+        c = consul.twisted.Consul(port=consul_port)
+        value = base64.b64encode(b"1").decode("utf8")
+        d = {"KV": {"Verb": "set", "Key": "asdf", "Value": value}}
+        r = yield c.txn.put([d])
+        assert r["Errors"] is None
+
+        d = {"KV": {"Verb": "get", "Key": "asdf"}}
+        r = yield c.txn.put([d])
+        assert r["Results"][0]["KV"]["Value"] == value
+
     @pytest.inlineCallbacks
     def test_kv(self, consul_port):
         c = consul.twisted.Consul(port=consul_port)

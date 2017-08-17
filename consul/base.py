@@ -317,6 +317,7 @@ class Consul(object):
 
         self.event = Consul.Event(self)
         self.kv = Consul.KV(self)
+        self.txn = Consul.Txn(self)
         self.agent = Consul.Agent(self)
         self.catalog = Consul.Catalog(self)
         self.health = Consul.Health(self)
@@ -639,6 +640,30 @@ class Consul(object):
 
             return self.agent.http.delete(
                 CB.json(), '/v1/kv/%s' % key, params=params)
+
+    class Txn(object):
+        """
+        The /txn endpoints manage updates or fetches of multiple keys inside
+        a single, atomic transaction.
+        """
+        def __init__(self, agent):
+            self.agent = agent
+
+        def put(self, value):
+            """
+            value is a list of operations
+            Each *operation* looks like this::
+
+                {
+                    "KV": {
+                        "Verb": "set",
+                        "Key": "foo",
+                        "Value": "YmFy" # base64-encoded blob of data
+                    }
+                }
+            """
+            return self.agent.http.put(CB.json(), "/v1/txn",
+                                       data=json.dumps(value))
 
     class Agent(object):
         """

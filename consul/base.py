@@ -317,6 +317,7 @@ class Consul(object):
 
         self.event = Consul.Event(self)
         self.kv = Consul.KV(self)
+        self.txn = Consul.Txn(self)
         self.agent = Consul.Agent(self)
         self.catalog = Consul.Catalog(self)
         self.health = Consul.Health(self)
@@ -639,6 +640,34 @@ class Consul(object):
 
             return self.agent.http.delete(
                 CB.json(), '/v1/kv/%s' % key, params=params)
+
+    class Txn(object):
+        """
+        The Txn endpoints manage updates or fetches of multiple keys inside
+        a single, atomic transaction.
+        """
+        def __init__(self, agent):
+            self.agent = agent
+
+        def put(self, payload):
+            """
+            *payload* is a list of operations where each operation is a `dict`
+            with a single key value pair, with the key specifying operation the
+            type. An example payload of operation type "KV" is
+            dict::
+                {
+                    "KV": {
+                      "Verb": "<verb>",
+                      "Key": "<key>",
+                      "Value": "<Base64-encoded blob of data>",
+                      "Flags": 0,
+                      "Index": 0,
+                      "Session": "<session id>"
+                    }
+                }
+            """
+            return self.agent.http.put(CB.json(), "/v1/txn",
+                                       data=json.dumps(payload))
 
     class Agent(object):
         """

@@ -1,3 +1,4 @@
+import base64
 import pytest
 import six
 import struct
@@ -147,6 +148,21 @@ class TestAsyncioConsul(object):
             assert response is True
 
         loop.run_until_complete(get())
+
+    def test_transaction(self, loop, consul_port):
+        @asyncio.coroutine
+        def main():
+            c = consul.aio.Consul(port=consul_port, loop=loop)
+            value = base64.b64encode(b"1").decode("utf8")
+            d = {"KV": {"Verb": "set", "Key": "asdf", "Value": value}}
+            r = yield from c.txn.put([d])
+            assert r["Errors"] is None
+
+            d = {"KV": {"Verb": "get", "Key": "asdf"}}
+            r = yield from c.txn.put([d])
+            assert r["Results"][0]["KV"]["Value"] == value
+            c.close()
+        loop.run_until_complete(main())
 
     def test_agent_services(self, loop, consul_port):
         @asyncio.coroutine

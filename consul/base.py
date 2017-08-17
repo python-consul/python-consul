@@ -230,6 +230,7 @@ class CB(object):
 
 
 class HTTPClient(six.with_metaclass(abc.ABCMeta, object)):
+
     def __init__(self, host='127.0.0.1', port=8500, scheme='http',
                  verify=True, cert=None):
         self.host = host

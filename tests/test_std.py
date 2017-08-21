@@ -1,3 +1,4 @@
+import base64
 import operator
 import struct
 import time
@@ -21,6 +22,18 @@ class TestHTTPClient(object):
 
 
 class TestConsul(object):
+
+    def test_transaction(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        value = base64.b64encode(b"1").decode("utf8")
+        d = {"KV": {"Verb": "set", "Key": "asdf", "Value": value}}
+        r = c.txn.put([d])
+        assert r["Errors"] is None
+
+        d = {"KV": {"Verb": "get", "Key": "asdf"}}
+        r = c.txn.put([d])
+        assert r["Results"][0]["KV"]["Value"] == value
+
     def test_kv(self, consul_port):
         c = consul.Consul(port=consul_port)
         index, data = c.kv.get('foo')

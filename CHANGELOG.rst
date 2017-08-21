@@ -4,7 +4,8 @@ Change log
 0.7.2-dev
 ---------
 
-* added header parameter to http check (thanks @matusvalo)
+* Add header parameter to http check (thanks @matusvalo)
+* Add Transaction HTTP API support (thanks @iandyh)
 
 0.7.1
 -----

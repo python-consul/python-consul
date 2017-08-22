@@ -293,6 +293,13 @@ Consul.status
    :members:
    :undoc-members:
 
+Consul.txn
+++++++++++
+
+.. autoclass:: consul.base::Consul.Txn()
+   :members:
+   :undoc-members:
+
 
 .. _ACL Token: http://www.consul.io/docs/internals/acl.html
 .. _HCL: https://github.com/hashicorp/hcl/

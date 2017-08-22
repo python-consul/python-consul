@@ -643,18 +643,23 @@ class Consul(object):
 
     class Txn(object):
         """
-        The Txn endpoints manage updates or fetches of multiple keys inside
-        a single, atomic transaction.
+        The Transactions endpoints manage updates or fetches of multiple keys
+        inside a single, atomic transaction.
         """
         def __init__(self, agent):
             self.agent = agent
 
         def put(self, payload):
             """
+            Create a transaction by submitting a list of operations to apply to
+            the KV store inside of a transaction. If any operation fails, the
+            transaction is rolled back and none of the changes are applied.
+
             *payload* is a list of operations where each operation is a `dict`
             with a single key value pair, with the key specifying operation the
             type. An example payload of operation type "KV" is
             dict::
+
                 {
                     "KV": {
                       "Verb": "<verb>",

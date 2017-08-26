@@ -1,11 +1,12 @@
 Change log
 ==========
 
-0.7.2-dev
----------
+0.7.2
+-----
 
 * Add header parameter to http check (thanks @matusvalo)
-* Add Transaction HTTP API support (thanks @iandyh)
+* Add basic Transaction HTTP API support (thanks @iandyh)
+* Fix invalid url error when specifying credentials via host (Issue #167)
 
 0.7.1
 -----

@@ -240,7 +240,7 @@ class HTTPClient(six.with_metaclass(abc.ABCMeta, object)):
         self.cert = cert
 
     def uri(self, path, params=None):
-        uri = urllib.parse.quote(self.base_uri + path, safe='/:')
+        uri = self.base_uri + urllib.parse.quote(path, safe='/:')
         if params:
             uri = '%s?%s' % (uri, urllib.parse.urlencode(params))
         return uri

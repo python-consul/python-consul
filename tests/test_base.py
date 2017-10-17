@@ -175,3 +175,39 @@ class TestChecks(object):
     def test_ttl_check(self):
         ch = consul.base.Check.ttl('1m')
         assert ch == {'ttl': '1m'}
+
+
+@pytest.fixture()
+def consul_client():
+    return Consul()
+
+
+class TestAgentService(object):
+    def test_list(self, consul_client):
+        ch = consul_client.agent.services()
+        assert ch == Request(method='get', path='/v1/agent/services',
+                             params=None, data=None)
+
+    def test_register(self, consul_client):
+        ch = consul_client.agent.service.register('test_service')
+        assert ch == Request(method='put', params={},
+                             path='/v1/agent/service/register',
+                             data='{"name": "test_service"}')
+
+    def test_deregister(self, consul_client):
+        ch = consul_client.agent.service.deregister('testservice')
+        assert ch == Request(method='put',
+                             path='/v1/agent/service/deregister/testservice',
+                             params=None, data='')
+
+    def test_mm_enable(self, consul_client):
+        ch = consul_client.agent.service.maintenance('testservice', True)
+        assert ch == Request(method='put',
+                             path='/v1/agent/service/maintenance/testservice',
+                             params={"enable": True}, data='')
+
+    def test_mm_disable(self, consul_client):
+        ch = consul_client.agent.service.maintenance('testservice', False)
+        assert ch == Request(method='put',
+                             path='/v1/agent/service/maintenance/testservice',
+                             params={"enable": False}, data='')

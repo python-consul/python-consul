@@ -39,7 +39,7 @@ class TestAsyncioConsul(object):
             response = yield from c.kv.put('foo', 'bar')
             assert response is True
             index, data = yield from c.kv.get('foo')
-            assert data['Value'] == six.b('bar')
+            assert data['Value'] == 'bar'
             c.close()
 
         loop.run_until_complete(main())
@@ -79,7 +79,7 @@ class TestAsyncioConsul(object):
             index, data = yield from c.kv.get('foo')
             assert data is None
             index, data = yield from c.kv.get('foo', index=index)
-            assert data['Value'] == six.b('bar')
+            assert data['Value'] == 'bar'
             yield from fut
             c.close()
 
@@ -137,7 +137,7 @@ class TestAsyncioConsul(object):
             index, data = yield from c.kv.get('foo')
             assert data is None
             index, data = yield from c.kv.get('foo', index=index)
-            assert data['Value'] == six.b('bar')
+            assert data['Value'] == 'bar'
             yield from fut
             c.close()
 

@@ -32,7 +32,7 @@ class TestConsul(object):
         response = yield c.kv.put('foo', 'bar')
         assert response is True
         index, data = yield c.kv.get('foo')
-        assert data['Value'] == six.b('bar')
+        assert data['Value'] == 'bar'
 
     @pytest.inlineCallbacks
     def test_kv_binary(self, consul_port):
@@ -49,7 +49,7 @@ class TestConsul(object):
         index, data = yield c.kv.get('foo')
         assert data is None
         index, data = yield c.kv.get('foo', index=index)
-        assert data['Value'] == six.b('bar')
+        assert data['Value'] == 'bar'
 
     @pytest.inlineCallbacks
     def test_kv_put_flags(self, consul_port):
@@ -94,7 +94,7 @@ class TestConsul(object):
         index, data = yield c.kv.get('foo')
         assert data is None
         index, data = yield c.kv.get('foo', index=index)
-        assert data['Value'] == six.b('bar')
+        assert data['Value'] == 'bar'
 
     @pytest.inlineCallbacks
     def test_transaction(self, consul_port):

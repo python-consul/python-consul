@@ -7,22 +7,8 @@ import os
 
 import six
 from six.moves import urllib
-import codecs
 
 log = logging.getLogger(__name__)
-
-
-def slashescape(err):
-    """ codecs error handler. err is UnicodeDecode instance. return
-    a tuple with a replacement for the unencodable part of the input
-    and a position where encoding should continue"""
-    # print err, dir(err), err.start, err.end, err.object[:err.start]
-    thebyte = err.object[err.start:err.end]
-    repl = u'\\x' + hex(ord(thebyte))[2:]
-    return repl, err.end
-
-
-codecs.register_error('slashescape', slashescape)
 
 
 class ConsulException(Exception):
@@ -227,7 +213,7 @@ class CB(object):
             if decode:
                 for item in data:
                     if item.get(decode) is not None:
-                        item[decode] = base64.b64decode(item[decode]).decode('utf-8', 'slashescape')
+                        item[decode] = base64.b64decode(item[decode]).decode('latin-1')
             if is_id:
                 data = data['ID']
             if one:

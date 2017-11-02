@@ -51,7 +51,8 @@ class TestAsyncioConsul(object):
             assert c._loop is loop
             yield from c.kv.put('foo', struct.pack('i', 1000))
             index, data = yield from c.kv.get('foo')
-            assert struct.unpack('i', data['Value'].encode('latin-1')) == (1000,)
+            encoded = data['Value'].encode('latin-1')
+            assert struct.unpack('i', encoded) == (1000,)
             c.close()
 
         asyncio.set_event_loop(loop)
@@ -63,7 +64,8 @@ class TestAsyncioConsul(object):
             c = consul.aio.Consul(port=consul_port, loop=loop)
             yield from c.kv.put('foo', struct.pack('i', 1000))
             index, data = yield from c.kv.get('foo')
-            assert struct.unpack('i', data['Value'].encode('latin-1')) == (1000,)
+            encoded = data['Value'].encode('latin-1')
+            assert struct.unpack('i', encoded) == (1000,)
             c.close()
 
         loop.run_until_complete(main())

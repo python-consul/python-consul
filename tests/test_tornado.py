@@ -48,7 +48,8 @@ class TestConsul(object):
             c = consul.tornado.Consul(port=consul_port)
             yield c.kv.put('foo', struct.pack('i', 1000))
             index, data = yield c.kv.get('foo')
-            assert struct.unpack('i', data['Value'].encode('latin-1')) == (1000,)
+            encoded = data['Value'].encode('latin-1')
+            assert struct.unpack('i', encoded) == (1000,)
             loop.stop()
         loop.run_sync(main)
 
@@ -135,7 +136,8 @@ class TestConsul(object):
             response = yield c.kv.put('foo', struct.pack('i', 1000))
             assert response is True
             index, data = yield c.kv.get('foo')
-            assert struct.unpack('i', data['Value'].encode('latin-1')) == (1000,)
+            encoded = data['Value'].encode('latin-1')
+            assert struct.unpack('i', encoded) == (1000,)
 
             # test unicode
             response = yield c.kv.put('foo', u'bar')

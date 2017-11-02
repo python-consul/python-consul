@@ -198,7 +198,7 @@ class CB(object):
         *one* returns only the first item of the list of items. empty lists are
         coerced to None.
 
-        *decode* if specified this key will be base64 decoded (bytes -> string in python3).
+        *decode* if specified this key will be base64 decoded
 
         *is_id* only the 'ID' field of the json object will be returned.
         """
@@ -213,7 +213,8 @@ class CB(object):
             if decode:
                 for item in data:
                     if item.get(decode) is not None:
-                        item[decode] = base64.b64decode(item[decode]).decode('latin-1')
+                        raw_value = base64.b64decode(item[decode])
+                        item[decode] = raw_value.decode('latin-1')
             if is_id:
                 data = data['ID']
             if one:

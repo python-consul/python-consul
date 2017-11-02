@@ -4,7 +4,6 @@ import struct
 import time
 
 import pytest
-import six
 
 import consul
 import consul.std

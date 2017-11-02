@@ -1,6 +1,5 @@
 import base64
 import pytest
-import six
 import struct
 import sys
 

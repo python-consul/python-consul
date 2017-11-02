@@ -3,7 +3,6 @@ import struct
 import time
 
 import pytest
-import six
 
 from tornado import ioloop
 from tornado import gen

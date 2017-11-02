@@ -2,7 +2,6 @@ import base64
 import struct
 
 import pytest
-import six
 from twisted.internet import defer, reactor
 
 import consul

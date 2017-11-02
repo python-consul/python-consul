@@ -215,6 +215,7 @@ class CB(object):
                     if item.get(decode) is not None:
                         raw_value = base64.b64decode(item[decode])
                         item[decode] = raw_value.decode('latin-1')
+
             if is_id:
                 data = data['ID']
             if one:

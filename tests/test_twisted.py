@@ -2,7 +2,6 @@ import base64
 import struct
 
 import pytest
-import six
 from twisted.internet import defer, reactor
 
 import consul
@@ -32,14 +31,14 @@ class TestConsul(object):
         response = yield c.kv.put('foo', 'bar')
         assert response is True
         index, data = yield c.kv.get('foo')
-        assert data['Value'] == six.b('bar')
+        assert data['Value'] == 'bar'
 
     @pytest.inlineCallbacks
     def test_kv_binary(self, consul_port):
         c = consul.twisted.Consul(port=consul_port)
         yield c.kv.put('foo', struct.pack('i', 1000))
         index, data = yield c.kv.get('foo')
-        assert struct.unpack('i', data['Value']) == (1000,)
+        assert struct.unpack('i', data['Value'].encode('latin-1')) == (1000,)
 
     @pytest.inlineCallbacks
     def test_kv_missing(self, consul_port):
@@ -49,7 +48,7 @@ class TestConsul(object):
         index, data = yield c.kv.get('foo')
         assert data is None
         index, data = yield c.kv.get('foo', index=index)
-        assert data['Value'] == six.b('bar')
+        assert data['Value'] == 'bar'
 
     @pytest.inlineCallbacks
     def test_kv_put_flags(self, consul_port):
@@ -94,7 +93,7 @@ class TestConsul(object):
         index, data = yield c.kv.get('foo')
         assert data is None
         index, data = yield c.kv.get('foo', index=index)
-        assert data['Value'] == six.b('bar')
+        assert data['Value'] == 'bar'
 
     @pytest.inlineCallbacks
     def test_transaction(self, consul_port):

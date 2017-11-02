@@ -8,7 +8,6 @@ import os
 import six
 from six.moves import urllib
 
-
 log = logging.getLogger(__name__)
 
 
@@ -199,10 +198,11 @@ class CB(object):
         *one* returns only the first item of the list of items. empty lists are
         coerced to None.
 
-        *decode* if specified this key will be base64 decoded.
+        *decode* if specified this key will be base64 decoded
 
         *is_id* only the 'ID' field of the json object will be returned.
         """
+
         def cb(response):
             CB.__status(response, allow_404=allow_404)
             if response.code == 404:
@@ -213,7 +213,9 @@ class CB(object):
             if decode:
                 for item in data:
                     if item.get(decode) is not None:
-                        item[decode] = base64.b64decode(item[decode])
+                        raw_value = base64.b64decode(item[decode])
+                        item[decode] = raw_value.decode('latin-1')
+
             if is_id:
                 data = data['ID']
             if one:

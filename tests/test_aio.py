@@ -1,6 +1,5 @@
 import base64
 import pytest
-import six
 import struct
 import sys
 
@@ -39,7 +38,7 @@ class TestAsyncioConsul(object):
             response = yield from c.kv.put('foo', 'bar')
             assert response is True
             index, data = yield from c.kv.get('foo')
-            assert data['Value'] == six.b('bar')
+            assert data['Value'] == 'bar'
             c.close()
 
         loop.run_until_complete(main())
@@ -52,7 +51,8 @@ class TestAsyncioConsul(object):
             assert c._loop is loop
             yield from c.kv.put('foo', struct.pack('i', 1000))
             index, data = yield from c.kv.get('foo')
-            assert struct.unpack('i', data['Value']) == (1000,)
+            encoded = data['Value'].encode('latin-1')
+            assert struct.unpack('i', encoded) == (1000,)
             c.close()
 
         asyncio.set_event_loop(loop)
@@ -64,7 +64,8 @@ class TestAsyncioConsul(object):
             c = consul.aio.Consul(port=consul_port, loop=loop)
             yield from c.kv.put('foo', struct.pack('i', 1000))
             index, data = yield from c.kv.get('foo')
-            assert struct.unpack('i', data['Value']) == (1000,)
+            encoded = data['Value'].encode('latin-1')
+            assert struct.unpack('i', encoded) == (1000,)
             c.close()
 
         loop.run_until_complete(main())
@@ -79,7 +80,7 @@ class TestAsyncioConsul(object):
             index, data = yield from c.kv.get('foo')
             assert data is None
             index, data = yield from c.kv.get('foo', index=index)
-            assert data['Value'] == six.b('bar')
+            assert data['Value'] == 'bar'
             yield from fut
             c.close()
 
@@ -137,7 +138,7 @@ class TestAsyncioConsul(object):
             index, data = yield from c.kv.get('foo')
             assert data is None
             index, data = yield from c.kv.get('foo', index=index)
-            assert data['Value'] == six.b('bar')
+            assert data['Value'] == 'bar'
             yield from fut
             c.close()
 

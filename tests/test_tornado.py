@@ -3,7 +3,6 @@ import struct
 import time
 
 import pytest
-import six
 
 from tornado import ioloop
 from tornado import gen
@@ -39,7 +38,7 @@ class TestConsul(object):
             response = yield c.kv.put('foo', 'bar')
             assert response is True
             index, data = yield c.kv.get('foo')
-            assert data['Value'] == six.b('bar')
+            assert data['Value'] == 'bar'
             loop.stop()
         loop.run_sync(main)
 
@@ -49,7 +48,8 @@ class TestConsul(object):
             c = consul.tornado.Consul(port=consul_port)
             yield c.kv.put('foo', struct.pack('i', 1000))
             index, data = yield c.kv.get('foo')
-            assert struct.unpack('i', data['Value']) == (1000,)
+            encoded = data['Value'].encode('latin-1')
+            assert struct.unpack('i', encoded) == (1000,)
             loop.stop()
         loop.run_sync(main)
 
@@ -62,7 +62,7 @@ class TestConsul(object):
             index, data = yield c.kv.get('foo')
             assert data is None
             index, data = yield c.kv.get('foo', index=index)
-            assert data['Value'] == six.b('bar')
+            assert data['Value'] == 'bar'
             loop.stop()
 
         @gen.coroutine
@@ -116,7 +116,7 @@ class TestConsul(object):
             index, data = yield c.kv.get('foo')
             assert data is None
             index, data = yield c.kv.get('foo', index=index)
-            assert data['Value'] == six.b('bar')
+            assert data['Value'] == 'bar'
             loop.stop()
 
         @gen.coroutine
@@ -136,13 +136,14 @@ class TestConsul(object):
             response = yield c.kv.put('foo', struct.pack('i', 1000))
             assert response is True
             index, data = yield c.kv.get('foo')
-            assert struct.unpack('i', data['Value']) == (1000,)
+            encoded = data['Value'].encode('latin-1')
+            assert struct.unpack('i', encoded) == (1000,)
 
             # test unicode
             response = yield c.kv.put('foo', u'bar')
             assert response is True
             index, data = yield c.kv.get('foo')
-            assert data['Value'] == six.b('bar')
+            assert data['Value'] == 'bar'
 
             # test empty-string comes back as `None`
             response = yield c.kv.put('foo', '')

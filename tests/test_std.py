@@ -43,7 +43,7 @@ class TestConsul(object):
         # test binary
         c.kv.put('foo', struct.pack('i', 1000))
         index, data = c.kv.get('foo')
-        assert struct.unpack('i', data['Value']) == (1000,)
+        assert struct.unpack('i', data['Value'].encode('latin-1')) == (1000,)
 
         # test unicode
         c.kv.put('foo', u'bar')

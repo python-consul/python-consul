@@ -39,7 +39,7 @@ class TestConsul(object):
         c = consul.twisted.Consul(port=consul_port)
         yield c.kv.put('foo', struct.pack('i', 1000))
         index, data = yield c.kv.get('foo')
-        assert struct.unpack('i', data['Value']) == (1000,)
+        assert struct.unpack('i', data['Value'].encode('latin-1')) == (1000,)
 
     @pytest.inlineCallbacks
     def test_kv_missing(self, consul_port):

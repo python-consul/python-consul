@@ -396,7 +396,8 @@ class TestConsul(object):
     def test_agent_self(self, consul_port):
         c = consul.Consul(port=consul_port)
         assert set(c.agent.self().keys()) == set(['Member', 'Stats', 'Config',
-                                                  'Coord', 'DebugConfig', 'Meta'])
+                                                  'Coord', 'DebugConfig',
+                                                  'Meta'])
 
     def test_agent_services(self, consul_port):
         c = consul.Consul(port=consul_port)
@@ -870,8 +871,9 @@ class TestConsul(object):
 
         agent_self = c.agent.self()
         leader = c.status.leader()
+        addr_port = agent_self['Stats']['consul']['leader_addr']
 
-        assert leader == agent_self['Stats']['consul']['leader_addr'], \
+        assert leader == addr_port, \
             "Leader value was {0}, expected value " \
             "was {1}".format(leader, addr_port)
 

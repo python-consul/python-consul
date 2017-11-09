@@ -291,10 +291,10 @@ class TestConsul(object):
         index, nodes = c.health.service('foo1')
         assert set([
             check['ServiceID'] for node in nodes
-            for check in node['Checks']]) == {'foo1', ''}
+            for check in node['Checks']]) == set(['foo1', ''])
         assert set([
             check['CheckID'] for node in nodes
-            for check in node['Checks']]) == {'foo', 'serfHealth'}
+            for check in node['Checks']]) == set(['foo', 'serfHealth'])
 
         # Clean up tasks
         assert c.agent.check.deregister('foo') is True

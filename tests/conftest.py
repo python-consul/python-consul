@@ -109,7 +109,7 @@ def start_consul_instance(acl_master_token=None):
     return p, ports['http']
 
 
-@pytest.yield_fixture(scope="session")
+@pytest.yield_fixture(scope="module")
 def consul_instance():
     p, port = start_consul_instance()
     yield port
@@ -124,7 +124,7 @@ def consul_port(consul_instance):
     requests.delete(base_uri + 'kv/?recurse=1')
 
 
-@pytest.yield_fixture(scope="session")
+@pytest.yield_fixture(scope="module")
 def acl_consul_instance():
     acl_master_token = uuid.uuid4().hex
     p, port = start_consul_instance(acl_master_token=acl_master_token)

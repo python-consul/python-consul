@@ -19,7 +19,8 @@ class HTTPClient(base.HTTPClient):
     def get(self, callback, path, params=None):
         uri = self.uri(path, params)
         return callback(self.response(
-            self.session.get(uri, verify=self.verify, cert=self.cert, timeout=self.timeout)))
+            self.session.get(uri, verify=self.verify, cert=self.cert,
+            timeout=self.timeout)))
 
     def put(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
@@ -30,7 +31,8 @@ class HTTPClient(base.HTTPClient):
     def delete(self, callback, path, params=None):
         uri = self.uri(path, params)
         return callback(self.response(
-            self.session.delete(uri, verify=self.verify, cert=self.cert, timeout=self.timeout)))
+            self.session.delete(uri, verify=self.verify, cert=self.cert,
+            timeout=self.timeout)))
 
     def post(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
@@ -40,5 +42,6 @@ class HTTPClient(base.HTTPClient):
 
 
 class Consul(base.Consul):
-    def connect(self, host, port, scheme, verify=True, cert=None, timeout=None):
+    def connect(self, host, port, scheme, verify=True, cert=None,
+        timeout=None):
         return HTTPClient(host, port, scheme, verify, cert, timeout)

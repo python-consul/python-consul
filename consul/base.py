@@ -927,6 +927,7 @@ class Consul(object):
                     notes=None,
                     service_id=None,
                     token=None,
+                    deregister_critical_service_after=None,
                     # *deprecated* use check parameter
                     script=None,
                     interval=None,
@@ -948,6 +949,9 @@ class Consul(object):
 
                 *notes* is not used by Consul, and is meant to be human
                 readable.
+                
+                *deregister_critical_service_after* is the time after which a
+                critical service will be deregistered.
 
                 Optionally, a *service_id* can be specified to associate a
                 registered check with an existing service.
@@ -983,7 +987,9 @@ class Consul(object):
                     payload['notes'] = notes
                 if service_id:
                     payload['serviceid'] = service_id
-
+                if deregister_critical_service_after:
+                    payload['deregistercriticalserviceafter'] = \
+                        deregister_critical_service_after
                 params = {}
                 token = token or self.agent.token
                 if token:

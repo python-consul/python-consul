@@ -37,6 +37,11 @@ class BadRequest(ConsulException):
     pass
 
 
+class ClientError(ConsulException):
+    """Encapsulates 4xx Http error code"""
+    pass
+
+
 #
 # Convenience to define checks
 
@@ -159,24 +164,28 @@ Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
 
 class CB(object):
     @classmethod
-    def __status(klass, response, allow_404=True):
+    def _status(klass, response, allow_404=True):
         # status checking
-        if response.code >= 500 and response.code < 600:
+        if 400 <= response.code < 500:
+            if response.code == 400:
+                raise BadRequest('%d %s' % (response.code, response.body))
+            elif response.code == 401:
+                raise ACLDisabled(response.body)
+            elif response.code == 403:
+                raise ACLPermissionDenied(response.body)
+            elif response.code == 404:
+                if not allow_404:
+                    raise NotFound(response.body)
+            else:
+                raise ClientError("%d %s" % (response.code, response.body))
+        elif 500 <= response.code < 600:
             raise ConsulException("%d %s" % (response.code, response.body))
-        if response.code == 400:
-            raise BadRequest('%d %s' % (response.code, response.body))
-        if response.code == 401:
-            raise ACLDisabled(response.body)
-        if response.code == 403:
-            raise ACLPermissionDenied(response.body)
-        if response.code == 404 and not allow_404:
-            raise NotFound(response.body)
 
     @classmethod
     def bool(klass):
         # returns True on successful response
         def cb(response):
-            CB.__status(response)
+            CB._status(response)
             return response.code == 200
         return cb
 

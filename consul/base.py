@@ -1182,7 +1182,8 @@ class Consul(object):
                 consistency=None,
                 dc=None,
                 near=None,
-                token=None):
+                token=None,
+                node_meta=None):
             """
             Returns a tuple of (*index*, *nodes*) of all nodes known
             about in the *dc* datacenter. *dc* defaults to the current
@@ -1203,6 +1204,9 @@ class Consul(object):
             was configured with.
 
             *token* is an optional `ACL token`_ to apply to this request.
+
+            *node_meta* is an optional meta data used for filtering, a string
+            formatted as 'key:value'.
 
             The response looks like this::
 
@@ -1233,6 +1237,9 @@ class Consul(object):
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
+            if node_meta:
+                params['node-meta'] = node_meta
+
             return self.agent.http.get(
                 CB.json(index=True), '/v1/catalog/nodes', params=params)
 
@@ -1241,7 +1248,8 @@ class Consul(object):
                      wait=None,
                      consistency=None,
                      dc=None,
-                     token=None):
+                     token=None,
+                     node_meta=None):
             """
             Returns a tuple of (*index*, *services*) of all services known
             about in the *dc* datacenter. *dc* defaults to the current
@@ -1259,6 +1267,9 @@ class Consul(object):
             was configured with.
 
             *token* is an optional `ACL token`_ to apply to this request.
+
+            *node_meta* is an optional meta data used for filtering, a string
+            formatted as 'key:value'.
 
             The response looks like this::
 
@@ -1288,6 +1299,9 @@ class Consul(object):
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
+            if node_meta:
+                params['node-meta'] = node_meta
+
             return self.agent.http.get(
                 CB.json(index=True), '/v1/catalog/services', params=params)
 
@@ -1445,7 +1459,8 @@ class Consul(object):
                     tag=None,
                     dc=None,
                     near=None,
-                    token=None):
+                    token=None,
+                    node_meta=None):
             """
             Returns a tuple of (*index*, *nodes*)
 
@@ -1470,6 +1485,9 @@ class Consul(object):
             order based on the estimated round trip time from that node
 
             *token* is an optional `ACL token`_ to apply to this request.
+
+            *node_meta* is an optional meta data used for filtering, a string
+            formatted as 'key:value'.
             """
             params = {}
             if index:
@@ -1488,6 +1506,8 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 params['token'] = token
+            if node_meta:
+                params['node-meta'] = node_meta
 
             return self.agent.http.get(
                 CB.json(index=True),
@@ -1501,7 +1521,8 @@ class Consul(object):
                 wait=None,
                 dc=None,
                 near=None,
-                token=None):
+                token=None,
+                node_meta=None):
             """
             Returns a tuple of (*index*, *checks*) with *checks* being the
             checks associated with the service.
@@ -1522,6 +1543,9 @@ class Consul(object):
             order based on the estimated round trip time from that node
 
             *token* is an optional `ACL token`_ to apply to this request.
+
+            *node_meta* is an optional meta data used for filtering, a string
+            formatted as 'key:value'.
             """
             params = {}
             if index:
@@ -1536,6 +1560,8 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 params['token'] = token
+            if node_meta:
+                params['node-meta'] = node_meta
 
             return self.agent.http.get(
                 CB.json(index=True),
@@ -1548,7 +1574,8 @@ class Consul(object):
                   wait=None,
                   dc=None,
                   near=None,
-                  token=None):
+                  token=None,
+                  node_meta=None):
             """
             Returns a tuple of (*index*, *nodes*)
 
@@ -1573,6 +1600,9 @@ class Consul(object):
 
             *token* is an optional `ACL token`_ to apply to this request.
 
+            *node_meta* is an optional meta data used for filtering, a string
+            formatted as 'key:value'.
+
             *nodes* are the nodes providing the given service.
             """
             assert name in ['any', 'unknown', 'passing', 'warning', 'critical']
@@ -1589,6 +1619,8 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 params['token'] = token
+            if node_meta:
+                params['node-meta'] = node_meta
 
             return self.agent.http.get(
                 CB.json(index=True),

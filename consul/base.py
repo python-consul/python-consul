@@ -262,17 +262,28 @@ class HTTPClient(six.with_metaclass(abc.ABCMeta, object)):
         raise NotImplementedError
 
 
+_UNSET = object()
+DEFAULT_HOST = '127.0.0.1'
+DEFAULT_PORT = 8500
+DEFAULT_TOKEN = None
+DEFAULT_SCHEME = 'http'
+DEFAULT_CONSISTENCY = 'default'
+DEFAULT_DC = None
+DEFAULT_VERIFY = True
+DEFAULT_CERT = None
+
+
 class Consul(object):
     def __init__(
             self,
-            host='127.0.0.1',
-            port=8500,
-            token=None,
-            scheme='http',
-            consistency='default',
-            dc=None,
-            verify=True,
-            cert=None):
+            host=_UNSET,
+            port=_UNSET,
+            token=_UNSET,
+            scheme=_UNSET,
+            consistency=DEFAULT_CONSISTENCY,
+            dc=DEFAULT_DC,
+            verify=_UNSET,
+            cert=DEFAULT_CERT):
         """
         *token* is an optional `ACL token`_. If supplied it will be used by
         default for all requests made with this client session. It's still
@@ -294,21 +305,38 @@ class Consul(object):
 
         # TODO: Status
 
-        if os.getenv('CONSUL_HTTP_ADDR'):
+        if host == _UNSET and port == _UNSET \
+                and os.getenv('CONSUL_HTTP_ADDR') is not None:
             try:
                 host, port = os.getenv('CONSUL_HTTP_ADDR').split(':')
             except ValueError:
                 raise ConsulException('CONSUL_HTTP_ADDR (%s) invalid, '
                                       'does not match <host>:<port>'
                                       % os.getenv('CONSUL_HTTP_ADDR'))
-        use_ssl = os.getenv('CONSUL_HTTP_SSL')
-        if use_ssl is not None:
-            scheme = 'https' if use_ssl == 'true' else 'http'
-        if os.getenv('CONSUL_HTTP_SSL_VERIFY') is not None:
-            verify = os.getenv('CONSUL_HTTP_SSL_VERIFY') == 'true'
+        if host == _UNSET:
+            host = DEFAULT_HOST
+        if port == _UNSET:
+            port = DEFAULT_PORT
+
+        if scheme == _UNSET:
+            use_ssl = os.getenv('CONSUL_HTTP_SSL')
+            if use_ssl is not None:
+                scheme = 'https' if use_ssl == 'true' else 'http'
+            else:
+                scheme = DEFAULT_SCHEME
+
+        if verify == _UNSET:
+            ssl_verify = os.getenv('CONSUL_HTTP_SSL_VERIFY')
+            if ssl_verify is not None:
+                verify = ssl_verify == 'true'
+            else:
+                verify = DEFAULT_VERIFY
+
+        if token == _UNSET:
+            token = os.getenv('CONSUL_HTTP_TOKEN', DEFAULT_TOKEN)
 
         self.http = self.connect(host, port, scheme, verify, cert)
-        self.token = os.getenv('CONSUL_HTTP_TOKEN', token)
+        self.token = token
         self.scheme = scheme
         self.dc = dc
         assert consistency in ('default', 'consistent', 'stale'), \

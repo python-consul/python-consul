@@ -772,7 +772,7 @@ class Consul(object):
             if wan:
                 params['wan'] = 1
 
-            return self.agent.http.get(
+            return self.agent.http.put(
                 CB.bool(), '/v1/agent/join/%s' % address, params=params)
 
         def force_leave(self, node):
@@ -787,7 +787,7 @@ class Consul(object):
             *node* is the node to change state for.
             """
 
-            return self.agent.http.get(
+            return self.agent.http.put(
                 CB.bool(), '/v1/agent/force-leave/%s' % node)
 
         class Service(object):
@@ -886,7 +886,7 @@ class Consul(object):
                 take care of deregistering the service with the Catalog. If
                 there is an associated check, that is also deregistered.
                 """
-                return self.agent.http.get(
+                return self.agent.http.put(
                     CB.bool(), '/v1/agent/service/deregister/%s' % service_id)
 
             def maintenance(self, service_id, enable, reason=None):
@@ -999,7 +999,7 @@ class Consul(object):
                 """
                 Remove a check from the local agent.
                 """
-                return self.agent.http.get(
+                return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/deregister/%s' % check_id)
 
@@ -1012,7 +1012,7 @@ class Consul(object):
                 if notes:
                     params['note'] = notes
 
-                return self.agent.http.get(
+                return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/pass/%s' % check_id,
                     params=params)
@@ -1027,7 +1027,7 @@ class Consul(object):
                 if notes:
                     params['note'] = notes
 
-                return self.agent.http.get(
+                return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/fail/%s' % check_id,
                     params=params)
@@ -1042,7 +1042,7 @@ class Consul(object):
                 if notes:
                     params['note'] = notes
 
-                return self.agent.http.get(
+                return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/warn/%s' % check_id,
                     params=params)

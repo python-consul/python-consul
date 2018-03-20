@@ -1012,7 +1012,7 @@ class Consul(object):
                 if notes:
                     params['note'] = notes
 
-                return self.agent.http.get(
+                return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/pass/%s' % check_id,
                     params=params)
@@ -1027,7 +1027,7 @@ class Consul(object):
                 if notes:
                     params['note'] = notes
 
-                return self.agent.http.get(
+                return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/fail/%s' % check_id,
                     params=params)
@@ -1042,7 +1042,7 @@ class Consul(object):
                 if notes:
                     params['note'] = notes
 
-                return self.agent.http.get(
+                return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/warn/%s' % check_id,
                     params=params)

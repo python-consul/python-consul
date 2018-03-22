@@ -25,8 +25,11 @@ class HTTPClient(object):
 
 
 class Consul(consul.base.Consul):
-    def connect(self, host, port, scheme, verify=True, cert=None):
-        return HTTPClient(host, port, scheme, verify=verify, cert=None)
+    def connect(self, host, port, scheme, verify=True, cert=None, token=None):
+        headers = dict()
+        if token is not None:
+            headers['X-Consul-Token'] = token
+        return HTTPClient(host, port, scheme, verify=verify, cert=None, headers=headers)
 
 
 def _should_support(c):

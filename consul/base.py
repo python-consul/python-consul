@@ -214,7 +214,7 @@ class CB(object):
         *is_id* only the 'ID' field of the json object will be returned.
         """
         def cb(response):
-            CB.__status(response, allow_404=allow_404)
+            CB._status(response, allow_404=allow_404)
             data = None
             if response.code in [200]:
                 data = json.loads(response.body)
@@ -233,12 +233,12 @@ class CB(object):
                 if map:
                     data = map(data)
             if index:
-                return response.headers['X-Consul-Index'], data
+                return response.headers['X-Nomad-Index'], data
             return data
         return cb
 
 class HTTPClient(six.with_metaclass(abc.ABCMeta, object)):
-    def __init__(self, host=None, port=None, scheme=None,
+    def __init__(self, host='127.0.0.1', port=8500, scheme='http',
                  verify=True, cert=None, token=None):
         self.host = host
         self.port = port

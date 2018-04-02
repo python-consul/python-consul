@@ -223,7 +223,7 @@ class CB(object):
                 if map:
                     data = map(data)
             if index:
-                return response.headers['X-Nomad-Index'], data
+                return response.headers['X-Consul-Index'], data
             return data
         return cb
 

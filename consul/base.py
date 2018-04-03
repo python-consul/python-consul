@@ -306,8 +306,8 @@ class Consul(object):
         if os.getenv('CONSUL_HTTP_SSL_VERIFY') is not None:
             verify = os.getenv('CONSUL_HTTP_SSL_VERIFY') == 'true'
 
-        self.http = self.connect(host, port, scheme, verify, cert)
         self.token = os.getenv('CONSUL_HTTP_TOKEN', token)
+        self.http = self.connect(host, port, scheme, verify, cert, token=self.token)
         self.scheme = scheme
         self.dc = dc
         assert consistency in ('default', 'consistent', 'stale'), \

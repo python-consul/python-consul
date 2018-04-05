@@ -30,11 +30,15 @@ class HTTPClient(base.HTTPClient):
 
     def get(self, callback, path, params=None):
         uri = self.uri(path, params)
-        return self._request(callback, uri)
+        request = httpclient.HTTPRequest(uri, method='GET',
+                                         headers={"X-Consul-Token": self.token},
+                                         validate_cert=self.verify)
+        return self._request(callback, request)
 
     def put(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
         request = httpclient.HTTPRequest(uri, method='PUT',
+                                         headers={"X-Consul-Token": self.token},
                                          body='' if data is None else data,
                                          validate_cert=self.verify)
         return self._request(callback, request)
@@ -42,16 +46,18 @@ class HTTPClient(base.HTTPClient):
     def delete(self, callback, path, params=None):
         uri = self.uri(path, params)
         request = httpclient.HTTPRequest(uri, method='DELETE',
+                                         headers={"X-Consul-Token": self.token},
                                          validate_cert=self.verify)
         return self._request(callback, request)
 
     def post(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
         request = httpclient.HTTPRequest(uri, method='POST', body=data,
+                                         headers={"X-Consul-Token": self.token},
                                          validate_cert=self.verify)
         return self._request(callback, request)
 
 
 class Consul(base.Consul):
-    def connect(self, host, port, scheme, verify=True, cert=None):
-        return HTTPClient(host, port, scheme, verify=verify, cert=cert)
+    def connect(self, host, port, scheme, verify=True, cert=None, token=None):
+        return HTTPClient(host, port, scheme, verify=verify, cert=cert, token=token)

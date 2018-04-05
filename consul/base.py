@@ -4,6 +4,7 @@ import logging
 import base64
 import json
 import os
+from urlparse import urlparse
 
 import six
 from six.moves import urllib
@@ -228,7 +229,7 @@ class CB(object):
         return cb
 
 class HTTPClient(six.with_metaclass(abc.ABCMeta, object)):
-    def __init__(self, host='127.0.0.1', port=8500, scheme='http',
+    def __init__(self, host=None, port=None, scheme=None,
                  verify=True, cert=None, token=None):
         self.host = host
         self.port = port
@@ -264,14 +265,17 @@ class HTTPClient(six.with_metaclass(abc.ABCMeta, object)):
 class Consul(object):
     def __init__(
             self,
-            host='127.0.0.1',
-            port=8500,
+            host=None,
+            port=None,
             token=None,
-            scheme='http',
+            scheme=None,
             consistency='default',
             dc=None,
             verify=True,
-            cert=None):
+            cert=None,
+            ssl_key=None,
+            ssl_ca=None
+    ):
         """
         *token* is an optional `ACL token`_. If supplied it will be used by
         default for all requests made with this client session. It's still
@@ -288,25 +292,44 @@ class Consul(object):
 
         *verify* is whether to verify the SSL certificate for HTTPS requests
 
-        *cert* client side certificates for HTTPS requests
+        *cert* is the client side certificates for HTTPS requests
+        *ssl_cert* is the client side certificates for HTTPS requests
+        *ssl_key* is the unencrypted PEM encoded private key matching the client certificate
+        *ssl_ca* is the path to a PEM encoded CA cert file to use to verify the Nomad server SSL certificate
         """
 
         # TODO: Status
 
-        if os.getenv('CONSUL_HTTP_ADDR'):
-            try:
-                host, port = os.getenv('CONSUL_HTTP_ADDR').split(':')
-            except ValueError:
-                raise ConsulException('CONSUL_HTTP_ADDR (%s) invalid, '
-                                      'does not match <host>:<port>'
-                                      % os.getenv('CONSUL_HTTP_ADDR'))
-        use_ssl = os.getenv('CONSUL_HTTP_SSL')
-        if use_ssl is not None:
-            scheme = 'https' if use_ssl == 'true' else 'http'
-        if os.getenv('CONSUL_HTTP_SSL_VERIFY') is not None:
-            verify = os.getenv('CONSUL_HTTP_SSL_VERIFY') == 'true'
+        for consul_host in [host, os.getenv('CONSUL_HTTP_ADDR'), '127.0.0.1']:
+            if consul_host is not None:
+                url_details = urlparse(consul_host)
+                address = "%s%s" % (url_details.netloc, url_details.path)
+                addr_list = address.split(':')
+                host = addr_list[0]
+                if port is None and len(addr_list) > 1:
+                    port = int(addr_list[0])
+                if scheme is None and url_details.scheme != "":
+                    scheme = url_details.scheme
+                break
 
-        self.token = os.getenv('CONSUL_HTTP_TOKEN', token)
+        port = port if port is not None else 8500
+
+        if scheme is None:
+            scheme = 'https' if os.getenv('CONSUL_HTTP_SSL', '').lower() in ['true', 'on'] else 'http'
+
+        verify = verify if verify is not None else os.getenv('CONSUL_HTTP_SSL_VERIFY', '').lower() in ['true', 'on']
+
+        self.token = token if token is not None else os.getenv('CONSUL_HTTP_TOKEN')
+
+        # PEM encoded client certificate for TLS authentication to the Consul server (Must also specify key)
+        ssl_cert = cert if cert is not None else os.getenv('CONSUL_CLIENT_CERT')
+
+        # unencrypted PEM encoded private key matching the client certificate
+        ssl_key = ssl_key if ssl_key is not None else os.getenv('CONSUL_CLIENT_KEY')
+
+        # Path to a PEM encoded CA cert file to use to verify the Consul server SSL certificate
+        ssl_ca = ssl_ca if ssl_ca is not None else os.getenv('CONSUL_CACERT')
+
         self.http = self.connect(host, port, scheme, verify, cert, token=self.token)
         self.scheme = scheme
         self.dc = dc

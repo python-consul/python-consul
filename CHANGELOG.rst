@@ -1,10 +1,11 @@
 Change log
 ==========
 
-0.7.3-dev
+1.0.0-dev
 ---------
 
-* TBD
+* Add support for Consul 1.0.0 (thanks @matusvalo!)
+* Expose all 400 errors and add tests for common callback handler (thanks @bagerard)
 
 0.7.2
 -----

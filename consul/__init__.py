@@ -1,4 +1,4 @@
-__version__ = '0.7.3-dev'
+__version__ = '1.0.0-dev'
 
 from consul.std import Consul
 

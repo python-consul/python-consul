@@ -4,6 +4,7 @@ Change log
 1.0.0-dev
 ---------
 
+* Support for Python 3.4 dropped (sorry)
 * Add support for Consul 1.0.0 (thanks @matusvalo!)
 * Expose all 400 errors and add tests for common callback handler (thanks @bagerard)
 

@@ -1,7 +1,7 @@
 Change log
 ==========
 
-1.0.0
+1.0.1
 -----
 
 * Support for Python 3.4 dropped (sorry)

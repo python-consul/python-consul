@@ -1,8 +1,8 @@
 Change log
 ==========
 
-1.0.0-dev
----------
+1.0.0
+-----
 
 * Support for Python 3.4 dropped (sorry)
 * Add support for Consul 1.0.0 (thanks @matusvalo!)

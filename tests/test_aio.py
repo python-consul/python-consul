@@ -169,12 +169,10 @@ class TestAsyncioConsul(object):
         def main():
             c = consul.aio.Consul(port=consul_port, loop=loop)
             services = yield from c.agent.services()
-            del services['consul']
             assert services == {}
             response = yield from c.agent.service.register('foo')
             assert response is True
             services = yield from c.agent.services()
-            del services['consul']
             assert services == {
                 'foo': {
                     'Port': 0,
@@ -183,12 +181,11 @@ class TestAsyncioConsul(object):
                     'ModifyIndex': 0,
                     'EnableTagOverride': False,
                     'Service': 'foo',
-                    'Tags': None,
+                    'Tags': [],
                     'Address': ''}, }
             response = yield from c.agent.service.deregister('foo')
             assert response is True
             services = yield from c.agent.services()
-            del services['consul']
             assert services == {}
             c.close()
 

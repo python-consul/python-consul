@@ -186,12 +186,10 @@ class TestConsul(object):
         def main():
             c = consul.tornado.Consul(port=consul_port)
             services = yield c.agent.services()
-            del services['consul']
             assert services == {}
             response = yield c.agent.service.register('foo')
             assert response is True
             services = yield c.agent.services()
-            del services['consul']
             assert services == {
                 'foo': {
                     'Port': 0,
@@ -200,12 +198,11 @@ class TestConsul(object):
                     'ModifyIndex': 0,
                     'EnableTagOverride': False,
                     'Service': 'foo',
-                    'Tags': None,
+                    'Tags': [],
                     'Address': ''}, }
             response = yield c.agent.service.deregister('foo')
             assert response is True
             services = yield c.agent.services()
-            del services['consul']
             assert services == {}
             loop.stop()
         loop.run_sync(main)

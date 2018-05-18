@@ -47,3 +47,4 @@ pip-log.txt
 # IntelliJ project files
 *.iml
 .idea/
+consul/consul_version.py

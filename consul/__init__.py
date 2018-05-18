@@ -1,4 +1,4 @@
-__version__ = '1.0.1'
+from consul.consul_version import __version__
 
 from consul.std import Consul
 

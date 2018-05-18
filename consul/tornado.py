@@ -26,6 +26,12 @@ class HTTPClient(base.HTTPClient):
             if e.code == 599:
                 raise base.Timeout
             response = e.response
+        except:
+            raise base.BadRequest("Unable to %s %s {headers: %s}",
+                                  request.method,
+                                  request.url,
+                                  [(key, value) for key, value in request.headers.get_all()],
+                                  )
         raise gen.Return(callback(self.response(response)))
 
     def get(self, callback, path, params=None):

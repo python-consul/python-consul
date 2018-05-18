@@ -4,7 +4,10 @@ import logging
 import base64
 import json
 import os
-from urlparse import urlparse
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
 
 import six
 from six.moves import urllib
@@ -316,7 +319,7 @@ class Consul(object):
                 addr_list = address.split(':')
                 host = addr_list[0]
                 if port is None and len(addr_list) > 1:
-                    port = int(addr_list[0])
+                    port = int(addr_list[1])
                 if scheme is None and url_details.scheme != "":
                     scheme = url_details.scheme
                 break

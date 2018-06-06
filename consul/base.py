@@ -569,7 +569,7 @@ class Consul(object):
                 release=None,
                 token=None,
                 dc=None,
-                prefix=self.prefix):
+                prefix=None):
             """
             Sets *key* to the given *value*.
 
@@ -629,13 +629,14 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 params['token'] = token
+            prefix = prefix or self.agent.prefix
             dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
             return self.agent.http.put(
                 CB.json(), prefix + key, params=params, data=value)
 
-        def delete(self, key, recurse=None, cas=None, token=None, dc=None, prefix=self.prefix):
+        def delete(self, key, recurse=None, cas=None, token=None, dc=None, prefix=None):
             """
             Deletes a single key or if *recurse* is True, all keys sharing a
             prefix.
@@ -667,6 +668,7 @@ class Consul(object):
             if cas is not None:
                 params['cas'] = cas
             token = token or self.agent.token
+            prefix = prefix or self.agent.prefix
             if token:
                 params['token'] = token
             dc = dc or self.agent.dc

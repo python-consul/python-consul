@@ -47,7 +47,6 @@ class Check(object):
     """
     There are three different kinds of checks: script, http and ttl
     """
-
     @classmethod
     def script(klass, script, interval):
         """
@@ -521,6 +520,11 @@ class Consul(object):
             """
             assert not key.startswith('/'), \
                 'keys should not start with a forward slash'
+            assert prefix.startswith('/'), \
+                'prefix should start with a forward slash'
+            assert prefix.endswith('/'), \
+                'prefix should end with a forward slash'
+
             params = {}
             if index:
                 params['index'] = index
@@ -600,9 +604,17 @@ class Consul(object):
             """
             assert not key.startswith('/'), \
                 'keys should not start with a forward slash'
+            assert prefix.startswith('/'), \
+                'prefix should start with a forward slash'
+            assert prefix.endswith('/'), \
+                'prefix should end with a forward slash'
             assert value is None or \
                    isinstance(value, (six.string_types, six.binary_type)), \
                 "value should be None or a string / binary data"
+            assert prefix.startswith('/'), \
+                'prefix should start with a forward slash'
+            assert prefix.endswith('/'), \
+                'prefix should end with a forward slash'
 
             params = {}
             if cas is not None:
@@ -643,6 +655,10 @@ class Consul(object):
             """
             assert not key.startswith('/'), \
                 'keys should not start with a forward slash'
+            assert prefix.startswith('/'), \
+                'prefix should start with a forward slash'
+            assert prefix.endswith('/'), \
+                'prefix should end with a forward slash'
 
             params = {}
             if recurse:

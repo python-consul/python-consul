@@ -520,6 +520,7 @@ class Consul(object):
             """
             assert not key.startswith('/'), \
                 'keys should not start with a forward slash'
+            prefix = prefix or self.agent.prefix
             assert prefix.startswith('/'), \
                 'prefix should start with a forward slash'
             assert prefix.endswith('/'), \
@@ -605,6 +606,7 @@ class Consul(object):
             """
             assert not key.startswith('/'), \
                 'keys should not start with a forward slash'
+            prefix = prefix or self.agent.prefix
             assert prefix.startswith('/'), \
                 'prefix should start with a forward slash'
             assert prefix.endswith('/'), \
@@ -612,10 +614,6 @@ class Consul(object):
             assert value is None or \
                    isinstance(value, (six.string_types, six.binary_type)), \
                 "value should be None or a string / binary data"
-            assert prefix.startswith('/'), \
-                'prefix should start with a forward slash'
-            assert prefix.endswith('/'), \
-                'prefix should end with a forward slash'
 
             params = {}
             if cas is not None:
@@ -629,7 +627,6 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 params['token'] = token
-            prefix = prefix or self.agent.prefix
             dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc
@@ -657,6 +654,7 @@ class Consul(object):
             """
             assert not key.startswith('/'), \
                 'keys should not start with a forward slash'
+            prefix = prefix or self.agent.prefix
             assert prefix.startswith('/'), \
                 'prefix should start with a forward slash'
             assert prefix.endswith('/'), \
@@ -668,7 +666,6 @@ class Consul(object):
             if cas is not None:
                 params['cas'] = cas
             token = token or self.agent.token
-            prefix = prefix or self.agent.prefix
             if token:
                 params['token'] = token
             dc = dc or self.agent.dc

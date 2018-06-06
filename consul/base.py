@@ -464,6 +464,7 @@ class Consul(object):
         def get(
                 self,
                 key,
+                prefix='/v1/kv/',
                 index=None,
                 recurse=False,
                 wait=None,
@@ -471,8 +472,7 @@ class Consul(object):
                 consistency=None,
                 keys=False,
                 separator=None,
-                dc=None,
-                prefix='/v1/kv/'):
+                dc=None):
             """
             Returns a tuple of (*index*, *value[s]*)
 
@@ -555,13 +555,13 @@ class Consul(object):
                 self,
                 key,
                 value,
+                prefix='/v1/kv/',
                 cas=None,
                 flags=None,
                 acquire=None,
                 release=None,
                 token=None,
-                dc=None,
-                prefix='/v1/kv/'):
+                dc=None):
             """
             Sets *key* to the given *value*.
 
@@ -623,7 +623,7 @@ class Consul(object):
             return self.agent.http.put(
                 CB.json(), prefix + key, params=params, data=value)
 
-        def delete(self, key, recurse=None, cas=None, token=None, dc=None, prefix='/v1/kv/'):
+        def delete(self, key, prefix='/v1/kv/', recurse=None, cas=None, token=None, dc=None):
             """
             Deletes a single key or if *recurse* is True, all keys sharing a
             prefix.

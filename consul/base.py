@@ -623,7 +623,13 @@ class Consul(object):
             return self.agent.http.put(
                 CB.json(), prefix + key, params=params, data=value)
 
-        def delete(self, key, prefix='/v1/kv/', recurse=None, cas=None, token=None, dc=None):
+        def delete(self,
+                   key,
+                   prefix='/v1/kv/',
+                   recurse=None,
+                   cas=None,
+                   token=None,
+                   dc=None):
             """
             Deletes a single key or if *recurse* is True, all keys sharing a
             prefix.

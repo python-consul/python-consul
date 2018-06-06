@@ -478,7 +478,7 @@ class Consul(object):
                 keys=False,
                 separator=None,
                 dc=None,
-                prefix=self.prefix):
+                prefix=None):
             """
             Returns a tuple of (*index*, *value[s]*)
 
@@ -535,6 +535,7 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 params['token'] = token
+            prefix = prefix or self.agent.prefix
             dc = dc or self.agent.dc
             if dc:
                 params['dc'] = dc

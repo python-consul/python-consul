@@ -464,6 +464,7 @@ class Consul(object):
         def get(
                 self,
                 key,
+                prefix='/v1/kv/',
                 index=None,
                 recurse=False,
                 wait=None,
@@ -513,6 +514,10 @@ class Consul(object):
             """
             assert not key.startswith('/'), \
                 'keys should not start with a forward slash'
+            assert prefix.startswith('/'), \
+                'prefix should start with a forward slash'
+            assert prefix.endswith('/'), \
+                'prefix should end with a forward slash'
             params = {}
             if index:
                 params['index'] = index
@@ -543,13 +548,14 @@ class Consul(object):
                 one = True
             return self.agent.http.get(
                 CB.json(index=True, decode=decode, one=one),
-                '/v1/kv/%s' % key,
+                prefix + key,
                 params=params)
 
         def put(
                 self,
                 key,
                 value,
+                prefix='/v1/kv/',
                 cas=None,
                 flags=None,
                 acquire=None,
@@ -594,6 +600,10 @@ class Consul(object):
             assert value is None or \
                 isinstance(value, (six.string_types, six.binary_type)), \
                 "value should be None or a string / binary data"
+            assert prefix.startswith('/'), \
+                'prefix should start with a forward slash'
+            assert prefix.endswith('/'), \
+                'prefix should end with a forward slash'
 
             params = {}
             if cas is not None:
@@ -611,9 +621,15 @@ class Consul(object):
             if dc:
                 params['dc'] = dc
             return self.agent.http.put(
-                CB.json(), '/v1/kv/%s' % key, params=params, data=value)
+                CB.json(), prefix + key, params=params, data=value)
 
-        def delete(self, key, recurse=None, cas=None, token=None, dc=None):
+        def delete(self,
+                   key,
+                   prefix='/v1/kv/',
+                   recurse=None,
+                   cas=None,
+                   token=None,
+                   dc=None):
             """
             Deletes a single key or if *recurse* is True, all keys sharing a
             prefix.
@@ -634,6 +650,10 @@ class Consul(object):
             """
             assert not key.startswith('/'), \
                 'keys should not start with a forward slash'
+            assert prefix.startswith('/'), \
+                'prefix should start with a forward slash'
+            assert prefix.endswith('/'), \
+                'prefix should end with a forward slash'
 
             params = {}
             if recurse:
@@ -648,7 +668,7 @@ class Consul(object):
                 params['dc'] = dc
 
             return self.agent.http.delete(
-                CB.json(), '/v1/kv/%s' % key, params=params)
+                CB.json(), prefix + key, params=params)
 
     class Txn(object):
         """

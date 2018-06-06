@@ -8,7 +8,6 @@ import os
 import six
 from six.moves import urllib
 
-
 log = logging.getLogger(__name__)
 
 
@@ -48,6 +47,7 @@ class Check(object):
     """
     There are three different kinds of checks: script, http and ttl
     """
+
     @classmethod
     def script(klass, script, interval):
         """
@@ -186,6 +186,7 @@ class CB(object):
         def cb(response):
             CB._status(response)
             return response.code == 200
+
         return cb
 
     @classmethod
@@ -212,6 +213,7 @@ class CB(object):
 
         *is_id* only the 'ID' field of the json object will be returned.
         """
+
         def cb(response):
             CB._status(response, allow_404=allow_404)
             if response.code == 404:
@@ -235,6 +237,7 @@ class CB(object):
             if index:
                 return response.headers['X-Consul-Index'], data
             return data
+
         return cb
 
 
@@ -276,6 +279,7 @@ class Consul(object):
             self,
             host='127.0.0.1',
             port=8500,
+            prefix='/v1/kv/',
             token=None,
             scheme='http',
             consistency='default',
@@ -318,6 +322,7 @@ class Consul(object):
 
         self.http = self.connect(host, port, scheme, verify, cert)
         self.token = os.getenv('CONSUL_HTTP_TOKEN', token)
+        self.prefix = prefix
         self.scheme = scheme
         self.dc = dc
         assert consistency in ('default', 'consistent', 'stale'), \
@@ -351,6 +356,7 @@ class Consul(object):
         practice, this means you cannot rely on the order of message delivery.
         An advantage however is that events can still be used even in the
         absence of server nodes or during an outage."""
+
         def __init__(self, agent):
             self.agent = agent
 
@@ -458,6 +464,7 @@ class Consul(object):
         used to store service configurations or other meta data in a simple
         way.
         """
+
         def __init__(self, agent):
             self.agent = agent
 
@@ -471,7 +478,8 @@ class Consul(object):
                 consistency=None,
                 keys=False,
                 separator=None,
-                dc=None):
+                dc=None,
+                prefix=self.prefix):
             """
             Returns a tuple of (*index*, *value[s]*)
 
@@ -543,7 +551,7 @@ class Consul(object):
                 one = True
             return self.agent.http.get(
                 CB.json(index=True, decode=decode, one=one),
-                '/v1/kv/%s' % key,
+                prefix + key,
                 params=params)
 
         def put(
@@ -555,7 +563,8 @@ class Consul(object):
                 acquire=None,
                 release=None,
                 token=None,
-                dc=None):
+                dc=None,
+                prefix=self.prefix):
             """
             Sets *key* to the given *value*.
 
@@ -592,7 +601,7 @@ class Consul(object):
             assert not key.startswith('/'), \
                 'keys should not start with a forward slash'
             assert value is None or \
-                isinstance(value, (six.string_types, six.binary_type)), \
+                   isinstance(value, (six.string_types, six.binary_type)), \
                 "value should be None or a string / binary data"
 
             params = {}
@@ -611,9 +620,9 @@ class Consul(object):
             if dc:
                 params['dc'] = dc
             return self.agent.http.put(
-                CB.json(), '/v1/kv/%s' % key, params=params, data=value)
+                CB.json(), prefix + key, params=params, data=value)
 
-        def delete(self, key, recurse=None, cas=None, token=None, dc=None):
+        def delete(self, key, recurse=None, cas=None, token=None, dc=None, prefix=self.prefix):
             """
             Deletes a single key or if *recurse* is True, all keys sharing a
             prefix.
@@ -648,13 +657,14 @@ class Consul(object):
                 params['dc'] = dc
 
             return self.agent.http.delete(
-                CB.json(), '/v1/kv/%s' % key, params=params)
+                CB.json(), prefix + key, params=params)
 
     class Txn(object):
         """
         The Transactions endpoints manage updates or fetches of multiple keys
         inside a single, atomic transaction.
         """
+
         def __init__(self, agent):
             self.agent = agent
 
@@ -690,6 +700,7 @@ class Consul(object):
         takes on the burden of registering with the Catalog and performing
         anti-entropy to recover from outages.
         """
+
         def __init__(self, agent):
             self.agent = agent
             self.service = Consul.Agent.Service(agent)
@@ -2046,6 +2057,7 @@ class Consul(object):
         The Status endpoints are used to get information about the status
          of the Consul cluster.
         """
+
         def __init__(self, agent):
             self.agent = agent
 

@@ -26,8 +26,6 @@ if sys.version_info[0] == 2 and sys.version_info[1] < 7:
     collect_ignore.append(p)
     p = os.path.join(os.path.dirname(__file__), 'test_tornado.py')
     collect_ignore.append(p)
-else:
-    pytest_plugins = "pytest_twisted"
 
 
 def get_free_ports(num, host=None):
@@ -55,10 +53,11 @@ def start_consul_instance(acl_master_token=None):
              instance is listening on
     """
     ports = dict(zip(
-        ['http', 'rpc', 'serf_lan', 'serf_wan', 'server', 'dns'],
-        get_free_ports(5) + [-1]))
+        ['http', 'serf_lan', 'serf_wan', 'server', 'dns'],
+        get_free_ports(4) + [-1]))
 
-    config = {'ports': ports, 'performance': {'raft_multiplier': 1}}
+    config = {'ports': ports, 'performance': {'raft_multiplier': 1},
+              'enable_script_checks': True}
     if acl_master_token:
         config['acl_datacenter'] = 'dc1'
         config['acl_master_token'] = acl_master_token
@@ -73,9 +72,9 @@ def start_consul_instance(acl_master_token=None):
     else:
         postfix = 'linux64'
     bin = os.path.join(os.path.dirname(__file__), 'consul.'+postfix)
-    command = '{bin} agent -server -bootstrap' \
+    command = '{bin} agent -dev' \
               ' -bind=127.0.0.1' \
-              ' -config-dir=. -data-dir=./data'
+              ' -config-dir=.'
     command = command.format(bin=bin).strip()
     command = shlex.split(command)
 
@@ -91,6 +90,7 @@ def start_consul_instance(acl_master_token=None):
             response = requests.get(base_uri + 'status/leader')
         except requests.ConnectionError:
             continue
+        print(response.text)
         if response.text.strip() != '""':
             break
 
@@ -102,13 +102,13 @@ def start_consul_instance(acl_master_token=None):
             break
         time.sleep(0.1)
 
-    requests.get(base_uri + 'agent/service/deregister/foo')
+    requests.put(base_uri + 'agent/service/deregister/foo')
     # phew
     time.sleep(2)
     return p, ports['http']
 
 
-@pytest.yield_fixture(scope="session")
+@pytest.yield_fixture(scope="module")
 def consul_instance():
     p, port = start_consul_instance()
     yield port
@@ -123,7 +123,7 @@ def consul_port(consul_instance):
     requests.delete(base_uri + 'kv/?recurse=1')
 
 
-@pytest.yield_fixture(scope="session")
+@pytest.yield_fixture(scope="module")
 def acl_consul_instance():
     acl_master_token = uuid.uuid4().hex
     p, port = start_consul_instance(acl_master_token=acl_master_token)

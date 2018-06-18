@@ -36,6 +36,11 @@ class BadRequest(ConsulException):
     pass
 
 
+class ClientError(ConsulException):
+    """Encapsulates 4xx Http error code"""
+    pass
+
+
 #
 # Convenience to define checks
 
@@ -158,24 +163,28 @@ Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
 
 class CB(object):
     @classmethod
-    def __status(klass, response, allow_404=True):
+    def _status(klass, response, allow_404=True):
         # status checking
-        if response.code >= 500 and response.code < 600:
+        if 400 <= response.code < 500:
+            if response.code == 400:
+                raise BadRequest('%d %s' % (response.code, response.body))
+            elif response.code == 401:
+                raise ACLDisabled(response.body)
+            elif response.code == 403:
+                raise ACLPermissionDenied(response.body)
+            elif response.code == 404:
+                if not allow_404:
+                    raise NotFound(response.body)
+            else:
+                raise ClientError("%d %s" % (response.code, response.body))
+        elif 500 <= response.code < 600:
             raise ConsulException("%d %s" % (response.code, response.body))
-        if response.code == 400:
-            raise BadRequest('%d %s' % (response.code, response.body))
-        if response.code == 401:
-            raise ACLDisabled(response.body)
-        if response.code == 403:
-            raise ACLPermissionDenied(response.body)
-        if response.code == 404 and not allow_404:
-            raise NotFound(response.body)
 
     @classmethod
     def bool(klass):
         # returns True on successful response
         def cb(response):
-            CB.__status(response)
+            CB._status(response)
             return response.code == 200
         return cb
 
@@ -204,7 +213,7 @@ class CB(object):
         *is_id* only the 'ID' field of the json object will be returned.
         """
         def cb(response):
-            CB.__status(response, allow_404=allow_404)
+            CB._status(response, allow_404=allow_404)
             if response.code == 404:
                 return response.headers['X-Consul-Index'], None
 
@@ -886,7 +895,7 @@ class Consul(object):
                 take care of deregistering the service with the Catalog. If
                 there is an associated check, that is also deregistered.
                 """
-                return self.agent.http.get(
+                return self.agent.http.put(
                     CB.bool(), '/v1/agent/service/deregister/%s' % service_id)
 
             def maintenance(self, service_id, enable, reason=None):
@@ -999,7 +1008,7 @@ class Consul(object):
                 """
                 Remove a check from the local agent.
                 """
-                return self.agent.http.get(
+                return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/deregister/%s' % check_id)
 
@@ -1012,7 +1021,7 @@ class Consul(object):
                 if notes:
                     params['note'] = notes
 
-                return self.agent.http.get(
+                return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/pass/%s' % check_id,
                     params=params)
@@ -1027,7 +1036,7 @@ class Consul(object):
                 if notes:
                     params['note'] = notes
 
-                return self.agent.http.get(
+                return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/fail/%s' % check_id,
                     params=params)
@@ -1042,7 +1051,7 @@ class Consul(object):
                 if notes:
                     params['note'] = notes
 
-                return self.agent.http.get(
+                return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/warn/%s' % check_id,
                     params=params)

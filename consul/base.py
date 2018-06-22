@@ -998,7 +998,6 @@ class Consul(object):
                 if token:
                     params.append(('token', token))
 
-
                 return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/register',
@@ -1249,7 +1248,8 @@ class Consul(object):
                 params.append((consistency, '1'))
             if node_meta:
                 for nodemeta_name, nodemeta_value in node_meta.items():
-                    params.append(('node-meta', '{}:{}'.format(nodemeta_name, nodemeta_value)))
+                    params.append(('node-meta', '{}:{}'.
+                                   format(nodemeta_name, nodemeta_value)))
 
             return self.agent.http.get(
                 CB.json(index=True), '/v1/catalog/nodes', params=params)
@@ -1312,7 +1312,8 @@ class Consul(object):
                 params.append((consistency, '1'))
             if node_meta:
                 for nodemeta_name, nodemeta_value in node_meta.items():
-                    params.append(('node-meta', '{}:{}'.format(nodemeta_name, nodemeta_value)))
+                    params.append(('node-meta', '{}:{}'.
+                                   format(nodemeta_name, nodemeta_value)))
 
             return self.agent.http.get(
                 CB.json(index=True), '/v1/catalog/services', params=params)
@@ -1520,7 +1521,8 @@ class Consul(object):
                 params.append(('token', token))
             if node_meta:
                 for nodemeta_name, nodemeta_value in node_meta.items():
-                    params.append(('node-meta', '{}:{}'.format(nodemeta_name, nodemeta_value)))
+                    params.append(('node-meta', '{}:{}'.
+                                   format(nodemeta_name, nodemeta_value)))
 
             return self.agent.http.get(
                 CB.json(index=True),
@@ -1575,7 +1577,8 @@ class Consul(object):
                 params.append(('token', token))
             if node_meta:
                 for nodemeta_name, nodemeta_value in node_meta.items():
-                    params.append(('node-meta', '{}:{}'.format(nodemeta_name, nodemeta_value)))
+                    params.append(('node-meta', '{}:{}'.
+                                   format(nodemeta_name, nodemeta_value)))
 
             return self.agent.http.get(
                 CB.json(index=True),
@@ -1635,7 +1638,8 @@ class Consul(object):
                 params.append(('token', token))
             if node_meta:
                 for nodemeta_name, nodemeta_value in node_meta.items():
-                    params.append(('node-meta', '{}:{}'.format(nodemeta_name, nodemeta_value)))
+                    params.append(('node-meta', '{}:{}'.
+                                   format(nodemeta_name, nodemeta_value)))
             return self.agent.http.get(
                 CB.json(index=True),
                 '/v1/health/state/%s' % name,

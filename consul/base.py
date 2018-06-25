@@ -386,16 +386,16 @@ class Consul(object):
             """
             assert not name.startswith('/'), \
                 'keys should not start with a forward slash'
-            params = {}
+            params = []
             if node is not None:
-                params['node'] = node
+                params.append(('node', node))
             if service is not None:
-                params['service'] = service
+                params.append(('service', service))
             if tag is not None:
-                params['tag'] = tag
+                params.append(('tag', tag))
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
 
             return self.agent.http.put(
                 CB.json(),
@@ -441,11 +441,11 @@ class Consul(object):
                       },
                 }
             """
-            params = {}
+            params = []
             if name is not None:
-                params['name'] = name
+                params.append(('name', name))
             if index:
-                params['index'] = index
+                params.append(('index', index))
                 if wait:
                     params['wait'] = wait
             return self.agent.http.get(
@@ -513,26 +513,26 @@ class Consul(object):
             """
             assert not key.startswith('/'), \
                 'keys should not start with a forward slash'
-            params = {}
+            params = []
             if index:
-                params['index'] = index
+                params.append(('index', index))
                 if wait:
-                    params['wait'] = wait
+                    params.append(('wait', wait))
             if recurse:
-                params['recurse'] = '1'
+                params.append(('recurse', '1'))
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             if keys:
-                params['keys'] = True
+                params.append(('keys', True))
             if separator:
-                params['separator'] = separator
+                params.append(('separator', separator))
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
-                params[consistency] = '1'
+                params.append((consistency, '1'))
 
             one = False
             decode = False
@@ -595,21 +595,21 @@ class Consul(object):
                 isinstance(value, (six.string_types, six.binary_type)), \
                 "value should be None or a string / binary data"
 
-            params = {}
+            params = []
             if cas is not None:
-                params['cas'] = cas
+                params.append(('cas', cas))
             if flags is not None:
-                params['flags'] = flags
+                params.append(('flags', flags))
             if acquire:
-                params['acquire'] = acquire
+                params.append(('acquire', acquire))
             if release:
-                params['release'] = release
+                params.append(('release', release))
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             return self.agent.http.put(
                 CB.json(), '/v1/kv/%s' % key, params=params, data=value)
 
@@ -635,17 +635,17 @@ class Consul(object):
             assert not key.startswith('/'), \
                 'keys should not start with a forward slash'
 
-            params = {}
+            params = []
             if recurse:
-                params['recurse'] = '1'
+                params.append(('recurse', '1'))
             if cas is not None:
-                params['cas'] = cas
+                params.append(('cas', cas))
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
 
             return self.agent.http.delete(
                 CB.json(), '/v1/kv/%s' % key, params=params)
@@ -737,9 +737,9 @@ class Consul(object):
             the list of WAN members instead of the LAN members which is
             default.
             """
-            params = {}
+            params = []
             if wan:
-                params['wan'] = 1
+                params.append(('wan', 1))
             return self.agent.http.get(
                 CB.json(), '/v1/agent/members', params=params)
 
@@ -755,11 +755,11 @@ class Consul(object):
             operators.
             """
 
-            params = {}
+            params = []
 
-            params['enable'] = enable
+            params.append(('enable', enable))
             if reason:
-                params['reason'] = reason
+                params.append(('reason', reason))
 
             return self.agent.http.put(
                 CB.bool(), '/v1/agent/maintenance', params=params)
@@ -776,10 +776,10 @@ class Consul(object):
             pool. Default is 'false'.
             """
 
-            params = {}
+            params = []
 
             if wan:
-                params['wan'] = 1
+                params.append(('wan', 1))
 
             return self.agent.http.get(
                 CB.bool(), '/v1/agent/join/%s' % address, params=params)
@@ -878,10 +878,10 @@ class Consul(object):
                         http=http,
                         timeout=timeout))
 
-                params = {}
+                params = []
                 token = token or self.agent.token
                 if token:
-                    params['token'] = token
+                    params.append(('token', token))
 
                 return self.agent.http.put(
                     CB.bool(),
@@ -913,11 +913,11 @@ class Consul(object):
                 operators.
                 """
 
-                params = {}
+                params = []
 
-                params['enable'] = enable
+                params.append(('enable', enable))
                 if reason:
-                    params['reason'] = reason
+                    params.append(('reason', reason))
 
                 return self.agent.http.put(
                     CB.bool(),
@@ -993,10 +993,10 @@ class Consul(object):
                 if service_id:
                     payload['serviceid'] = service_id
 
-                params = {}
+                params = []
                 token = token or self.agent.token
                 if token:
-                    params['token'] = token
+                    params.append(('token', token))
 
                 return self.agent.http.put(
                     CB.bool(),
@@ -1017,9 +1017,9 @@ class Consul(object):
                 Mark a ttl based check as passing. Optional notes can be
                 attached to describe the status of the check.
                 """
-                params = {}
+                params = []
                 if notes:
-                    params['note'] = notes
+                    params.append(('note', notes))
 
                 return self.agent.http.put(
                     CB.bool(),
@@ -1032,9 +1032,9 @@ class Consul(object):
                 attached to describe why check is failing. The status of the
                 check will be set to critical and the ttl clock will be reset.
                 """
-                params = {}
+                params = []
                 if notes:
-                    params['note'] = notes
+                    params.append(('note', notes))
 
                 return self.agent.http.put(
                     CB.bool(),
@@ -1047,9 +1047,9 @@ class Consul(object):
                 attached to describe the warning. The status of the
                 check will be set to warn and the ttl clock will be reset.
                 """
-                params = {}
+                params = []
                 if notes:
-                    params['note'] = notes
+                    params.append(('note', notes))
 
                 return self.agent.http.put(
                     CB.bool(),
@@ -1123,7 +1123,7 @@ class Consul(object):
             Returns *True* on success.
             """
             data = {'node': node, 'address': address}
-            params = {}
+            params = []
             dc = dc or self.agent.dc
             if dc:
                 data['datacenter'] = dc
@@ -1134,7 +1134,7 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 data['WriteRequest'] = {'Token': token}
-                params['token'] = token
+                params.append(('token', token))
             return self.agent.http.put(
                 CB.bool(),
                 '/v1/catalog/register',
@@ -1191,7 +1191,8 @@ class Consul(object):
                 consistency=None,
                 dc=None,
                 near=None,
-                token=None):
+                token=None,
+                node_meta=None):
             """
             Returns a tuple of (*index*, *nodes*) of all nodes known
             about in the *dc* datacenter. *dc* defaults to the current
@@ -1213,6 +1214,9 @@ class Consul(object):
 
             *token* is an optional `ACL token`_ to apply to this request.
 
+            *node_meta* is an optional meta data used for filtering, a
+            dictionary formatted as {k1:v1, k2:v2}.
+
             The response looks like this::
 
                 (index, [
@@ -1226,22 +1230,27 @@ class Consul(object):
                     }
                 ])
             """
-            params = {}
+            params = []
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             if index:
-                params['index'] = index
+                params.append(('index', index))
                 if wait:
-                    params['wait'] = wait
+                    params.append(('wait', wait))
             if near:
-                params['near'] = near
+                params.append(('near', near))
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
-                params[consistency] = '1'
+                params.append((consistency, '1'))
+            if node_meta:
+                for nodemeta_name, nodemeta_value in node_meta.items():
+                    params.append(('node-meta', '{}:{}'.
+                                   format(nodemeta_name, nodemeta_value)))
+
             return self.agent.http.get(
                 CB.json(index=True), '/v1/catalog/nodes', params=params)
 
@@ -1250,7 +1259,8 @@ class Consul(object):
                      wait=None,
                      consistency=None,
                      dc=None,
-                     token=None):
+                     token=None,
+                     node_meta=None):
             """
             Returns a tuple of (*index*, *services*) of all services known
             about in the *dc* datacenter. *dc* defaults to the current
@@ -1269,6 +1279,9 @@ class Consul(object):
 
             *token* is an optional `ACL token`_ to apply to this request.
 
+            *node_meta* is an optional meta data used for filtering, a
+            dictionary formatted as {k1:v1, k2:v2}.
+
             The response looks like this::
 
                 (index, {
@@ -1283,20 +1296,25 @@ class Consul(object):
             The main keys are the service names and the list provides all the
             known tags for a given service.
             """
-            params = {}
+            params = []
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             if index:
-                params['index'] = index
+                params.append(('index', index))
                 if wait:
-                    params['wait'] = wait
+                    params.append(('wait', wait))
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
-                params[consistency] = '1'
+                params.append((consistency, '1'))
+            if node_meta:
+                for nodemeta_name, nodemeta_value in node_meta.items():
+                    params.append(('node-meta', '{}:{}'.
+                                   format(nodemeta_name, nodemeta_value)))
+
             return self.agent.http.get(
                 CB.json(index=True), '/v1/catalog/services', params=params)
 
@@ -1352,20 +1370,20 @@ class Consul(object):
                     }
                 })
             """
-            params = {}
+            params = []
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             if index:
-                params['index'] = index
+                params.append(('index', index))
                 if wait:
-                    params['wait'] = wait
+                    params.append(('wait', wait))
             token = token or self.agent.token
             if token:
                 params['token'] = token
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
-                params[consistency] = '1'
+                params.append((consistency, '1'))
             return self.agent.http.get(
                 CB.json(index=True),
                 '/v1/catalog/node/%s' % node,
@@ -1418,24 +1436,24 @@ class Consul(object):
                     }
                 ])
             """
-            params = {}
+            params = []
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             if tag:
-                params['tag'] = tag
+                params.append(('tag', tag))
             if index:
-                params['index'] = index
+                params.append(('index', index))
                 if wait:
-                    params['wait'] = wait
+                    params.append(('wait', wait))
             if near:
-                params['near'] = near
+                params.append(('near', near))
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
-                params[consistency] = '1'
+                params.append((consistency, '1'))
             return self.agent.http.get(
                 CB.json(index=True),
                 '/v1/catalog/service/%s' % service,
@@ -1454,7 +1472,8 @@ class Consul(object):
                     tag=None,
                     dc=None,
                     near=None,
-                    token=None):
+                    token=None,
+                    node_meta=None):
             """
             Returns a tuple of (*index*, *nodes*)
 
@@ -1479,24 +1498,31 @@ class Consul(object):
             order based on the estimated round trip time from that node
 
             *token* is an optional `ACL token`_ to apply to this request.
+
+            *node_meta* is an optional meta data used for filtering, a
+            dictionary formatted as {k1:v1, k2:v2}.
             """
-            params = {}
+            params = []
             if index:
-                params['index'] = index
+                params.append(('index', index))
                 if wait:
-                    params['wait'] = wait
+                    params.append(('wait', wait))
             if passing:
-                params['passing'] = '1'
+                params.append(('passing', '1'))
             if tag is not None:
-                params['tag'] = tag
+                params.append(('tag', tag))
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             if near:
-                params['near'] = near
+                params.append(('near', near))
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
+            if node_meta:
+                for nodemeta_name, nodemeta_value in node_meta.items():
+                    params.append(('node-meta', '{}:{}'.
+                                   format(nodemeta_name, nodemeta_value)))
 
             return self.agent.http.get(
                 CB.json(index=True),
@@ -1510,7 +1536,8 @@ class Consul(object):
                 wait=None,
                 dc=None,
                 near=None,
-                token=None):
+                token=None,
+                node_meta=None):
             """
             Returns a tuple of (*index*, *checks*) with *checks* being the
             checks associated with the service.
@@ -1531,20 +1558,27 @@ class Consul(object):
             order based on the estimated round trip time from that node
 
             *token* is an optional `ACL token`_ to apply to this request.
+
+            *node_meta* is an optional meta data used for filtering, a
+            dictionary formatted as {k1:v1, k2:v2}.
             """
-            params = {}
+            params = []
             if index:
-                params['index'] = index
+                params.append(('index', index))
                 if wait:
-                    params['wait'] = wait
+                    params.append(('wait', wait))
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             if near:
-                params['near'] = near
+                params.append(('near', near))
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
+            if node_meta:
+                for nodemeta_name, nodemeta_value in node_meta.items():
+                    params.append(('node-meta', '{}:{}'.
+                                   format(nodemeta_name, nodemeta_value)))
 
             return self.agent.http.get(
                 CB.json(index=True),
@@ -1557,7 +1591,8 @@ class Consul(object):
                   wait=None,
                   dc=None,
                   near=None,
-                  token=None):
+                  token=None,
+                  node_meta=None):
             """
             Returns a tuple of (*index*, *nodes*)
 
@@ -1582,23 +1617,29 @@ class Consul(object):
 
             *token* is an optional `ACL token`_ to apply to this request.
 
+            *node_meta* is an optional meta data used for filtering, a
+            dictionary formatted as {k1:v1, k2:v2}.
+
             *nodes* are the nodes providing the given service.
             """
             assert name in ['any', 'unknown', 'passing', 'warning', 'critical']
-            params = {}
+            params = []
             if index:
-                params['index'] = index
+                params.append(('index', index))
                 if wait:
-                    params['wait'] = wait
+                    params.append(('wait', wait))
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             if near:
-                params['near'] = near
+                params.append(('near', near))
             token = token or self.agent.token
             if token:
-                params['token'] = token
-
+                params.append(('token', token))
+            if node_meta:
+                for nodemeta_name, nodemeta_value in node_meta.items():
+                    params.append(('node-meta', '{}:{}'.
+                                   format(nodemeta_name, nodemeta_value)))
             return self.agent.http.get(
                 CB.json(index=True),
                 '/v1/health/state/%s' % name,
@@ -1622,17 +1663,17 @@ class Consul(object):
 
             *nodes* are the nodes providing the given service.
             """
-            params = {}
+            params = []
             if index:
-                params['index'] = index
+                params.append(('index', index))
                 if wait:
-                    params['wait'] = wait
+                    params.append(('wait', wait))
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
 
             return self.agent.http.get(
                 CB.json(index=True),
@@ -1684,10 +1725,10 @@ class Consul(object):
 
             Returns the string *session_id* for the session.
             """
-            params = {}
+            params = []
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             data = {}
             if name:
                 data['name'] = name
@@ -1721,10 +1762,10 @@ class Consul(object):
 
             Returns *True* on success.
             """
-            params = {}
+            params = []
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             return self.agent.http.put(
                 CB.bool(),
                 '/v1/session/destroy/%s' % session_id,
@@ -1762,17 +1803,17 @@ class Consul(object):
                   ...
                ])
             """
-            params = {}
+            params = []
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             if index:
-                params['index'] = index
+                params.append(('index', index))
                 if wait:
-                    params['wait'] = wait
+                    params.append(('wait', wait))
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
-                params[consistency] = '1'
+                params.append((consistency, '1'))
             return self.agent.http.get(
                 CB.json(index=True), '/v1/session/list', params=params)
 
@@ -1792,17 +1833,17 @@ class Consul(object):
             not specified *consistency* will the consistency level this client
             was configured with.
             """
-            params = {}
+            params = []
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             if index:
-                params['index'] = index
+                params.append(('index', index))
                 if wait:
-                    params['wait'] = wait
+                    params.append(('wait', wait))
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
-                params[consistency] = '1'
+                params.append((consistency, '1'))
             return self.agent.http.get(
                 CB.json(index=True),
                 '/v1/session/node/%s' % node, params=params)
@@ -1829,17 +1870,17 @@ class Consul(object):
             not specified *consistency* will the consistency level this client
             was configured with.
             """
-            params = {}
+            params = []
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             if index:
-                params['index'] = index
+                params.append(('index', index))
                 if wait:
-                    params['wait'] = wait
+                    params.append(('wait', wait))
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
-                params[consistency] = '1'
+                params.append((consistency, '1'))
             return self.agent.http.get(
                 CB.json(index=True, one=True),
                 '/v1/session/info/%s' % session_id,
@@ -1855,10 +1896,10 @@ class Consul(object):
 
             Returns the session.
             """
-            params = {}
+            params = []
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             return self.agent.http.put(
                 CB.json(one=True, allow_404=False),
                 '/v1/session/renew/%s' % session_id,
@@ -1875,10 +1916,10 @@ class Consul(object):
             default token.  An *ACLPermissionDenied* exception will be raised
             if a management token is not used.
             """
-            params = {}
+            params = []
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             return self.agent.http.get(
                 CB.json(), '/v1/acl/list', params=params)
 
@@ -1886,10 +1927,10 @@ class Consul(object):
             """
             Returns the token information for *acl_id*.
             """
-            params = {}
+            params = []
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             return self.agent.http.get(
                 CB.json(one=True), '/v1/acl/info/%s' % acl_id, params=params)
 
@@ -1931,10 +1972,10 @@ class Consul(object):
 
             Returns the string *acl_id* for the new token.
             """
-            params = {}
+            params = []
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
 
             payload = {}
             if name:
@@ -1980,10 +2021,10 @@ class Consul(object):
 
             Returns the string *acl_id* of this token on success.
             """
-            params = {}
+            params = []
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
 
             payload = {'ID': acl_id}
             if name:
@@ -2014,10 +2055,10 @@ class Consul(object):
 
             Returns the string of the newly created *acl_id*.
             """
-            params = {}
+            params = []
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             return self.agent.http.put(
                 CB.json(is_id=True),
                 '/v1/acl/clone/%s' % acl_id,
@@ -2032,10 +2073,10 @@ class Consul(object):
 
             Returns *True* on success.
             """
-            params = {}
+            params = []
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             return self.agent.http.put(
                 CB.json(),
                 '/v1/acl/destroy/%s' % acl_id,
@@ -2078,12 +2119,12 @@ class Consul(object):
 
             *token* is an optional `ACL token`_ to apply to this request.
             """
-            params = {}
+            params = []
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
 
             return self.agent.http.get(CB.json(), '/v1/query', params=params)
 
@@ -2182,7 +2223,7 @@ class Consul(object):
             https://www.consul.io/docs/agent/http/query.html
             """
             path = '/v1/query'
-            params = None if dc is None else {'dc': dc}
+            params = None if dc is None else [('dc', dc)]
             data = self._query_data(
                 service, name, session, token, nearestn, datacenters,
                 onlypassing, tags, ttl, regexp
@@ -2210,7 +2251,7 @@ class Consul(object):
             all the other setting remains the same as the query create method
             """
             path = '/v1/query/%s' % query_id
-            params = None if dc is None else {'dc': dc}
+            params = None if dc is None else [('dc', dc)]
             data = self._query_data(
                 service, name, session, token, nearestn, datacenters,
                 onlypassing, tags, ttl, regexp
@@ -2232,12 +2273,12 @@ class Consul(object):
             *dc* is the datacenter that this agent will communicate with. By
             default the datacenter of the host is used.
             """
-            params = {}
+            params = []
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             return self.agent.http.get(
                 CB.json(), '/v1/query/%s' % query_id, params=params)
 
@@ -2252,12 +2293,12 @@ class Consul(object):
             *dc* is the datacenter that this agent will communicate with. By
             default the datacenter of the host is used.
             """
-            params = {}
+            params = []
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             return self.agent.http.delete(
                 CB.bool(), '/v1/query/%s' % query_id, params=params)
 
@@ -2283,16 +2324,16 @@ class Consul(object):
             *limit* is used to limit the size of the list to the given number
             of nodes. This is applied after any sorting or shuffling.
             """
-            params = {}
+            params = []
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             if near:
-                params['near'] = near
+                params.append(('near', near))
             if limit:
-                params['limit'] = limit
+                params.append(('limit', limit))
             return self.agent.http.get(
                 CB.json(), '/v1/query/%s/execute' % query, params=params)
 
@@ -2310,12 +2351,12 @@ class Consul(object):
             *dc* is the datacenter that this agent will communicate with. By
             default the datacenter of the host is used.
             """
-            params = {}
+            params = []
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             return self.agent.http.get(
                 CB.json(), '/v1/query/%s/explain' % query, params=params)
 
@@ -2346,16 +2387,16 @@ class Consul(object):
             not specified *consistency* will the consistency level this client
             was configured with.
             """
-            params = {}
+            params = []
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             if index:
-                params['index'] = index
+                params.append(('index', index))
                 if wait:
-                    params['wait'] = wait
+                    params.append(('wait', wait))
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
-                params[consistency] = '1'
+                params.append((consistency, '1'))
             return self.agent.http.get(
                 CB.json(index=True), '/v1/coordinate/nodes', params=params)
 

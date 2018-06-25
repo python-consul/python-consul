@@ -55,8 +55,8 @@ class TestIndex(object):
     def test_index(self):
         c = Consul()
         for r in _should_support(c):
-            assert r().params == {}
-            assert r(index='5').params == {'index': '5'}
+            assert r().params == []
+            assert r(index='5').params == [('index', '5')]
 
 
 class TestConsistency(object):
@@ -66,18 +66,18 @@ class TestConsistency(object):
     def test_explict(self):
         c = Consul()
         for r in _should_support(c):
-            assert r().params == {}
-            assert r(consistency='default').params == {}
-            assert r(consistency='consistent').params == {'consistent': '1'}
-            assert r(consistency='stale').params == {'stale': '1'}
+            assert r().params == []
+            assert r(consistency='default').params == []
+            assert r(consistency='consistent').params == [('consistent', '1')]
+            assert r(consistency='stale').params == [('stale', '1')]
 
     def test_implicit(self):
         c = Consul(consistency='consistent')
         for r in _should_support(c):
-            assert r().params == {'consistent': '1'}
-            assert r(consistency='default').params == {}
-            assert r(consistency='consistent').params == {'consistent': '1'}
-            assert r(consistency='stale').params == {'stale': '1'}
+            assert r().params == [('consistent', '1')]
+            assert r(consistency='default').params == []
+            assert r(consistency='consistent').params == [('consistent', '1')]
+            assert r(consistency='stale').params == [('stale', '1')]
 
 
 class TestCB(object):

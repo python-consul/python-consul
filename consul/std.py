@@ -1,5 +1,7 @@
 import requests
 
+from six.moves import urllib
+
 from consul import base
 
 
@@ -9,7 +11,17 @@ __all__ = ['Consul']
 class HTTPClient(base.HTTPClient):
     def __init__(self, *args, **kwargs):
         super(HTTPClient, self).__init__(*args, **kwargs)
-        self.session = requests.session()
+        if 'unix://' in self.base_uri:
+            pr = urllib.parse.urlparse(self.base_uri)
+            netloc = urllib.parse.quote_plus(pr.path)
+            self.base_uri = 'http+unix://{0}'.format(netloc)
+            try:
+                import requests_unixsocket
+                self.session = requests_unixsocket.Session()
+            except ImportError:
+                raise ConsulException('To use a unix socket to connect to Consul you need to install the "requests_unixsocket" package.')
+        else:
+            self.session = requests.session()
 
     def response(self, response):
         response.encoding = 'utf-8'
@@ -40,5 +52,5 @@ class HTTPClient(base.HTTPClient):
 
 
 class Consul(base.Consul):
-    def connect(self, host, port, scheme, verify=True, cert=None):
-        return HTTPClient(host, port, scheme, verify, cert)
+    def connect(self, base_uri, verify=True, cert=None, auth=None):
+        return HTTPClient(base_uri, verify=verify, cert=cert, auth=auth)

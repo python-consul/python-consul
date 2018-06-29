@@ -1,5 +1,7 @@
 import collections
+from contextlib import contextmanager
 import json
+import os
 
 import pytest
 
@@ -14,9 +16,11 @@ Request = collections.namedtuple(
 
 
 class HTTPClient(object):
-    def __init__(self, host=None, port=None, scheme=None,
-                 verify=True, cert=None):
-        pass
+    def __init__(self, base_uri, verify=True, cert=None, auth=None):
+        self.base_uri = base_uri
+        self.verify = verify
+        self.cert = cert
+        self.auth = auth
 
     def get(self, callback, path, params=None):
         return Request('get', path, params, None)
@@ -29,8 +33,69 @@ class HTTPClient(object):
 
 
 class Consul(consul.base.Consul):
-    def connect(self, host, port, scheme, verify=True, cert=None):
-        return HTTPClient(host, port, scheme, verify=verify, cert=None)
+    def connect(self, base_uri, verify=True, cert=None, auth=None):
+        return HTTPClient(base_uri, verify=verify, cert=cert, auth=auth)
+
+
+
+class TestEnvironment(object):
+
+    @contextmanager
+    def environ(self, **env):
+        original_env = {key: os.getenv(key) for key in env}
+        os.environ.update(env)
+        try:
+            yield
+        finally:
+            for key, value in original_env.items():
+                if value is None:
+                    del os.environ[key]
+                else:
+                    os.environ[key] = value
+
+    def test_CONSUL_HTTP_ADDR(self):
+        CONSUL_HTTP_ADDR = 'http://127.0.0.23:4242'
+        with self.environ(CONSUL_HTTP_ADDR=CONSUL_HTTP_ADDR):
+            c = Consul.from_env()
+            assert c.http.base_uri == CONSUL_HTTP_ADDR
+
+    def test_CONSUL_HTTP_TOKEN(self):
+        CONSUL_HTTP_TOKEN = '1bdc2cb4-9b02-4b3c-9df5-eb86214e1a6c'
+        with self.environ(CONSUL_HTTP_TOKEN=CONSUL_HTTP_TOKEN):
+            c = Consul.from_env()
+            assert c.token == CONSUL_HTTP_TOKEN
+
+    def test_cert(self):
+        CONSUL_CLIENT_CERT = '/path/to/client.crt'
+        CONSUL_CLIENT_KEY = '/path/to/client.key'
+        with self.environ(CONSUL_CLIENT_CERT=CONSUL_CLIENT_CERT,
+                          CONSUL_CLIENT_KEY=CONSUL_CLIENT_KEY):
+            c = Consul.from_env()
+            assert c.http.cert == (CONSUL_CLIENT_CERT, CONSUL_CLIENT_KEY)
+
+    def test_CONSUL_HTTP_AUTH(self):
+        CONSUL_HTTP_AUTH = 'username:s3cr3t'
+        with self.environ(CONSUL_HTTP_AUTH=CONSUL_HTTP_AUTH):
+            c = Consul.from_env()
+            assert c.http.auth == CONSUL_HTTP_AUTH.split(':')
+
+    def test_CONSUL_HTTP_SSL_VERIFY_True(self):
+        CONSUL_HTTP_SSL_VERIFY = 'true'
+        with self.environ(CONSUL_HTTP_SSL_VERIFY=CONSUL_HTTP_SSL_VERIFY):
+            c = Consul.from_env()
+            assert c.http.verify == True
+
+    def test_CONSUL_HTTP_SSL_VERIFY_False(self):
+        CONSUL_HTTP_SSL_VERIFY = 'false'
+        with self.environ(CONSUL_HTTP_SSL_VERIFY=CONSUL_HTTP_SSL_VERIFY):
+            c = Consul.from_env()
+            assert c.http.verify == False
+
+    def test_CONSUL_CACERT(self):
+        CONSUL_CACERT = '/path/to/ca.crt'
+        with self.environ(CONSUL_CACERT=CONSUL_CACERT):
+            c = Consul.from_env()
+            assert c.http.verify == CONSUL_CACERT
 
 
 def _should_support(c):

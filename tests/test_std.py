@@ -15,7 +15,7 @@ Check = consul.Check
 
 class TestHTTPClient(object):
     def test_uri(self):
-        http = consul.std.HTTPClient()
+        http = consul.std.HTTPClient('http://127.0.0.1:8500')
         assert http.uri('/v1/kv') == 'http://127.0.0.1:8500/v1/kv'
         assert http.uri('/v1/kv', params={'index': 1}) == \
             'http://127.0.0.1:8500/v1/kv?index=1'

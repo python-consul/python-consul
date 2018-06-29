@@ -12,6 +12,7 @@ __all__ = ['Consul']
 class HTTPClient(base.HTTPClient):
     def __init__(self, *args, **kwargs):
         super(HTTPClient, self).__init__(*args, **kwargs)
+        # TODO: support for unix:// uris
         self.client = httpclient.AsyncHTTPClient()
 
     def response(self, response):
@@ -53,5 +54,5 @@ class HTTPClient(base.HTTPClient):
 
 
 class Consul(base.Consul):
-    def connect(self, host, port, scheme, verify=True, cert=None):
-        return HTTPClient(host, port, scheme, verify=verify, cert=cert)
+    def connect(self, base_uri, verify=True, cert=None, auth=None):
+        return HTTPClient(base_uri, verify=verify, cert=cert, auth=auth)

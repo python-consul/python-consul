@@ -4,7 +4,7 @@ import logging
 import base64
 import json
 import os
-
+import requests
 import six
 from six.moves import urllib
 
@@ -53,7 +53,15 @@ class Check(object):
         """
         Run *script* every *interval* (e.g. "10s") to peform health check
         """
-        return {'script': script, 'interval': interval}
+        config = requests.get('http://127.0.0.1:8500/v1/agent/self')
+        version = config.json()['Config']['Version']
+
+        if version <= '1.0.0':
+            # only return a string for script key in consul releases 0.9.X
+            return {'script': script, 'interval': interval}
+        else:
+            # name changed to args and also we should return an array instead of a string for releases 1.X
+            return {'args': script.split(), 'interval': interval}
 
     @classmethod
     def http(klass, url, interval, timeout=None, deregister=None, header=None):

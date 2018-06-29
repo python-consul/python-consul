@@ -354,7 +354,6 @@ class Consul(object):
             'consistency': consistency,
             'dc': dc,
             'addr': oe.get('CONSUL_HTTP_ADDR', None),
-            'verify': oe.get('CONSUL_CACERT', oe.get('CONSUL_HTTP_SSL_VERIFY', False)),
             'token': oe.get('CONSUL_HTTP_TOKEN', None),
         }
         verify = oe.get('CONSUL_CACERT', oe.get('CONSUL_HTTP_SSL_VERIFY', None))

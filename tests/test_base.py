@@ -42,12 +42,14 @@ class TestEnvironment(object):
 
     @contextmanager
     def environ(self, **env):
-        original_env = {key: os.getenv(key) for key in env}
+        original_env = {}
+        for key in env:
+            original_env[key] = os.getenv(key)
         os.environ.update(env)
         try:
             yield
         finally:
-            for key, value in original_env.items():
+            for key,value in original_env.items():
                 if value is None:
                     del os.environ[key]
                 else:

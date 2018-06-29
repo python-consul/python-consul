@@ -19,6 +19,8 @@ Example
     import consul
 
     c = consul.Consul()
+    # alternatively create client from envrionment variables
+    # c = consul.Consul.from_env()
 
     # poll a key for updates
     index = None
@@ -28,6 +30,17 @@ Example
 
     # in another process
     c.kv.put('foo', 'bar')
+
+.. code:: python
+
+    import consul
+
+    # Alternatively create a client from the same environment variables that the
+    # consul command line client uses. e.g. CONSUL_HTTP_ADDR, CONSUL_HTTP_TOKEN
+    c = consul.Consul.from_env()
+
+    c.agent.self()
+
 
 Installation
 ------------

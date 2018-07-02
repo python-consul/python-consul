@@ -26,7 +26,7 @@ class HTTPClient(base.HTTPClient):
                                               path=pr.path)
         else:
             connector = aiohttp.TCPConnector(loop=self._loop,
-                                         verify_ssl=self.verify)
+                                             verify_ssl=self.verify)
         self._session = aiohttp.ClientSession(connector=connector)
 
     @asyncio.coroutine

@@ -335,7 +335,6 @@ class Consul(object):
         self.coordinate = Consul.Coordinate(self)
         self.operator = Consul.Operator(self)
 
-
     @classmethod
     def from_env(cls, consistency='default', dc=None):
         """
@@ -347,7 +346,7 @@ class Consul(object):
         Additionally all supported given keyword arguments are passed on the
         client constructor.
 
-        [1] https://www.consul.io/docs/commands/index.html#environment-variables
+        [1] https://www.consul.io/docs/commands/index.html#environment-variables # noqa: E501
         """
         oe = os.environ
         kwargs = {
@@ -356,7 +355,8 @@ class Consul(object):
             'addr': oe.get('CONSUL_HTTP_ADDR', None),
             'token': oe.get('CONSUL_HTTP_TOKEN', None),
         }
-        verify = oe.get('CONSUL_CACERT', oe.get('CONSUL_HTTP_SSL_VERIFY', None))
+        verify = oe.get('CONSUL_CACERT',
+                        oe.get('CONSUL_HTTP_SSL_VERIFY', None))
         if verify:
             if verify == 'false':
                 verify = False
@@ -365,14 +365,14 @@ class Consul(object):
             kwargs['verify'] = verify
 
         if 'CONSUL_CLIENT_CERT' in oe \
-            and 'CONSUL_CLIENT_KEY' in oe:
-            kwargs['cert'] = (oe['CONSUL_CLIENT_CERT'], oe['CONSUL_CLIENT_KEY'])
+                and 'CONSUL_CLIENT_KEY' in oe:
+            kwargs['cert'] = (oe['CONSUL_CLIENT_CERT'],
+                              oe['CONSUL_CLIENT_KEY'])
 
         if 'CONSUL_HTTP_AUTH' in oe:
             kwargs['auth'] = oe['CONSUL_HTTP_AUTH'].split(':')
 
         return cls(**kwargs)
-
 
     class Event(object):
         """

@@ -37,7 +37,6 @@ class Consul(consul.base.Consul):
         return HTTPClient(base_uri, verify=verify, cert=cert, auth=auth)
 
 
-
 class TestEnvironment(object):
 
     @contextmanager
@@ -49,7 +48,7 @@ class TestEnvironment(object):
         try:
             yield
         finally:
-            for key,value in original_env.items():
+            for key, value in original_env.items():
                 if value is None:
                     del os.environ[key]
                 else:

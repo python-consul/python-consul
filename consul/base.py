@@ -52,9 +52,11 @@ class Check(object):
     @classmethod
     def script(klass, args, interval):
         """
-        Run the script *args* every *interval* (e.g. "10s") to peform health check
+        Run the script *args* every *interval* (e.g. "10s") to peform health
+        check
         """
-        if isinstance(args, six.string_types) or isinstance(args, six.binary_type):
+        if isinstance(args, six.string_types) \
+                or isinstance(args, six.binary_type):
             log.warn("DEPRECATED: Check.script should take a list of args")
             args = shlex.split(args)
         return {'args': args, 'interval': interval}

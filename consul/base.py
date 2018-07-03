@@ -2,6 +2,7 @@ import abc
 import collections
 import logging
 import base64
+import shlex
 import json
 import os
 
@@ -49,11 +50,14 @@ class Check(object):
     There are three different kinds of checks: script, http and ttl
     """
     @classmethod
-    def script(klass, script, interval):
+    def script(klass, args, interval):
         """
-        Run *script* every *interval* (e.g. "10s") to peform health check
+        Run the script *args* every *interval* (e.g. "10s") to peform health check
         """
-        return {'script': script, 'interval': interval}
+        if isinstance(args, six.string_types) or isinstance(args, six.binary_type):
+            log.warn("DEPRECATED: Check.script should take a list of args")
+            args = shlex.split(args)
+        return {'args': args, 'interval': interval}
 
     @classmethod
     def http(klass, url, interval, timeout=None, deregister=None, header=None):

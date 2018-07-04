@@ -182,6 +182,7 @@ class TestAsyncioConsul(object):
                     'EnableTagOverride': False,
                     'Service': 'foo',
                     'Tags': [],
+                    'Meta': {},
                     'Address': ''}, }
             response = yield from c.agent.service.deregister('foo')
             assert response is True

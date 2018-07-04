@@ -125,6 +125,7 @@ class TestConsul(object):
                 'EnableTagOverride': False,
                 'Service': 'foo',
                 'Tags': [],
+                'Meta': {},
                 'Address': ''}
         }
         response = yield c.agent.service.deregister('foo')

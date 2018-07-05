@@ -84,13 +84,13 @@ class TestEnvironment(object):
         CONSUL_HTTP_SSL_VERIFY = 'true'
         with self.environ(CONSUL_HTTP_SSL_VERIFY=CONSUL_HTTP_SSL_VERIFY):
             c = Consul.from_env()
-            assert c.http.verify == True
+            assert c.http.verify is True
 
     def test_CONSUL_HTTP_SSL_VERIFY_False(self):
         CONSUL_HTTP_SSL_VERIFY = 'false'
         with self.environ(CONSUL_HTTP_SSL_VERIFY=CONSUL_HTTP_SSL_VERIFY):
             c = Consul.from_env()
-            assert c.http.verify == False
+            assert c.http.verify is False
 
     def test_CONSUL_CACERT(self):
         CONSUL_CACERT = '/path/to/ca.crt'

@@ -13,6 +13,11 @@ import consul.std
 Check = consul.Check
 
 
+@pytest.fixture
+def c(consul_port):
+    return consul.Consul(port=consul_port)
+
+
 class TestHTTPClient(object):
     def test_uri(self):
         http = consul.std.HTTPClient('http://127.0.0.1:8500')
@@ -22,24 +27,20 @@ class TestHTTPClient(object):
 
 
 class TestConsul(object):
-    def test_kv(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_kv(self, c):
         index, data = c.kv.get('foo')
         assert data is None
         assert c.kv.put('foo', 'bar') is True
         index, data = c.kv.get('foo')
         assert data['Value'] == six.b('bar')
 
-    def test_kv_wait(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_kv_wait(self, c):
         assert c.kv.put('foo', 'bar') is True
         index, data = c.kv.get('foo')
         check, data = c.kv.get('foo', index=index, wait='20ms')
         assert index == check
 
-    def test_kv_encoding(self, consul_port):
-        c = consul.Consul(port=consul_port)
-
+    def test_kv_encoding(self, c):
         # test binary
         c.kv.put('foo', struct.pack('i', 1000))
         index, data = c.kv.get('foo')
@@ -63,8 +64,7 @@ class TestConsul(object):
         # check unencoded values raises assert
         pytest.raises(AssertionError, c.kv.put, 'foo', {1: 2})
 
-    def test_kv_put_cas(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_kv_put_cas(self, c):
         assert c.kv.put('foo', 'bar', cas=50) is False
         assert c.kv.put('foo', 'bar', cas=0) is True
         index, data = c.kv.get('foo')
@@ -74,8 +74,7 @@ class TestConsul(object):
         index, data = c.kv.get('foo')
         assert data['Value'] == six.b('bar2')
 
-    def test_kv_put_flags(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_kv_put_flags(self, c):
         c.kv.put('foo', 'bar')
         index, data = c.kv.get('foo')
         assert data['Flags'] == 0
@@ -84,8 +83,7 @@ class TestConsul(object):
         index, data = c.kv.get('foo')
         assert data['Flags'] == 50
 
-    def test_kv_recurse(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_kv_recurse(self, c):
         index, data = c.kv.get('foo/', recurse=True)
         assert data is None
 
@@ -102,8 +100,7 @@ class TestConsul(object):
         assert [x['Value'] for x in data] == [
             None, six.b('1'), six.b('2'), six.b('3')]
 
-    def test_kv_delete(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_kv_delete(self, c):
         c.kv.put('foo1', '1')
         c.kv.put('foo2', '2')
         c.kv.put('foo3', '3')
@@ -117,9 +114,7 @@ class TestConsul(object):
         index, data = c.kv.get('foo', recurse=True)
         assert data is None
 
-    def test_kv_delete_cas(self, consul_port):
-        c = consul.Consul(port=consul_port)
-
+    def test_kv_delete_cas(self, c):
         c.kv.put('foo', 'bar')
         index, data = c.kv.get('foo')
 
@@ -130,9 +125,7 @@ class TestConsul(object):
         index, data = c.kv.get('foo')
         assert data is None
 
-    def test_kv_acquire_release(self, consul_port):
-        c = consul.Consul(port=consul_port)
-
+    def test_kv_acquire_release(self, c):
         pytest.raises(
             consul.ConsulException, c.kv.put, 'foo', 'bar', acquire='foo')
 
@@ -149,9 +142,7 @@ class TestConsul(object):
         c.session.destroy(s1)
         c.session.destroy(s2)
 
-    def test_kv_keys_only(self, consul_port):
-        c = consul.Consul(port=consul_port)
-
+    def test_kv_keys_only(self, c):
         assert c.kv.put('bar', '4') is True
         assert c.kv.put('base/foo', '1') is True
         assert c.kv.put('base/base/foo', '5') is True
@@ -159,8 +150,7 @@ class TestConsul(object):
         index, data = c.kv.get('base/', keys=True, separator='/')
         assert data == ['base/base/', 'base/foo']
 
-    def test_transaction(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_transaction(self, c):
         value = base64.b64encode(b"1").decode("utf8")
         d = {"KV": {"Verb": "set", "Key": "asdf", "Value": value}}
         r = c.txn.put([d])
@@ -170,17 +160,13 @@ class TestConsul(object):
         r = c.txn.put([d])
         assert r["Results"][0]["KV"]["Value"] == value
 
-    def test_event(self, consul_port):
-        c = consul.Consul(port=consul_port)
-
+    def test_event(self, c):
         assert c.event.fire("fooname", "foobody")
         index, events = c.event.list()
         assert [x['Name'] == 'fooname' for x in events]
         assert [x['Payload'] == 'foobody' for x in events]
 
-    def test_event_targeted(self, consul_port):
-        c = consul.Consul(port=consul_port)
-
+    def test_event_targeted(self, c):
         assert c.event.fire("fooname", "foobody")
         index, events = c.event.list(name="othername")
         assert events == []
@@ -189,8 +175,7 @@ class TestConsul(object):
         assert [x['Name'] == 'fooname' for x in events]
         assert [x['Payload'] == 'foobody' for x in events]
 
-    def test_agent_checks(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_agent_checks(self, c):
 
         def verify_and_dereg_check(check_id):
             assert set(c.agent.checks().keys()) == set([check_id])
@@ -219,7 +204,8 @@ class TestConsul(object):
             check_id='check_id') is True
         verify_and_dereg_check('check_id')
 
-        http_addr = "http://127.0.0.1:{0}".format(consul_port)
+        #http_addr = "http://127.0.0.1:{0}".format(c)
+        http_addr = c.http.base_uri
         assert c.agent.check.register(
             'http_check', Check.http(http_addr, '10ms')) is True
         time.sleep(1)
@@ -256,10 +242,9 @@ class TestConsul(object):
         verify_check_status('ttl_check', 'critical')
         verify_and_dereg_check('ttl_check')
 
-    def test_service_dereg_issue_156(self, consul_port):
+    def test_service_dereg_issue_156(self, c):
         # https://github.com/cablehead/python-consul/issues/156
         service_name = 'app#127.0.0.1#3000'
-        c = consul.Consul(port=consul_port)
         c.agent.service.register(service_name)
 
         time.sleep(80/1000.0)
@@ -275,8 +260,7 @@ class TestConsul(object):
         index, nodes = c.health.service(service_name)
         assert [node['Service']['ID'] for node in nodes] == []
 
-    def test_agent_checks_service_id(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_agent_checks_service_id(self, c):
         c.agent.service.register('foo1')
 
         time.sleep(40/1000.0)
@@ -305,8 +289,7 @@ class TestConsul(object):
 
         time.sleep(40/1000.0)
 
-    def test_agent_register_check_no_service_id(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_agent_register_check_no_service_id(self, c):
         index, nodes = c.health.service("foo1")
         assert nodes == []
 
@@ -324,8 +307,7 @@ class TestConsul(object):
 
         time.sleep(40/1000.0)
 
-    def test_agent_register_enable_tag_override(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_agent_register_enable_tag_override(self, c):
         index, nodes = c.health.service("foo1")
         assert nodes == []
 
@@ -335,9 +317,7 @@ class TestConsul(object):
         # Cleanup tasks
         c.agent.check.deregister('foo')
 
-    def test_agent_service_maintenance(self, consul_port):
-        c = consul.Consul(port=consul_port)
-
+    def test_agent_service_maintenance(self, c):
         c.agent.service.register('foo', check=Check.ttl('100ms'))
 
         time.sleep(40/1000.0)
@@ -362,9 +342,7 @@ class TestConsul(object):
 
         time.sleep(40/1000.0)
 
-    def test_agent_node_maintenance(self, consul_port):
-        c = consul.Consul(port=consul_port)
-
+    def test_agent_node_maintenance(self, c):
         c.agent.maintenance('true', "test")
 
         time.sleep(40/1000.0)
@@ -380,8 +358,7 @@ class TestConsul(object):
         checks_post = c.agent.checks()
         assert '_node_maintenance' not in checks_post.keys()
 
-    def test_agent_members(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_agent_members(self, c):
         members = c.agent.members()
         for x in members:
             assert x['Status'] == 1
@@ -393,14 +370,12 @@ class TestConsul(object):
         for x in wan_members:
             assert 'dc1' in x['Name']
 
-    def test_agent_self(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_agent_self(self, c):
         assert set(c.agent.self().keys()) == set(['Member', 'Stats', 'Config',
                                                   'Coord', 'DebugConfig',
                                                   'Meta'])
 
-    def test_agent_services(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_agent_services(self, c):
         assert c.agent.service.register('foo') is True
         assert set(c.agent.services().keys()) == set(['foo'])
         assert c.agent.service.deregister('foo') is True
@@ -413,9 +388,7 @@ class TestConsul(object):
             if k == 'foo'][0] == '10.10.10.1'
         assert c.agent.service.deregister('foo') is True
 
-    def test_catalog(self, consul_port):
-        c = consul.Consul(port=consul_port)
-
+    def test_catalog(self, c):
         # grab the node our server created, so we can ignore it
         _, nodes = c.catalog.nodes()
         assert len(nodes) == 1
@@ -486,9 +459,7 @@ class TestConsul(object):
         nodes.remove(current)
         assert [x['Node'] for x in nodes] == []
 
-    def test_health_service(self, consul_port):
-        c = consul.Consul(port=consul_port)
-
+    def test_health_service(self, c):
         # check there are no nodes for the service 'foo'
         index, nodes = c.health.service('foo')
         assert nodes == []
@@ -551,9 +522,7 @@ class TestConsul(object):
         index, nodes = c.health.service('foo')
         assert nodes == []
 
-    def test_health_state(self, consul_port):
-        c = consul.Consul(port=consul_port)
-
+    def test_health_state(self, c):
         # The empty string is for the Serf Health Status check, which has an
         # empty ServiceID
         index, nodes = c.health.state('any')
@@ -614,16 +583,13 @@ class TestConsul(object):
         index, nodes = c.health.state('any')
         assert [node['ServiceID'] for node in nodes] == ['']
 
-    def test_health_node(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_health_node(self, c):
         # grab local node name
         node = c.agent.self()['Config']['NodeName']
         index, checks = c.health.node(node)
         assert node in [check["Node"] for check in checks]
 
-    def test_health_checks(self, consul_port):
-        c = consul.Consul(port=consul_port)
-
+    def test_health_checks(self, c):
         c.agent.service.register(
             'foobar', service_id='foobar', check=Check.ttl('10s'))
 
@@ -641,9 +607,7 @@ class TestConsul(object):
         index, checks = c.health.checks('foobar')
         assert len(checks) == 0
 
-    def test_session(self, consul_port):
-        c = consul.Consul(port=consul_port)
-
+    def test_session(self, c):
         # session.create
         pytest.raises(consul.ConsulException, c.session.create, node='n2')
         pytest.raises(consul.ConsulException, c.session.create, dc='dc2')
@@ -676,9 +640,7 @@ class TestConsul(object):
         _, sessions = c.session.list()
         assert sessions == []
 
-    def test_session_delete_ttl_renew(self, consul_port):
-        c = consul.Consul(port=consul_port)
-
+    def test_session_delete_ttl_renew(self, c):
         s = c.session.create(behavior='delete', ttl=20)
 
         # attempt to renew an unknown session
@@ -697,8 +659,7 @@ class TestConsul(object):
         index, data = c.kv.get('foo')
         assert data is None
 
-    def test_acl_disabled(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_acl_disabled(self, c):
         pytest.raises(consul.ACLDisabled, c.acl.list)
         pytest.raises(consul.ACLDisabled, c.acl.info, '1'*36)
         pytest.raises(consul.ACLDisabled, c.acl.create)
@@ -866,9 +827,7 @@ class TestConsul(object):
         assert set([x['ID'] for x in acls]) == \
             set(['anonymous', master_token])
 
-    def test_status_leader(self, consul_port):
-        c = consul.Consul(port=consul_port)
-
+    def test_status_leader(self, c):
         agent_self = c.agent.self()
         leader = c.status.leader()
         addr_port = agent_self['Stats']['consul']['leader_addr']
@@ -877,10 +836,7 @@ class TestConsul(object):
             "Leader value was {0}, expected value " \
             "was {1}".format(leader, addr_port)
 
-    def test_status_peers(self, consul_port):
-
-        c = consul.Consul(port=consul_port)
-
+    def test_status_peers(self, c):
         agent_self = c.agent.self()
 
         addr_port = agent_self['Stats']['consul']['leader_addr']
@@ -890,9 +846,7 @@ class TestConsul(object):
             "Expected value '{0}' " \
             "in peer list but it was not present".format(addr_port)
 
-    def test_query(self, consul_port):
-        c = consul.Consul(port=consul_port)
-
+    def test_query(self, c):
         # check that query list is empty
         queries = c.query.list()
         assert queries == []
@@ -920,15 +874,13 @@ class TestConsul(object):
         # delete query
         assert c.query.delete(query['ID'])
 
-    def test_coordinate(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_coordinate(self, c):
         c.coordinate.nodes()
         c.coordinate.datacenters()
         assert set(c.coordinate.datacenters()[0].keys()) == \
             set(['Datacenter', 'Coordinates', 'AreaID'])
 
-    def test_operator(self, consul_port):
-        c = consul.Consul(port=consul_port)
+    def test_operator(self, c):
         config = c.operator.raft_config()
         assert config["Index"] == 1
         leader = False

@@ -22,6 +22,11 @@ def loop():
     return loop
 
 
+@pytest.fixture
+def c(consul_port):
+    return consul.tornado.Consul(port=consul_port)
+
+
 def sleep(loop, s):
     result = gen.Future()
     loop.add_timeout(
@@ -30,10 +35,9 @@ def sleep(loop, s):
 
 
 class TestConsul(object):
-    def test_kv(self, loop, consul_port):
+    def test_kv(self, loop, c):
         @gen.coroutine
         def main():
-            c = consul.tornado.Consul(port=consul_port)
             index, data = yield c.kv.get('foo')
             assert data is None
             response = yield c.kv.put('foo', 'bar')
@@ -43,18 +47,16 @@ class TestConsul(object):
             loop.stop()
         loop.run_sync(main)
 
-    def test_kv_binary(self, loop, consul_port):
+    def test_kv_binary(self, loop, c):
         @gen.coroutine
         def main():
-            c = consul.tornado.Consul(port=consul_port)
             yield c.kv.put('foo', struct.pack('i', 1000))
             index, data = yield c.kv.get('foo')
             assert struct.unpack('i', data['Value']) == (1000,)
             loop.stop()
         loop.run_sync(main)
 
-    def test_kv_missing(self, loop, consul_port):
-        c = consul.tornado.Consul(port=consul_port)
+    def test_kv_missing(self, loop, c):
 
         @gen.coroutine
         def main():
@@ -72,10 +74,9 @@ class TestConsul(object):
         loop.add_timeout(time.time()+(2.0/100), put)
         loop.run_sync(main)
 
-    def test_kv_put_flags(self, loop, consul_port):
+    def test_kv_put_flags(self, loop, c):
         @gen.coroutine
         def main():
-            c = consul.tornado.Consul(port=consul_port)
             yield c.kv.put('foo', 'bar')
             index, data = yield c.kv.get('foo')
             assert data['Flags'] == 0
@@ -87,10 +88,9 @@ class TestConsul(object):
             loop.stop()
         loop.run_sync(main)
 
-    def test_kv_delete(self, loop, consul_port):
+    def test_kv_delete(self, loop, c):
         @gen.coroutine
         def main():
-            c = consul.tornado.Consul(port=consul_port)
             yield c.kv.put('foo1', '1')
             yield c.kv.put('foo2', '2')
             yield c.kv.put('foo3', '3')
@@ -108,8 +108,7 @@ class TestConsul(object):
             loop.stop()
         loop.run_sync(main)
 
-    def test_kv_subscribe(self, loop, consul_port):
-        c = consul.tornado.Consul(port=consul_port)
+    def test_kv_subscribe(self, loop, c):
 
         @gen.coroutine
         def get():
@@ -127,10 +126,9 @@ class TestConsul(object):
         loop.add_timeout(time.time()+(1.0/100), put)
         loop.run_sync(get)
 
-    def test_kv_encoding(self, loop, consul_port):
+    def test_kv_encoding(self, loop, c):
         @gen.coroutine
         def main():
-            c = consul.tornado.Consul(port=consul_port)
 
             # test binary
             response = yield c.kv.put('foo', struct.pack('i', 1000))
@@ -166,10 +164,9 @@ class TestConsul(object):
             loop.stop()
         loop.run_sync(main)
 
-    def test_transaction(self, loop, consul_port):
+    def test_transaction(self, loop, c):
         @gen.coroutine
         def main():
-            c = consul.tornado.Consul(port=consul_port)
             value = base64.b64encode(b"1").decode("utf8")
             d = {"KV": {"Verb": "set", "Key": "asdf", "Value": value}}
             r = yield c.txn.put([d])
@@ -181,10 +178,9 @@ class TestConsul(object):
             loop.stop()
         loop.run_sync(main)
 
-    def test_agent_services(self, loop, consul_port):
+    def test_agent_services(self, loop, c):
         @gen.coroutine
         def main():
-            c = consul.tornado.Consul(port=consul_port)
             services = yield c.agent.services()
             assert services == {}
             response = yield c.agent.service.register('foo')
@@ -208,8 +204,7 @@ class TestConsul(object):
             loop.stop()
         loop.run_sync(main)
 
-    def test_catalog(self, loop, consul_port):
-        c = consul.tornado.Consul(port=consul_port)
+    def test_catalog(self, loop, c):
 
         @gen.coroutine
         def nodes():
@@ -237,10 +232,9 @@ class TestConsul(object):
         loop.add_timeout(time.time()+(1.0/100), register)
         loop.run_sync(nodes)
 
-    def test_health_service(self, loop, consul_port):
+    def test_health_service(self, loop, c):
         @gen.coroutine
         def main():
-            c = consul.tornado.Consul(port=consul_port)
 
             # check there are no nodes for the service 'foo'
             index, nodes = yield c.health.service('foo')
@@ -302,8 +296,7 @@ class TestConsul(object):
 
         loop.run_sync(main)
 
-    def test_health_service_subscribe(self, loop, consul_port):
-        c = consul.tornado.Consul(port=consul_port)
+    def test_health_service_subscribe(self, loop, c):
 
         class Config(object):
             pass
@@ -341,8 +334,7 @@ class TestConsul(object):
         loop.add_callback(monitor)
         loop.run_sync(keepalive)
 
-    def test_session(self, loop, consul_port):
-        c = consul.tornado.Consul(port=consul_port)
+    def test_session(self, loop, c):
 
         @gen.coroutine
         def monitor():

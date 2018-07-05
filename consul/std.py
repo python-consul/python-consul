@@ -20,7 +20,8 @@ class HTTPClient(base.HTTPClient):
                 self.session = requests_unixsocket.Session()
             except ImportError:
                 raise base.ConsulException('To use a unix socket to connect to'
-                    'Consul you need to install the "requests_unixsocket" package.')
+                                           ' Consul you need to install the'
+                                           ' "requests_unixsocket" package.')
         else:
             self.session = requests.session()
 

@@ -204,7 +204,6 @@ class TestConsul(object):
             check_id='check_id') is True
         verify_and_dereg_check('check_id')
 
-        #http_addr = "http://127.0.0.1:{0}".format(c)
         http_addr = c.http.base_uri
         assert c.agent.check.register(
             'http_check', Check.http(http_addr, '10ms')) is True

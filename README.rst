@@ -35,6 +35,8 @@ Installation
 ::
 
     pip install python-consul
+    
+**Note:** When using python-consul library in environment with proxy server, setting of ``http_proxy``, ``https_proxy`` and ``no_proxy`` environment variables can be required for proper functionality.
 
 .. |Build Status|
    image:: https://img.shields.io/travis/cablehead/python-consul.svg?style=flat-square

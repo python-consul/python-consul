@@ -3,7 +3,6 @@ import collections
 import warnings
 import logging
 import base64
-import shlex
 import json
 import os
 
@@ -60,7 +59,7 @@ class Check(object):
                 or isinstance(args, six.binary_type):
             warnings.warn(
                 "Check.script should take a list of args", DeprecationWarning)
-            args = shlex.split(args)
+            args = ["sh", "-c", args]
         return {'args': args, 'interval': interval}
 
     @classmethod

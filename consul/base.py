@@ -1,5 +1,6 @@
 import abc
 import collections
+import warnings
 import logging
 import base64
 import shlex
@@ -57,7 +58,8 @@ class Check(object):
         """
         if isinstance(args, six.string_types) \
                 or isinstance(args, six.binary_type):
-            log.warn("DEPRECATED: Check.script should take a list of args")
+            warnings.warn(
+                "Check.script should take a list of args", DeprecationWarning)
             args = shlex.split(args)
         return {'args': args, 'interval': interval}
 

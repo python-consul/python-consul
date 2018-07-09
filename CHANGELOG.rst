@@ -1,6 +1,14 @@
 Change log
 ==========
 
+1.1.0
+-----
+
+* add support for nodemeta to catalog and health end points (thanks
+  @ibrahimmenem)
+* update Check.script to use args, as Consul 1.1 has dropped the script
+  parameter
+
 1.0.1
 -----
 

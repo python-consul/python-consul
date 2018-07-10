@@ -352,9 +352,26 @@ class Consul(object):
         kwargs = {
             'consistency': consistency,
             'dc': dc,
-            'addr': oe.get('CONSUL_HTTP_ADDR', None),
             'token': oe.get('CONSUL_HTTP_TOKEN', None),
         }
+
+        addr = oe.get('CONSUL_HTTP_ADDR', None)
+        if addr:
+            if not addr.startswith('http'):
+                # Ensure addr starts with a scheme.
+                ssl = oe.get('CONSUL_HTTP_SSL', False)
+                if ssl == 'false':
+                    ssl = False
+                elif ssl == 'true':
+                    ssl = True
+
+                if ssl:
+                    scheme = 'https'
+                else:
+                    scheme = 'http'
+                addr = '%s://%s' % (scheme, addr)
+            kwargs['addr'] = addr
+
         verify = oe.get('CONSUL_CACERT',
                         oe.get('CONSUL_HTTP_SSL_VERIFY', None))
         if verify:

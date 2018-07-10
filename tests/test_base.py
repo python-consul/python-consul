@@ -64,14 +64,14 @@ class TestEnvironment(object):
         CONSUL_HTTP_ADDR = '127.0.0.23:4242'
         with self.environ(CONSUL_HTTP_ADDR=CONSUL_HTTP_ADDR):
             c = Consul.from_env()
-            assert c.http.base_uri == 'http://'+ CONSUL_HTTP_ADDR
+            assert c.http.base_uri == 'http://' + CONSUL_HTTP_ADDR
 
     def test_CONSUL_HTTP_ADDR_with_CONSUL_HTTP_SSL(self):
         CONSUL_HTTP_ADDR = '127.0.0.23:4242'
         with self.environ(CONSUL_HTTP_ADDR=CONSUL_HTTP_ADDR,
                           CONSUL_HTTP_SSL='true'):
             c = Consul.from_env()
-            assert c.http.base_uri == 'https://'+ CONSUL_HTTP_ADDR
+            assert c.http.base_uri == 'https://' + CONSUL_HTTP_ADDR
 
     def test_CONSUL_HTTP_TOKEN(self):
         CONSUL_HTTP_TOKEN = '1bdc2cb4-9b02-4b3c-9df5-eb86214e1a6c'

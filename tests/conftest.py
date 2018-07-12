@@ -77,8 +77,9 @@ def start_consul_instance(acl_master_token=None):
     command = command.format(bin=bin).strip()
     command = shlex.split(command)
 
-    p = subprocess.Popen(
-        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    with open('/dev/null', 'w') as devnull:
+        p = subprocess.Popen(
+            command, stdout=devnull, stderr=devnull)
 
     # wait for consul instance to bootstrap
     base_uri = 'http://127.0.0.1:%s/v1/' % ports['http']

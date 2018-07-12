@@ -108,6 +108,15 @@ def start_consul_instance(acl_master_token=None):
     return p, ports['http']
 
 
+def clean_consul(port):
+    # remove all data from the instance, to have a clean start
+    base_uri = 'http://127.0.0.1:%s/v1/' % port
+    requests.delete(base_uri + 'kv/', params={'recurse': 1})
+    services = requests.get(base_uri + 'agent/services').json().keys()
+    for s in services:
+        requests.put(base_uri + 'agent/service/deregister/%s' % s)
+
+
 @pytest.fixture(scope="module")
 def consul_instance():
     p, port = start_consul_instance()
@@ -117,10 +126,9 @@ def consul_instance():
 
 @pytest.fixture
 def consul_port(consul_instance):
-    yield consul_instance
-    # remove all data from the instance, to have a clean start
-    base_uri = 'http://127.0.0.1:%s/v1/' % consul_instance
-    requests.delete(base_uri + 'kv/?recurse=1')
+    port = consul_instance
+    yield port
+    clean_consul(port)
 
 
 @pytest.fixture(scope="module")
@@ -136,6 +144,4 @@ def acl_consul(acl_consul_instance):
     ACLConsul = collections.namedtuple('ACLConsul', ['port', 'token'])
     port, token = acl_consul_instance
     yield ACLConsul(port, token)
-    # remove all data from the instance, to have a clean start
-    base_uri = 'http://127.0.0.1:%s/v1/' % port
-    requests.delete(base_uri + 'kv/?recurse=1')
+    clean_consul(port)

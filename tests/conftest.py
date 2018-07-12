@@ -9,7 +9,6 @@ import uuid
 import time
 import json
 import os
-
 import requests
 import pytest
 import py
@@ -78,8 +77,9 @@ def start_consul_instance(acl_master_token=None):
     command = command.format(bin=bin).strip()
     command = shlex.split(command)
 
-    p = subprocess.Popen(
-        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    with open('/dev/null', 'w') as devnull:
+        p = subprocess.Popen(
+            command, stdout=devnull, stderr=devnull)
 
     # wait for consul instance to bootstrap
     base_uri = 'http://127.0.0.1:%s/v1/' % ports['http']
@@ -108,22 +108,30 @@ def start_consul_instance(acl_master_token=None):
     return p, ports['http']
 
 
-@pytest.yield_fixture(scope="module")
+def clean_consul(port):
+    # remove all data from the instance, to have a clean start
+    base_uri = 'http://127.0.0.1:%s/v1/' % port
+    requests.delete(base_uri + 'kv/', params={'recurse': 1})
+    services = requests.get(base_uri + 'agent/services').json().keys()
+    for s in services:
+        requests.put(base_uri + 'agent/service/deregister/%s' % s)
+
+
+@pytest.fixture(scope="module")
 def consul_instance():
     p, port = start_consul_instance()
     yield port
     p.terminate()
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def consul_port(consul_instance):
-    yield consul_instance
-    # remove all data from the instance, to have a clean start
-    base_uri = 'http://127.0.0.1:%s/v1/' % consul_instance
-    requests.delete(base_uri + 'kv/?recurse=1')
+    port = consul_instance
+    yield port
+    clean_consul(port)
 
 
-@pytest.yield_fixture(scope="module")
+@pytest.fixture(scope="module")
 def acl_consul_instance():
     acl_master_token = uuid.uuid4().hex
     p, port = start_consul_instance(acl_master_token=acl_master_token)
@@ -131,11 +139,9 @@ def acl_consul_instance():
     p.terminate()
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def acl_consul(acl_consul_instance):
     ACLConsul = collections.namedtuple('ACLConsul', ['port', 'token'])
     port, token = acl_consul_instance
     yield ACLConsul(port, token)
-    # remove all data from the instance, to have a clean start
-    base_uri = 'http://127.0.0.1:%s/v1/' % port
-    requests.delete(base_uri + 'kv/?recurse=1')
+    clean_consul(port)

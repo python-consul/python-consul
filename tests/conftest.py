@@ -9,7 +9,6 @@ import uuid
 import time
 import json
 import os
-
 import requests
 import pytest
 import py
@@ -108,14 +107,14 @@ def start_consul_instance(acl_master_token=None):
     return p, ports['http']
 
 
-@pytest.yield_fixture(scope="module")
+@pytest.fixture(scope="module")
 def consul_instance():
     p, port = start_consul_instance()
     yield port
     p.terminate()
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def consul_port(consul_instance):
     yield consul_instance
     # remove all data from the instance, to have a clean start
@@ -123,7 +122,7 @@ def consul_port(consul_instance):
     requests.delete(base_uri + 'kv/?recurse=1')
 
 
-@pytest.yield_fixture(scope="module")
+@pytest.fixture(scope="module")
 def acl_consul_instance():
     acl_master_token = uuid.uuid4().hex
     p, port = start_consul_instance(acl_master_token=acl_master_token)
@@ -131,7 +130,7 @@ def acl_consul_instance():
     p.terminate()
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def acl_consul(acl_consul_instance):
     ACLConsul = collections.namedtuple('ACLConsul', ['port', 'token'])
     port, token = acl_consul_instance

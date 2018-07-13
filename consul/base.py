@@ -454,7 +454,7 @@ class Consul(object):
             if index:
                 params.append(('index', index))
                 if wait:
-                    params['wait'] = wait
+                    params.append(('wait', wait))
             return self.agent.http.get(
                 CB.json(index=True, decode='Payload'),
                 '/v1/event/list', params=params)
@@ -1387,7 +1387,7 @@ class Consul(object):
                     params.append(('wait', wait))
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params.append((consistency, '1'))

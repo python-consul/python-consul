@@ -1066,7 +1066,8 @@ class Consul(object):
                      service=None,
                      check=None,
                      dc=None,
-                     token=None):
+                     token=None,
+                     node_meta=None):
             """
             A low level mechanism for directly registering or updating entries
             in the catalog. It is usually recommended to use
@@ -1116,6 +1117,9 @@ class Consul(object):
 
             *token* is an optional `ACL token`_ to apply to this request.
 
+            *node_meta* is an optional meta data used for filtering, a
+            dictionary formatted as {k1:v1, k2:v2}.
+
             This manipulates the health check entry, but does not setup a
             script or TTL to actually update the status. The full documentation
             is `here <https://consul.io/docs/agent/http.html#catalog>`_.
@@ -1135,6 +1139,10 @@ class Consul(object):
             if token:
                 data['WriteRequest'] = {'Token': token}
                 params.append(('token', token))
+            if node_meta:
+                for nodemeta_name, nodemeta_value in node_meta.items():
+                    params.append(('node-meta', '{}:{}'.
+                                   format(nodemeta_name, nodemeta_value)))
             return self.agent.http.put(
                 CB.bool(),
                 '/v1/catalog/register',

@@ -98,7 +98,6 @@ class TestNodemeta(object):
     """
 
     def test_node_meta(self):
-        import sys
         c = Consul()
         for r in _should_support_node_meta(c):
             assert r().params == []

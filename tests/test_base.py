@@ -102,8 +102,8 @@ class TestNodemeta(object):
         c = Consul()
         for r in _should_support_node_meta(c):
             assert r().params == []
-            assert r(node_meta={'env': 'prod', 'net': 1}).params == \
-                [('node-meta', 'net:1'), ('node-meta', 'env:prod')]
+            assert sorted(r(node_meta={'env': 'prod', 'net': 1}).params) == \
+                sorted([('node-meta', 'net:1'), ('node-meta', 'env:prod')])
 
 
 class TestCB(object):

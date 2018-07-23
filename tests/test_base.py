@@ -5,6 +5,9 @@ import pytest
 import consul.base
 
 
+CB = consul.base.CB
+Response = consul.base.Response
+
 Request = collections.namedtuple(
     'Request', ['method', 'path', 'params', 'data'])
 
@@ -52,8 +55,8 @@ class TestIndex(object):
     def test_index(self):
         c = Consul()
         for r in _should_support(c):
-            assert r().params == {}
-            assert r(index='5').params == {'index': '5'}
+            assert r().params == []
+            assert r(index='5').params == [('index', '5')]
 
 
 class TestConsistency(object):
@@ -63,18 +66,60 @@ class TestConsistency(object):
     def test_explict(self):
         c = Consul()
         for r in _should_support(c):
-            assert r().params == {}
-            assert r(consistency='default').params == {}
-            assert r(consistency='consistent').params == {'consistent': '1'}
-            assert r(consistency='stale').params == {'stale': '1'}
+            assert r().params == []
+            assert r(consistency='default').params == []
+            assert r(consistency='consistent').params == [('consistent', '1')]
+            assert r(consistency='stale').params == [('stale', '1')]
 
     def test_implicit(self):
         c = Consul(consistency='consistent')
         for r in _should_support(c):
-            assert r().params == {'consistent': '1'}
-            assert r(consistency='default').params == {}
-            assert r(consistency='consistent').params == {'consistent': '1'}
-            assert r(consistency='stale').params == {'stale': '1'}
+            assert r().params == [('consistent', '1')]
+            assert r(consistency='default').params == []
+            assert r(consistency='consistent').params == [('consistent', '1')]
+            assert r(consistency='stale').params == [('stale', '1')]
+
+
+class TestCB(object):
+
+    def test_status_200_passes(self):
+        response = consul.base.Response(200, None, None)
+        CB._status(response)
+
+    @pytest.mark.parametrize(
+        'response, expected_exception',
+        [
+            (Response(400, None, None), consul.base.BadRequest),
+            (Response(401, None, None), consul.base.ACLDisabled),
+            (Response(403, None, None), consul.base.ACLPermissionDenied),
+        ])
+    def test_status_4xx_raises_error(self, response, expected_exception):
+        with pytest.raises(expected_exception):
+            CB._status(response)
+
+    def test_status_404_allow_404(self):
+        response = Response(404, None, None)
+        CB._status(response, allow_404=True)
+
+    def test_status_404_dont_allow_404(self):
+        response = Response(404, None, None)
+        with pytest.raises(consul.base.NotFound):
+            CB._status(response, allow_404=False)
+
+    def test_status_405_raises_generic_ClientError(self):
+        response = Response(405, None, None)
+        with pytest.raises(consul.base.ClientError):
+            CB._status(response)
+
+    @pytest.mark.parametrize(
+        'response',
+        [
+            Response(500, None, None),
+            Response(599, None, None),
+        ])
+    def test_status_5xx_raises_error(self, response):
+        with pytest.raises(consul.base.ConsulException):
+            CB._status(response)
 
 
 class TestChecks(object):

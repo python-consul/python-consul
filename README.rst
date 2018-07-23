@@ -9,7 +9,7 @@ Documentation
 Status
 ------
 
-|Build Status|\ |Coverage Status|
+|Build Status|
 
 Example
 -------
@@ -35,6 +35,8 @@ Installation
 ::
 
     pip install python-consul
+    
+**Note:** When using python-consul library in environment with proxy server, setting of ``http_proxy``, ``https_proxy`` and ``no_proxy`` environment variables can be required for proper functionality.
 
 .. |Build Status|
    image:: https://img.shields.io/travis/cablehead/python-consul.svg?style=flat-square
@@ -51,12 +53,22 @@ There's a few API endpoints still to go to expose all features available in
 Consul v0.6.0. If you need an endpoint that's not in the documentation, just
 open an issue and I'll try and add it straight away.
 
+Mailing List
+------------
+
+- https://groups.google.com/forum/#!forum/python-consul
+
 Contributing
 ------------
 
-python-consul is currently maintained by @abn and @cablehead. Please reach out
-if you're interested in being a maintainer as well. Otherwise, open a PR or
-Issue we'll try and respond as quickly as we're able.
+python-consul is currently maintained by:
+
+- @matusvalo
+- @abn
+- @cablehead
+
+Please reach out if you're interested in being a maintainer as well. Otherwise,
+open a PR or Issue we'll try and respond as quickly as we're able.
 
 Issue Labels
 ~~~~~~~~~~~~

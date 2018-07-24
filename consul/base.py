@@ -1258,7 +1258,6 @@ class Consul(object):
                 for nodemeta_name, nodemeta_value in node_meta.items():
                     params.append(('node-meta', '{0}:{1}'.
                                    format(nodemeta_name, nodemeta_value)))
-
             return self.agent.http.get(
                 CB.json(index=True), '/v1/catalog/nodes', params=params)
 
@@ -1322,7 +1321,6 @@ class Consul(object):
                 for nodemeta_name, nodemeta_value in node_meta.items():
                     params.append(('node-meta', '{0}:{1}'.
                                    format(nodemeta_name, nodemeta_value)))
-
             return self.agent.http.get(
                 CB.json(index=True), '/v1/catalog/services', params=params)
 
@@ -1406,7 +1404,8 @@ class Consul(object):
                 consistency=None,
                 dc=None,
                 near=None,
-                token=None):
+                token=None,
+                node_meta=None):
             """
             Returns a tuple of (*index*, *nodes*) of the nodes providing
             *service* in the *dc* datacenter. *dc* defaults to the current
@@ -1430,6 +1429,9 @@ class Consul(object):
             was configured with.
 
             *token* is an optional `ACL token`_ to apply to this request.
+
+            *node_meta* is an optional meta data used for filtering, a
+            dictionary formatted as {k1:v1, k2:v2}.
 
             The response looks like this::
 
@@ -1462,6 +1464,10 @@ class Consul(object):
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params.append((consistency, '1'))
+            if node_meta:
+                for nodemeta_name, nodemeta_value in node_meta.items():
+                    params.append(('node-meta', '{0}:{1}'.
+                                   format(nodemeta_name, nodemeta_value)))
             return self.agent.http.get(
                 CB.json(index=True),
                 '/v1/catalog/service/%s' % service,
@@ -1531,7 +1537,6 @@ class Consul(object):
                 for nodemeta_name, nodemeta_value in node_meta.items():
                     params.append(('node-meta', '{0}:{1}'.
                                    format(nodemeta_name, nodemeta_value)))
-
             return self.agent.http.get(
                 CB.json(index=True),
                 '/v1/health/service/%s' % service,
@@ -1587,7 +1592,6 @@ class Consul(object):
                 for nodemeta_name, nodemeta_value in node_meta.items():
                     params.append(('node-meta', '{0}:{1}'.
                                    format(nodemeta_name, nodemeta_value)))
-
             return self.agent.http.get(
                 CB.json(index=True),
                 '/v1/health/checks/%s' % service,

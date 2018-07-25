@@ -53,6 +53,7 @@ def _should_support_node_meta(c):
         # catalog
         c.catalog.nodes,
         c.catalog.services,
+        lambda **kw: c.catalog.service('foo', **kw),
         lambda **kw: c.catalog.register('foo', 'bar', **kw),
         # health
         lambda **kw: c.health.service('foo', **kw),

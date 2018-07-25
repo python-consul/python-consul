@@ -48,6 +48,20 @@ def _should_support(c):
     )
 
 
+def _should_support_node_meta(c):
+    return (
+        # catalog
+        c.catalog.nodes,
+        c.catalog.services,
+        lambda **kw: c.catalog.service('foo', **kw),
+        lambda **kw: c.catalog.register('foo', 'bar', **kw),
+        # health
+        lambda **kw: c.health.service('foo', **kw),
+        lambda **kw: c.health.checks('foo', **kw),
+        lambda **kw: c.health.state('unknown', **kw),
+    )
+
+
 class TestIndex(object):
     """
     Tests read requests that should support blocking on an index
@@ -78,6 +92,19 @@ class TestConsistency(object):
             assert r(consistency='default').params == []
             assert r(consistency='consistent').params == [('consistent', '1')]
             assert r(consistency='stale').params == [('stale', '1')]
+
+
+class TestNodemeta(object):
+    """
+    Tests read requests that should support node_meta
+    """
+
+    def test_node_meta(self):
+        c = Consul()
+        for r in _should_support_node_meta(c):
+            assert r().params == []
+            assert sorted(r(node_meta={'env': 'prod', 'net': 1}).params) == \
+                sorted([('node-meta', 'net:1'), ('node-meta', 'env:prod')])
 
 
 class TestCB(object):

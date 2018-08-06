@@ -231,7 +231,8 @@ class CB(object):
                 if txn and data.get('Results') is not None:
                     for item in data.get('Results'):
                         if item.get('KV').get('Value') is not None:
-                            item['KV']['Value'] = base64.b64decode(item['KV']['Value'])
+                            item['KV']['Value'] = base64.b64decode(
+                                                   item['KV']['Value'])
                 elif not txn:
                     for item in data:
                         if item.get(decode) is not None:
@@ -711,7 +712,8 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
 
-            return self.agent.http.put(CB.json(txn=True, decode=decode), "/v1/txn",
+            return self.agent.http.put(CB.json(txn=True, decode=decode),
+                                       "/v1/txn",
                                        data=json.dumps(payload),
                                        params=params)
 

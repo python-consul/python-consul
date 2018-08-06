@@ -173,7 +173,7 @@ class TestConsul(object):
     def test_transaction_decode(self, consul_port):
         c = consul.Consul(port=consul_port)
         value = '123 qweqwe'
-        enc_value = base64.b64encode(value).decode("utf8")
+        enc_value = base64.b64encode(value.encode()).decode("utf8")
         d = {"KV": {"Verb": "set", "Key": "asdf", "Value": enc_value}}
         r = c.txn.put([d])
         assert r["Errors"] is None

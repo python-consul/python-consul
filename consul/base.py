@@ -232,7 +232,7 @@ class CB(object):
                     for item in data.get('Results'):
                         if item.get('KV').get('Value') is not None:
                             item['KV']['Value'] = base64.b64decode(
-                                                    item['KV']['Value'])
+                                            item['KV']['Value'])
                 elif not txn:
                     for item in data:
                         if item.get(decode) is not None:

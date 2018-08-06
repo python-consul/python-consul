@@ -676,7 +676,8 @@ class Consul(object):
                 payload,
                 token=None,
                 consistency=None,
-                dc=None):
+                dc=None,
+                decode=False):
             """
             Create a transaction by submitting a list of operations to apply to
             the KV store inside of a transaction. If any operation fails, the
@@ -710,7 +711,7 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params[consistency] = '1'
 
-            return self.agent.http.put(CB.json(txn=True, decode=True), "/v1/txn",
+            return self.agent.http.put(CB.json(txn=True, decode=decode), "/v1/txn",
                                        data=json.dumps(payload),
                                        params=params)
 

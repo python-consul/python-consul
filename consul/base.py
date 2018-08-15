@@ -896,14 +896,19 @@ class Consul(object):
                     params=params,
                     data=json.dumps(payload))
 
-            def deregister(self, service_id):
+            def deregister(self, service_id,token=None):
                 """
                 Used to remove a service from the local agent. The agent will
                 take care of deregistering the service with the Catalog. If
                 there is an associated check, that is also deregistered.
                 """
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(("token",token))
                 return self.agent.http.put(
-                    CB.bool(), '/v1/agent/service/deregister/%s' % service_id)
+                    CB.bool(), '/v1/agent/service/deregister/%s' % service_id,
+                    params=params)
 
             def maintenance(self, service_id, enable, reason=None):
                 """
@@ -1011,13 +1016,19 @@ class Consul(object):
                     params=params,
                     data=json.dumps(payload))
 
-            def deregister(self, check_id):
+            def deregister(self, check_id,token=None):
                 """
                 Remove a check from the local agent.
                 """
+                params = []
+                token = token or token = self.agent.token
+                if token:
+                    params.append(("token",token))
+
                 return self.agent.http.put(
                     CB.bool(),
-                    '/v1/agent/check/deregister/%s' % check_id)
+                    '/v1/agent/check/deregister/%s' % check_id,
+                    params=params)
 
             def ttl_pass(self, check_id, notes=None):
                 """
@@ -1180,6 +1191,7 @@ class Consul(object):
             assert not (service_id and check_id)
             data = {'node': node}
             dc = dc or self.agent.dc
+            params = []
             if dc:
                 data['datacenter'] = dc
             if service_id:
@@ -1189,8 +1201,11 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 data['WriteRequest'] = {'Token': token}
+                params.append(("token",token))
             return self.agent.http.put(
-                CB.bool(), '/v1/catalog/deregister', data=json.dumps(data))
+                CB.bool(), '/v1/catalog/deregister',
+                data=json.dumps(data),
+                params=params)
 
         def datacenters(self):
             """

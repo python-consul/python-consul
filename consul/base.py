@@ -1020,15 +1020,9 @@ class Consul(object):
                 """
                 Remove a check from the local agent.
                 """
-                params = []
-#                token = token or token = self.agent.token
-#                if token:
-#                    params.append(("token",token))
-#
                 return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/deregister/%s' % check_id)
-#                    params=params)
 
             def ttl_pass(self, check_id, notes=None):
                 """

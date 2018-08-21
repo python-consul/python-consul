@@ -124,8 +124,8 @@ class TestMeta(object):
     def test_meta(self):
         c = Consul()
         for r in _should_support_meta(c):
-            assert sorted(json.loads(r(meta={'env': 'prod', 'net': 1}).data)['meta']) == \
-                sorted({'env': 'prod', 'net': 1})
+            d = json.loads(r(meta={'env': 'prod', 'net': 1}).data)
+            assert sorted(d['meta']) == sorted({'env': 'prod', 'net': 1})
 
 
 class TestCB(object):

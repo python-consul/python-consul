@@ -1,4 +1,5 @@
 import collections
+import json
 
 import pytest
 
@@ -62,6 +63,14 @@ def _should_support_node_meta(c):
     )
 
 
+def _should_support_meta(c):
+    return (
+        # agent
+        lambda **kw: c.agent.service.register('foo', **kw),
+        lambda **kw: c.agent.service.register('foo', 'bar', **kw),
+    )
+
+
 class TestIndex(object):
     """
     Tests read requests that should support blocking on an index
@@ -105,6 +114,18 @@ class TestNodemeta(object):
             assert r().params == []
             assert sorted(r(node_meta={'env': 'prod', 'net': 1}).params) == \
                 sorted([('node-meta', 'net:1'), ('node-meta', 'env:prod')])
+
+
+class TestMeta(object):
+    """
+    Tests read requests that should support meta
+    """
+
+    def test_meta(self):
+        c = Consul()
+        for r in _should_support_meta(c):
+            assert sorted(json.loads(r(meta={'env': 'prod', 'net': 1}).data)['meta']) == \
+                sorted({'env': 'prod', 'net': 1})
 
 
 class TestCB(object):

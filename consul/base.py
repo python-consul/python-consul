@@ -849,7 +849,8 @@ class Consul(object):
                 Note this call will return successful even if the token doesn't
                 have permissions to register this service.
 
-                *meta* is an optional meta data, dictionary formatted as {k1:v1, k2:v2}.
+                *meta* specifies arbitrary KV metadata linked to the service
+                formatted as {k1:v1, k2:v2}.
 
                 *script*, *interval*, *ttl*, *http*, and *timeout* arguments
                 are deprecated. use *check* instead.

@@ -819,6 +819,7 @@ class Consul(object):
                     tags=None,
                     check=None,
                     token=None,
+                    meta=None,
                     # *deprecated* use check parameter
                     script=None,
                     interval=None,
@@ -848,6 +849,8 @@ class Consul(object):
                 Note this call will return successful even if the token doesn't
                 have permissions to register this service.
 
+                *meta* is an optional meta data, dictionary formatted as {k1:v1, k2:v2}.
+
                 *script*, *interval*, *ttl*, *http*, and *timeout* arguments
                 are deprecated. use *check* instead.
 
@@ -873,7 +876,8 @@ class Consul(object):
                     payload['port'] = port
                 if tags:
                     payload['tags'] = tags
-
+                if meta:
+                    payload['meta'] = meta
                 if check:
                     payload['check'] = check
 

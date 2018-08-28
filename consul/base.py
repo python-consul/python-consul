@@ -878,7 +878,7 @@ class Consul(object):
                 if tags:
                     payload['tags'] = tags
                 if meta:
-                    payload['meta'] = meta
+                    payload['meta'] = {str(k): str(v) for (k, v) in meta.items()}
                 if check:
                     payload['check'] = check
 

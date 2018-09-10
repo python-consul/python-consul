@@ -1184,6 +1184,7 @@ class Consul(object):
             """
             assert not (service_id and check_id)
             data = {'node': node}
+            params = {}
             dc = dc or self.agent.dc
             if dc:
                 data['datacenter'] = dc
@@ -1194,8 +1195,11 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 data['WriteRequest'] = {'Token': token}
+                params['token'] = token
             return self.agent.http.put(
-                CB.bool(), '/v1/catalog/deregister', data=json.dumps(data))
+                CB.bool(), '/v1/catalog/deregister',
+                data=json.dumps(data),
+                params=params)
 
         def datacenters(self):
             """

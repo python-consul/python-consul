@@ -358,6 +358,7 @@ class Consul(object):
         practice, this means you cannot rely on the order of message delivery.
         An advantage however is that events can still be used even in the
         absence of server nodes or during an outage."""
+
         def __init__(self, agent):
             self.agent = agent
 
@@ -1716,7 +1717,8 @@ class Consul(object):
                 lock_delay=15,
                 behavior='release',
                 ttl=None,
-                dc=None):
+                dc=None,
+                token=None):
             """
             Creates a new session. There is more documentation for sessions
             `here <https://consul.io/docs/internals/sessions.html>`_.
@@ -1747,12 +1749,16 @@ class Consul(object):
             By default the session will be created in the current datacenter
             but an optional *dc* can be provided.
 
+            *token* is an optional `ACL token`_ to apply to this request.
+
             Returns the string *session_id* for the session.
             """
             params = []
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
+            if token:
+                params.append(('token', token))
             data = {}
             if name:
                 data['name'] = name
@@ -1780,9 +1786,11 @@ class Consul(object):
                 params=params,
                 data=data)
 
-        def destroy(self, session_id, dc=None):
+        def destroy(self, session_id, dc=None, token=None):
             """
             Destroys the session *session_id*
+
+            *token* is an optional `ACL token`_ to apply to this request.
 
             Returns *True* on success.
             """
@@ -1790,12 +1798,14 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
+            if token:
+                params.append(('token', token))
             return self.agent.http.put(
                 CB.bool(),
                 '/v1/session/destroy/%s' % session_id,
                 params=params)
 
-        def list(self, index=None, wait=None, consistency=None, dc=None):
+        def list(self, index=None, wait=None, consistency=None, dc=None, token=None):
             """
             Returns a tuple of (*index*, *sessions*) of all active sessions in
             the *dc* datacenter. *dc* defaults to the current datacenter of
@@ -1811,6 +1821,8 @@ class Consul(object):
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
             was configured with.
+
+            *token* is an optional `ACL token`_ to apply to this request.
 
             The response looks like this::
 
@@ -1831,6 +1843,8 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
+            if token:
+                params.append(('token', token))
             if index:
                 params.append(('index', index))
                 if wait:
@@ -1841,7 +1855,7 @@ class Consul(object):
             return self.agent.http.get(
                 CB.json(index=True), '/v1/session/list', params=params)
 
-        def node(self, node, index=None, wait=None, consistency=None, dc=None):
+        def node(self, node, index=None, wait=None, consistency=None, dc=None, token=None):
             """
             Returns a tuple of (*index*, *sessions*) as per *session.list*, but
             filters the sessions returned to only those active for *node*.
@@ -1856,11 +1870,15 @@ class Consul(object):
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
             was configured with.
+
+            *token* is an optional `ACL token`_ to apply to this request.
             """
             params = []
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
+            if token:
+                params.append(('token', token))
             if index:
                 params.append(('index', index))
                 if wait:
@@ -1877,7 +1895,8 @@ class Consul(object):
                  index=None,
                  wait=None,
                  consistency=None,
-                 dc=None):
+                 dc=None,
+                 token=None):
             """
             Returns a tuple of (*index*, *session*) for the session
             *session_id* in the *dc* datacenter. *dc* defaults to the current
@@ -1893,11 +1912,15 @@ class Consul(object):
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
             was configured with.
+
+            *token* is an optional `ACL token`_ to apply to this request.
             """
             params = []
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
+            if token:
+                params.append(('token', token))
             if index:
                 params.append(('index', index))
                 if wait:
@@ -1910,7 +1933,7 @@ class Consul(object):
                 '/v1/session/info/%s' % session_id,
                 params=params)
 
-        def renew(self, session_id, dc=None):
+        def renew(self, session_id, dc=None, token=None):
             """
             This is used with sessions that have a TTL, and it extends the
             expiration by the TTL.
@@ -1918,12 +1941,16 @@ class Consul(object):
             *dc* is the optional datacenter that you wish to communicate with.
             If None is provided, defaults to the agent's datacenter.
 
+            *token* is an optional `ACL token`_ to apply to this request.
+
             Returns the session.
             """
             params = []
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
+            if token:
+                params.append(('token', token))
             return self.agent.http.put(
                 CB.json(one=True, allow_404=False),
                 '/v1/session/renew/%s' % session_id,

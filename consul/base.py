@@ -466,6 +466,7 @@ class Consul(object):
         used to store service configurations or other meta data in a simple
         way.
         """
+
         def __init__(self, agent):
             self.agent = agent
 
@@ -663,6 +664,7 @@ class Consul(object):
         The Transactions endpoints manage updates or fetches of multiple keys
         inside a single, atomic transaction.
         """
+
         def __init__(self, agent):
             self.agent = agent
 
@@ -698,6 +700,7 @@ class Consul(object):
         takes on the burden of registering with the Catalog and performing
         anti-entropy to recover from outages.
         """
+
         def __init__(self, agent):
             self.agent = agent
             self.service = Consul.Agent.Service(agent)
@@ -1805,7 +1808,13 @@ class Consul(object):
                 '/v1/session/destroy/%s' % session_id,
                 params=params)
 
-        def list(self, index=None, wait=None, consistency=None, dc=None, token=None):
+        def list(
+                self,
+                index=None,
+                wait=None,
+                consistency=None,
+                dc=None,
+                token=None):
             """
             Returns a tuple of (*index*, *sessions*) of all active sessions in
             the *dc* datacenter. *dc* defaults to the current datacenter of
@@ -1855,7 +1864,14 @@ class Consul(object):
             return self.agent.http.get(
                 CB.json(index=True), '/v1/session/list', params=params)
 
-        def node(self, node, index=None, wait=None, consistency=None, dc=None, token=None):
+        def node(
+                self,
+                node,
+                index=None,
+                wait=None,
+                consistency=None,
+                dc=None,
+                token=None):
             """
             Returns a tuple of (*index*, *sessions*) as per *session.list*, but
             filters the sessions returned to only those active for *node*.
@@ -2138,6 +2154,7 @@ class Consul(object):
         The Status endpoints are used to get information about the status
          of the Consul cluster.
         """
+
         def __init__(self, agent):
             self.agent = agent
 

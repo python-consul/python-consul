@@ -806,6 +806,20 @@ class Consul(object):
             return self.agent.http.put(
                 CB.bool(), '/v1/agent/force-leave/%s' % node)
 
+        def leave(self, node):
+            """
+            This endpoint instructs the agent to graceful leave a node.
+            It is used to ensure other nodes see the agent as "left" instead of "failed".
+            Nodes that leave will not attempt to re-join the cluster on restarting with a snapshot.
+            For nodes in server mode, the node is removed from the Raft peer set in a graceful manner.
+            This is critical, as in certain situations a non-graceful leave can affect cluster availability.
+
+            *node* is the node to change state for.
+            """
+
+            return self.agent.http.put(
+                CB.bool(), '/v1/agent/leave/%s' % node)
+
         class Service(object):
             def __init__(self, agent):
                 self.agent = agent

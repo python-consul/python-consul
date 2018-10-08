@@ -203,7 +203,8 @@ class CB(object):
             one=False,
             decode=False,
             is_id=False,
-            index=False):
+            index=False,
+            txn=False):
         """
         *map* is a function to apply to the final result.
 
@@ -218,6 +219,9 @@ class CB(object):
         *decode* if specified this key will be base64 decoded.
 
         *is_id* only the 'ID' field of the json object will be returned.
+
+        *txn* if specified along with *decode*, the answer will be treated as
+        transaction result and all values will be base64-decoded
         """
         def cb(response):
             CB._status(response, allow_404=allow_404)
@@ -227,9 +231,16 @@ class CB(object):
             data = json.loads(response.body)
 
             if decode:
-                for item in data:
-                    if item.get(decode) is not None:
-                        item[decode] = base64.b64decode(item[decode])
+                if txn and data.get('Results') is not None:
+                    for item in data.get('Results'):
+                        if item.get('KV').get('Value') is not None:
+                            item['KV']['Value'] = base64.b64decode(
+                                item['KV']['Value'])
+                elif not txn:
+                    for item in data:
+                        if item.get(decode) is not None:
+                            item[decode] = base64.b64decode(item[decode])
+
             if is_id:
                 data = data['ID']
             if one:
@@ -665,7 +676,13 @@ class Consul(object):
         def __init__(self, agent):
             self.agent = agent
 
-        def put(self, payload):
+        def put(
+                self,
+                payload,
+                token=None,
+                consistency=None,
+                dc=None,
+                decode=False):
             """
             Create a transaction by submitting a list of operations to apply to
             the KV store inside of a transaction. If any operation fails, the
@@ -686,9 +703,33 @@ class Consul(object):
                       "Session": "<session id>"
                     }
                 }
+
+            *token* is an optional `ACL token`_ to apply to this request. If
+            the token's policy is not allowed to delete to this key an
+            *ACLPermissionDenied* exception will be raised.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
+
+            *consistency* the result will be base64-decoded if set to True
             """
-            return self.agent.http.put(CB.json(), "/v1/txn",
-                                       data=json.dumps(payload))
+
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            dc = dc or self.agent.dc
+            if dc:
+                params.append(('dc', dc))
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params.append(('consistency', 1))
+
+            return self.agent.http.put(CB.json(txn=True, decode=decode),
+                                       "/v1/txn",
+                                       data=json.dumps(payload),
+                                       params=params)
 
     class Agent(object):
         """

@@ -179,7 +179,7 @@ class TestConsul(object):
         assert r["Errors"] is None
 
         d = {"KV": {"Verb": "get", "Key": "asdf"}}
-        r = c.txn.put([d])
+        r = c.txn.put([d], decode=True)
         assert r["Results"][0]["KV"]["Value"] == value
 
     def test_event(self, consul_port):

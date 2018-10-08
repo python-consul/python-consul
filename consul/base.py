@@ -219,6 +219,9 @@ class CB(object):
         *decode* if specified this key will be base64 decoded.
 
         *is_id* only the 'ID' field of the json object will be returned.
+
+        *txn* if specified along with *decode*, the answer will be treated as
+        transaction result and all values will be base64-decoded
         """
         def cb(response):
             CB._status(response, allow_404=allow_404)
@@ -673,12 +676,12 @@ class Consul(object):
         def __init__(self, agent):
             self.agent = agent
 
-        def put(self,
+        def put(
+                self,
                 payload,
                 token=None,
                 consistency=None,
-                dc=None,
-                decode=False):
+                dc=None):
             """
             Create a transaction by submitting a list of operations to apply to
             the KV store inside of a transaction. If any operation fails, the
@@ -699,20 +702,28 @@ class Consul(object):
                       "Session": "<session id>"
                     }
                 }
+
+            *token* is an optional `ACL token`_ to apply to this request. If
+            the token's policy is not allowed to delete to this key an
+            *ACLPermissionDenied* exception will be raised.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
             """
 
-            params = {}
+            params = []
             token = token or self.agent.token
             if token:
-                params['token'] = token
+                params.append(('token', token))
             dc = dc or self.agent.dc
             if dc:
-                params['dc'] = dc
+                params.append(('dc', dc))
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
-                params[consistency] = '1'
+                params.append(('consistency', 1))
 
-            return self.agent.http.put(CB.json(txn=True, decode=decode),
+            return self.agent.http.put(CB.json(txn=True, decode=True),
                                        "/v1/txn",
                                        data=json.dumps(payload),
                                        params=params)

@@ -1152,6 +1152,7 @@ class Consul(object):
                 data['WriteRequest'] = {'Token': token}
                 params.append(('token', token))
             if node_meta:
+                data['nodemeta'] = node_meta
                 for nodemeta_name, nodemeta_value in node_meta.items():
                     params.append(('node-meta', '{0}:{1}'.
                                    format(nodemeta_name, nodemeta_value)))

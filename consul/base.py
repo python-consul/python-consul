@@ -687,8 +687,16 @@ class Consul(object):
                     }
                 }
             """
-            return self.agent.http.put(CB.json(), "/v1/txn",
-                                       data=json.dumps(payload))
+            params = []
+            token = self.agent.token
+            if token:
+                params.append(('token', tokenn))
+            return self.agent.http.put(
+                    CB.json(), 
+                    "/v1/txn", 
+                    params=params,
+                    data=json.dumps(payload)
+            )
 
     class Agent(object):
         """

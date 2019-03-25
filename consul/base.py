@@ -1769,6 +1769,9 @@ class Consul(object):
             if ttl:
                 assert 10 <= ttl <= 86400
                 data['ttl'] = '%ss' % ttl
+            token = self.agent.token
+            if token:
+                params.append(('token', token))
             if data:
                 data = json.dumps(data)
             else:

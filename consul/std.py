@@ -16,29 +16,38 @@ class HTTPClient(base.HTTPClient):
         return base.Response(
             response.status_code, response.headers, response.text)
 
-    def get(self, callback, path, params=None):
+    def get(self, callback, path, params=None, timeout=None):
         uri = self.uri(path, params)
+        # TODO: Work out behaviour when timeout is 0 (i.e. disable timeout)
+        timeout = timeout if timeout else self.timeout
         return callback(self.response(
-            self.session.get(uri, verify=self.verify, cert=self.cert)))
+            self.session.get(uri, verify=self.verify, cert=self.cert, timeout=timeout)))
 
-    def put(self, callback, path, params=None, data=''):
+    def put(self, callback, path, params=None, data='', timeout=None):
         uri = self.uri(path, params)
+        # TODO: Work out behaviour when timeout is 0 (i.e. disable timeout)
+        timeout = timeout if timeout else self.timeout
         return callback(self.response(
             self.session.put(uri, data=data, verify=self.verify,
-                             cert=self.cert)))
+                             cert=self.cert, timeout=timeout)))
 
-    def delete(self, callback, path, params=None):
+    def delete(self, callback, path, params=None, timeout=None):
         uri = self.uri(path, params)
+        # TODO: Work out behaviour when timeout is 0 (i.e. disable timeout)
+        timeout = timeout if timeout else self.timeout
         return callback(self.response(
-            self.session.delete(uri, verify=self.verify, cert=self.cert)))
+            self.session.delete(uri, verify=self.verify, cert=self.cert,
+                                timeout=timeout)))
 
-    def post(self, callback, path, params=None, data=''):
+    def post(self, callback, path, params=None, data='', timeout=None):
         uri = self.uri(path, params)
+        # TODO: Work out behaviour when timeout is 0 (i.e. disable timeout)
+        timeout = timeout if timeout else self.timeout
         return callback(self.response(
             self.session.post(uri, data=data, verify=self.verify,
-                              cert=self.cert)))
+                              cert=self.cert, timeout=timeout)))
 
 
 class Consul(base.Consul):
-    def connect(self, host, port, scheme, verify=True, cert=None):
-        return HTTPClient(host, port, scheme, verify, cert)
+    def connect(self, host, port, scheme, verify=True, cert=None, timeout=None):
+        return HTTPClient(host, port, scheme, verify, cert, timeout)

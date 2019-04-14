@@ -10,27 +10,27 @@ CB = consul.base.CB
 Response = consul.base.Response
 
 Request = collections.namedtuple(
-    'Request', ['method', 'path', 'params', 'data'])
+    'Request', ['method', 'path', 'params', 'data', 'timeout'])
 
 
 class HTTPClient(object):
     def __init__(self, host=None, port=None, scheme=None,
-                 verify=True, cert=None):
+                 verify=True, cert=None, timeout=None):
         pass
 
-    def get(self, callback, path, params=None):
-        return Request('get', path, params, None)
+    def get(self, callback, path, params=None, timeout=None):
+        return Request('get', path, params, None, timeout)
 
-    def put(self, callback, path, params=None, data=''):
-        return Request('put', path, params, data)
+    def put(self, callback, path, params=None, data='', timeout=None):
+        return Request('put', path, params, data, timeout)
 
-    def delete(self, callback, path, params=None):
-        return Request('delete', path, params, None)
+    def delete(self, callback, path, params=None, timeout=None):
+        return Request('delete', path, params, None, timeout)
 
 
 class Consul(consul.base.Consul):
-    def connect(self, host, port, scheme, verify=True, cert=None):
-        return HTTPClient(host, port, scheme, verify=verify, cert=None)
+    def connect(self, host, port, scheme, verify=True, cert=None, timeout=None):
+        return HTTPClient(host, port, scheme, verify=verify, cert=None, timeout=timeout)
 
 
 def _should_support(c):

@@ -417,7 +417,10 @@ class Consul(object):
 
             return self.agent.http.put(
                 CB.json(),
-                '/v1/event/fire/%s' % name, params=params, data=body, timeout=timeout)
+                '/v1/event/fire/%s' % name, 
+                params=params, 
+                data=body, 
+                timeout=timeout)
 
         def list(
                 self,

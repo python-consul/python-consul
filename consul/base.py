@@ -13,6 +13,16 @@ from six.moves import urllib
 log = logging.getLogger(__name__)
 
 
+def args_to_payload(args_map):
+    return [
+        (key, value)
+        for key, value in
+        {
+            k: v for
+            k, v in args_map.items() if v is not None and k != "self"
+        }.items()
+    ]
+
 class ConsulException(Exception):
     pass
 
@@ -343,6 +353,7 @@ class Consul(object):
         self.query = Consul.Query(self)
         self.coordinate = Consul.Coordinate(self)
         self.operator = Consul.Operator(self)
+        self.acl_v2 = Consul
 
     class Event(object):
         """
@@ -1932,6 +1943,79 @@ class Consul(object):
     class ACL(object):
         def __init__(self, agent):
             self.agent = agent
+
+        def create_token(self, accessor_id=None, secret_id=None, description=None, policies=None, roles=None, service_identities=None, local=None, expiration_time=None, expiration_ttl=None):
+            return self.agent.http.put(
+                CB.json(), '/v1/acl/token', params=args_to_payload(locals()))
+
+        def read_token(self, accessor_id):
+            return self.agent.http.get(
+                CB.json(), '/v1/acl/token/{}'.format(accessor_id))
+
+        def read_self_token(self):
+            return self.agent.http.get(
+                CB.json(), '/v1/acl/token/self')
+
+        def update_token(self, accessor_id, secret_id=None, description=None, policies=None, roles=None, service_identities=None, local=None, expiration_time=None, expiration_ttl=None):
+            return self.agent.http.put(
+                CB.json(), '/v1/acl/policies/{}'.format(accessor_id), params=args_to_payload(locals()))
+
+        def clone_token(self, accessor_id, description=None):
+            return self.agent.http.put(
+                CB.json(), '/v1/acl/token/{}/clone'.format(accessor_id),
+                params=[("description", description)] if description != "" else [])
+
+        def delete_token(self, accessor_id):
+            return self.agent.http.delete(
+                CB.json(), '/v1/acl/token/{}'.format(accessor_id))
+
+        def list_tokens(self, token=None):
+            return self.agent.http.get(
+                CB.json(), '/v1/acl/tokens')
+
+        def create_policy(self, name, description=None, rules=None, datacenters=None):
+            return self.agent.http.put(
+                CB.json(), '/v1/acl/policy', params=args_to_payload(locals()))
+
+        def read_policy(self, policy_id):
+            return self.agent.http.get(
+                CB.json(), '/v1/acl/policy/{}'.format(policy_id))
+
+        def update_policy(self, policy_id, name, description=None, rules=None, datacenters=None):
+            return self.agent.http.put(
+                CB.json(), '/v1/acl/policy/{}'.format(policy_id), args_to_payload(locals()))
+
+        def delete_policy(self, policy_id):
+            return self.agent.http.delete(
+                CB.json(), '/v1/acl/policy/{}'.format(policy_id))
+
+        def list_policies(self, token=None):
+            return self.agent.http.get(
+                CB.json(), '/v1/acl/policies')
+        
+        def create_role(self, name, description=None, policies=None, service_identities=None):
+            return self.agent.http.put(
+                CB.json(), '/v1/acl/role', params=args_to_payload(locals()))
+
+        def read_role(self, role_id):
+            return self.agent.http.get(
+                CB.json(), '/v1/acl/role/{}'.format(role_id))
+
+        def read_role_by_name(self, role_name):
+            return self.agent.http.get(
+                CB.json(), '/v1/acl/role/name/{}'.format(role_name))
+
+        def update_role(self, role_id, name, description=None, policies=None, service_identities=None):
+            return self.agent.http.put(
+                CB.json(), '/v1/acl/role/{}'.format(role_id), args_to_payload(locals()))
+
+        def delete_role(self, role_id):
+            return self.agent.http.delete(
+                CB.json(), '/v1/acl/role/{}'.format(role_id))
+
+        def list_roles(self, policy_id=None):
+            return self.agent.http.get(
+                CB.json(), '/v1/acl/roles', params=[("policy_id", policy_id)] if policy_id != "" else [])
 
         def list(self, token=None):
             """

@@ -353,7 +353,6 @@ class Consul(object):
         self.query = Consul.Query(self)
         self.coordinate = Consul.Coordinate(self)
         self.operator = Consul.Operator(self)
-        self.acl_v2 = Consul
 
     class Event(object):
         """
@@ -1969,7 +1968,7 @@ class Consul(object):
             return self.agent.http.delete(
                 CB.json(), '/v1/acl/token/{}'.format(accessor_id))
 
-        def list_tokens(self, token=None):
+        def list_tokens(self):
             return self.agent.http.get(
                 CB.json(), '/v1/acl/tokens')
 
@@ -1989,7 +1988,7 @@ class Consul(object):
             return self.agent.http.delete(
                 CB.json(), '/v1/acl/policy/{}'.format(policy_id))
 
-        def list_policies(self, token=None):
+        def list_policies(self):
             return self.agent.http.get(
                 CB.json(), '/v1/acl/policies')
         
@@ -2016,6 +2015,46 @@ class Consul(object):
         def list_roles(self, policy_id=None):
             return self.agent.http.get(
                 CB.json(), '/v1/acl/roles', params=[("policy_id", policy_id)] if policy_id != "" else [])
+
+        def create_auth_method(self, auth_method_name, auth_method_type, config, description=None):
+            return self.agent.http.put(
+                CB.json(), '/v1/acl/auth-method', params=args_to_payload(locals()))
+
+        def read_auth_method(self, auth_method_name):
+            return self.agent.http.put(
+                CB.json(), '/v1/acl/auth-method/{}'.format(auth_method_name))
+
+        def update_auth_method(self, auth_method_name, auth_method_type, config, description=None):
+            return self.agent.http.put(
+                CB.json(), '/v1/acl/auth-method/{}'.format(auth_method_name), args_to_payload(locals()))
+
+        def delete_auth_method(self, auth_method_name):
+            return self.agent.http.delete(
+                CB.json(), '/v1/acl/auth-method/{}'.format(auth_method_name))
+
+        def list_auth_methods(self):
+            return self.agent.http.get(
+                CB.json(), '/v1/acl/auth-methods')
+
+        def create_binding_rule(self, binding_rule, bind_type, bind_name, description=None, selector=None):
+            return self.agent.http.put(
+                CB.json(), '/v1/acl/binding-rule', params=args_to_payload(locals()))
+
+        def read_binding_rule(self, binding_rule_id):
+            return self.agent.http.put(
+                CB.json(), '/v1/acl/binding-rule/{}'.format(binding_rule_id))
+
+        def update_binding_rule(self, binding_rule_id, auth_method, bind_type, bind_name, description=None, selector=None):
+            return self.agent.http.put(
+                CB.json(), '/v1/acl/binding-rule/{}'.format(binding_rule_id), args_to_payload(locals()))
+
+        def delete_binding_rule(self, binding_rule_id):
+            return self.agent.http.delete(
+                CB.json(), '/v1/acl/binding-rule/{}'.format(binding_rule_id))
+
+        def list_binding_rules(self):
+            return self.agent.http.get(
+                CB.json(), '/v1/acl/binding-rules')
 
         def list(self, token=None):
             """

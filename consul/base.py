@@ -907,7 +907,7 @@ class Consul(object):
                 take care of deregistering the service with the Catalog. If
                 there is an associated check, that is also deregistered.
 
-                *service_id* is the id of the service that is to be deregistered
+                *service_id* is the id of the service to be deregistered
 
                 *token* is an optional `ACL token`_ to apply to this request.
                 """

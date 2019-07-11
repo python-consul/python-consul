@@ -12,7 +12,8 @@ class HTTPClient(base.HTTPClient):
         super(HTTPClient, self).__init__(*args, **kwargs)
         cert_file = kwargs.get('cert', None)
         cert_reqs = 'CERT_REQUIRED' if kwargs.get('verify', False) else None
-        self.session = urllib3.PoolManager(cert_file=cert_file, cert_reqs=cert_reqs)
+        self.session = urllib3.PoolManager(cert_file=cert_file,
+                                           cert_reqs=cert_reqs)
 
     def response(self, response):
         return base.Response(

@@ -1,0 +1,49 @@
+language: python
+
+python:
+  - 2.7
+  - pypy
+  - 3.5
+  - 3.6
+  - 3.7
+
+install:
+  - pip install tox
+  - pip install tox-travis
+
+script:
+  - tox
+
+jobs:
+  include:
+    - stage: flake
+      python: 3.7
+      script:
+        - tox -e flake8
+    - stage: sonar
+      dist: trusty
+      language: java
+      addons:
+        sonarcloud:
+          organization: "python-consul"
+          token:
+            secure: "lTtnh4/Tm/5vRckFzh5uF/HotBO+lWX/Vx41hc+wS5eFQe9WTsWZlY/hhKtL24rHBdUr3JVBDTBhEtDR5FAv/XwlX2kAOjqcuxOhW0eQP+1NyuMklbV7zGup3T8aNY1vHh0k0mhO5kUwHw3iNLKxO73BvP7/tlrLg+DTeFLtgx8="
+          branches:
+            - master
+      install: ignore
+      script:
+        - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
+      branches:
+        only:
+          - master
+    - stage: deploy
+      python: 3.7
+      script: ignore
+      deploy:
+        provider: pypi
+        user: python-consul-admin
+        password:
+          secure: "HmLBvgjd5WB8nNBI/KbgvVPKUy1Wsb4TwLL2aEA4IrZHW0/8JHbwwo71zEX+ep+CvqCRTZDMfXtWbckpAJUhjGuqeFqiQGzxwU+SffJsdqy4mVl8NSUJ3WkWItYhPAhnbPYLTOg3QPAEY8KW0RrW1WW3X4wpwEe1+F+o3BDIvvw="
+        distributions: "sdist bdist_wheel"
+        on:
+          tags: true

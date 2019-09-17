@@ -74,7 +74,8 @@ class TestAsyncioConsul(object):
 
         @asyncio.coroutine
         def main():
-            fut = asyncio.async(put(), loop=loop)
+            x = getattr(asyncio, 'async')
+            fut = x(put(), loop=loop)
             yield from c.kv.put('index', 'bump')
             index, data = yield from c.kv.get('foo')
             assert data is None
@@ -133,7 +134,8 @@ class TestAsyncioConsul(object):
 
         @asyncio.coroutine
         def get():
-            fut = asyncio.async(put(), loop=loop)
+            x = getattr(asyncio, 'async')
+            fut = x(put(), loop=loop)
             index, data = yield from c.kv.get('foo')
             assert data is None
             index, data = yield from c.kv.get('foo', index=index)
@@ -197,7 +199,8 @@ class TestAsyncioConsul(object):
 
         @asyncio.coroutine
         def nodes():
-            fut = asyncio.async(register(), loop=loop)
+            x = getattr(asyncio, 'async')
+            fut = x(register(), loop=loop)
             index, nodes = yield from c.catalog.nodes()
             assert len(nodes) == 1
             current = nodes[0]
@@ -228,7 +231,8 @@ class TestAsyncioConsul(object):
 
         @asyncio.coroutine
         def monitor():
-            fut = asyncio.async(register(), loop=loop)
+            x = getattr(asyncio, 'async')
+            fut = x(register(), loop=loop)
             index, services = yield from c.session.list()
             assert services == []
             yield from asyncio.sleep(20/1000.0, loop=loop)

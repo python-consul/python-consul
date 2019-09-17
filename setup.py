@@ -53,8 +53,8 @@ setup(
     url='https://github.com/cablehead/python-consul',
     license='MIT',
     description=description,
-    long_description=open('README.rst').read() + '\n\n' +
-        open('CHANGELOG.rst').read(),
+    long_description=open('README.rst')
+            .read() + '\n\n' + open('CHANGELOG.rst').read(),
     py_modules=py_modules,
     install_requires=requirements,
     extras_require={

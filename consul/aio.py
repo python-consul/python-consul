@@ -25,9 +25,10 @@ class HTTPClient(base.HTTPClient):
     def _request(self, callback, method, uri, data=None):
         resp = yield from self._session.request(method, uri, data=data)
         body = yield from resp.text(encoding='utf-8')
+        content = yield from resp.read()
         if resp.status == 599:
             raise base.Timeout
-        r = base.Response(resp.status, resp.headers, body)
+        r = base.Response(resp.status, resp.headers, body, content)
         return callback(r)
 
     # python prior 3.4.1 does not play nice with __del__ method

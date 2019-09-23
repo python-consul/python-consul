@@ -47,8 +47,8 @@ class HTTPClient(base.HTTPClient):
         self.client = TreqHTTPClient(Agent(**agent_kwargs))
 
     @staticmethod
-    def response(code, headers, text):
-        return base.Response(code, headers, text)
+    def response(code, headers, text, content):
+        return base.Response(code, headers, text, content)
 
     @staticmethod
     def compat_string(value):
@@ -70,7 +70,8 @@ class HTTPClient(base.HTTPClient):
             for k, v in dict(response.headers.getAllRawHeaders()).items()
         ])
         body = yield response.text(encoding='utf-8')
-        returnValue((response.code, headers, body))
+        content = yield response.content()
+        returnValue((response.code, headers, body, content))
 
     @inlineCallbacks
     def request(self, callback, method, url, **kwargs):

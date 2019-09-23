@@ -162,7 +162,8 @@ class Check(object):
         return ret
 
 
-Response = collections.namedtuple('Response', ['code', 'headers', 'body', 'content'])
+Response = collections.namedtuple('Response',
+                                  ['code', 'headers', 'body', 'content'])
 
 
 #
@@ -2447,7 +2448,7 @@ class Consul(object):
                 CB.json(), '/v1/operator/raft/configuration')
 
     class Snapshot(object):
-        def __init__(self,agent):
+        def __init__(self, agent):
             self.agent = agent
 
         def get(self):
@@ -2455,7 +2456,7 @@ class Consul(object):
             Returns gzipped snapshot of current consul cluster
             """
             return self.agent.http.get(
-                CB.binary(),'/v1/snapshot')
+                CB.binary(), '/v1/snapshot')
 
         def save(self, file_path):
             """

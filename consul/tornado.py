@@ -16,7 +16,8 @@ class HTTPClient(base.HTTPClient):
 
     def response(self, response):
         return base.Response(
-            response.code, response.headers, response.body.decode('utf-8'), response.body)
+            response.code, response.headers,
+            response.body.decode('utf-8'), response.body)
 
     @gen.coroutine
     def _request(self, callback, request):

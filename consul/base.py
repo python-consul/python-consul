@@ -2451,17 +2451,45 @@ class Consul(object):
         def __init__(self, agent):
             self.agent = agent
 
-        def get(self):
+        def get(self, dc=None, token=None):
             """
             Returns gzipped snapshot of current consul cluster
             """
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            if dc:
+                params.append(('dc', dc))
             return self.agent.http.get(
-                CB.binary(), '/v1/snapshot')
+                CB.binary(), '/v1/snapshot', params=params)
 
-        def save(self, file_path):
+        def save(self, file_path, dc=None, token=None):
             """
             Backup snapshot in a file
             """
             backup_file = open(file_path, 'w+b')
-            backup_file.write(self.get())
+            backup_file.write(self.get(dc, token))
             backup_file.close()
+
+        def restore(self, file_path=None, data=None, dc=None, token=None):
+            """
+            Restore snapshot from a file or from data
+            """
+            if file_path or data:
+                if file_path:
+                    backup_file = open(file_path, 'rb')
+                    data = backup_file.read()
+                    backup_file.close()
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                res = self.agent.http.put(CB.bool(), '/v1/snapshot',
+                                          params=params,
+                                          data=data)
+                return res
+            else:
+                return False

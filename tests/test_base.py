@@ -131,39 +131,39 @@ class TestMeta(object):
 class TestCB(object):
 
     def test_status_200_passes(self):
-        response = consul.base.Response(200, None, None)
+        response = consul.base.Response(200, None, None, None)
         CB._status(response)
 
     @pytest.mark.parametrize(
         'response, expected_exception',
         [
-            (Response(400, None, None), consul.base.BadRequest),
-            (Response(401, None, None), consul.base.ACLDisabled),
-            (Response(403, None, None), consul.base.ACLPermissionDenied),
+            (Response(400, None, None, None), consul.base.BadRequest),
+            (Response(401, None, None, None), consul.base.ACLDisabled),
+            (Response(403, None, None, None), consul.base.ACLPermissionDenied),
         ])
     def test_status_4xx_raises_error(self, response, expected_exception):
         with pytest.raises(expected_exception):
             CB._status(response)
 
     def test_status_404_allow_404(self):
-        response = Response(404, None, None)
+        response = Response(404, None, None, None)
         CB._status(response, allow_404=True)
 
     def test_status_404_dont_allow_404(self):
-        response = Response(404, None, None)
+        response = Response(404, None, None, None)
         with pytest.raises(consul.base.NotFound):
             CB._status(response, allow_404=False)
 
     def test_status_405_raises_generic_ClientError(self):
-        response = Response(405, None, None)
+        response = Response(405, None, None, None)
         with pytest.raises(consul.base.ClientError):
             CB._status(response)
 
     @pytest.mark.parametrize(
         'response',
         [
-            Response(500, None, None),
-            Response(599, None, None),
+            Response(500, None, None, None),
+            Response(599, None, None, None),
         ])
     def test_status_5xx_raises_error(self, response):
         with pytest.raises(consul.base.ConsulException):

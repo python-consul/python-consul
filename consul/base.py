@@ -162,7 +162,8 @@ class Check(object):
         return ret
 
 
-Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
+Response = collections.namedtuple('Response',
+                                  ['code', 'headers', 'body', 'content'])
 
 
 #
@@ -242,6 +243,16 @@ class CB(object):
             if index:
                 return response.headers['X-Consul-Index'], data
             return data
+        return cb
+
+    @classmethod
+    def binary(klass):
+        """
+        This method simply returns response body, usefull for snapshot
+        """
+        def cb(response):
+            CB._status(response)
+            return response.content
         return cb
 
 
@@ -343,6 +354,7 @@ class Consul(object):
         self.query = Consul.Query(self)
         self.coordinate = Consul.Coordinate(self)
         self.operator = Consul.Operator(self)
+        self.snapshot = Consul.Snapshot(self)
 
     class Event(object):
         """
@@ -2434,3 +2446,50 @@ class Consul(object):
             """
             return self.agent.http.get(
                 CB.json(), '/v1/operator/raft/configuration')
+
+    class Snapshot(object):
+        def __init__(self, agent):
+            self.agent = agent
+
+        def get(self, dc=None, token=None):
+            """
+            Returns gzipped snapshot of current consul cluster
+            """
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            if dc:
+                params.append(('dc', dc))
+            return self.agent.http.get(
+                CB.binary(), '/v1/snapshot', params=params)
+
+        def save(self, file_path, dc=None, token=None):
+            """
+            Backup snapshot in a file
+            """
+            backup_file = open(file_path, 'w+b')
+            backup_file.write(self.get(dc, token))
+            backup_file.close()
+
+        def restore(self, file_path=None, data=None, dc=None, token=None):
+            """
+            Restore snapshot from a file or from data
+            """
+            if file_path or data:
+                if file_path:
+                    backup_file = open(file_path, 'rb')
+                    data = backup_file.read()
+                    backup_file.close()
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                res = self.agent.http.put(CB.bool(), '/v1/snapshot',
+                                          params=params,
+                                          data=data)
+                return res
+            else:
+                return False

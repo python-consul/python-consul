@@ -14,7 +14,8 @@ class HTTPClient(base.HTTPClient):
     def response(self, response):
         response.encoding = 'utf-8'
         return base.Response(
-            response.status_code, response.headers, response.text)
+            response.status_code, response.headers,
+            response.text, response.content)
 
     def get(self, callback, path, params=None):
         uri = self.uri(path, params)

@@ -886,7 +886,7 @@ class Consul(object):
                 take care of deregistering the service with the Catalog. If
                 there is an associated check, that is also deregistered.
                 """
-                return self.agent.http.get(
+                return self.agent.http.post(
                     CB.bool(), '/v1/agent/service/deregister/%s' % service_id)
 
             def maintenance(self, service_id, enable, reason=None):

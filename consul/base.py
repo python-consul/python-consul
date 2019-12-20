@@ -1760,6 +1760,7 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
+            token = token or self.agent.token
             if token:
                 params.append(('token', token))
             data = {}
@@ -1801,6 +1802,7 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
+            token = token or self.agent.token
             if token:
                 params.append(('token', token))
             return self.agent.http.put(
@@ -1852,6 +1854,7 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
+            token = token or self.agent.token
             if token:
                 params.append(('token', token))
             if index:
@@ -1893,6 +1896,7 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
+            token = token or self.agent.token
             if token:
                 params.append(('token', token))
             if index:
@@ -1935,6 +1939,7 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
+            token = token or self.agent.token
             if token:
                 params.append(('token', token))
             if index:
@@ -1965,6 +1970,7 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
+            token = token or self.agent.token
             if token:
                 params.append(('token', token))
             return self.agent.http.put(

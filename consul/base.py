@@ -313,13 +313,19 @@ class Consul(object):
         if os.getenv('CONSUL_HTTP_ADDR'):
             try:
                 host, port = os.getenv('CONSUL_HTTP_ADDR').split(':')
+                scheme = 'http'
             except ValueError:
-                raise ConsulException('CONSUL_HTTP_ADDR (%s) invalid, '
-                                      'does not match <host>:<port>'
-                                      % os.getenv('CONSUL_HTTP_ADDR'))
+                try:
+                    scheme, host, port = os.getenv('CONSUL_HTTP_ADDR').split(':')
+                    host = host.lstrip('//')
+                except ValueError:
+                    raise ConsulException('CONSUL_HTTP_ADDR (%s) invalid, '
+                                          'does not match <host>:<port> or '
+                                          '<protocol>:<host>:<port>'
+                                          % os.getenv('CONSUL_HTTP_ADDR'))
         use_ssl = os.getenv('CONSUL_HTTP_SSL')
-        if use_ssl is not None:
-            scheme = 'https' if use_ssl == 'true' else 'http'
+        if use_ssl == 'true':
+            scheme = 'https'
         if os.getenv('CONSUL_HTTP_SSL_VERIFY') is not None:
             verify = os.getenv('CONSUL_HTTP_SSL_VERIFY') == 'true'
 

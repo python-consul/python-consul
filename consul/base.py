@@ -1957,7 +1957,7 @@ class Consul(object):
 
         def update_token(self, accessor_id, secret_id=None, description=None, policies=None, roles=None, service_identities=None, local=None, expiration_time=None, expiration_ttl=None):
             return self.agent.http.put(
-                CB.json(), '/v1/acl/policies/{}'.format(accessor_id), params=args_to_payload(locals()))
+                CB.json(), '/v1/acl/token/{}'.format(accessor_id), params=args_to_payload(locals()))
 
         def clone_token(self, accessor_id, description=None):
             return self.agent.http.put(

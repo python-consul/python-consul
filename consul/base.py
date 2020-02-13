@@ -1129,8 +1129,8 @@ class Consul(object):
 
             *token* is an optional `ACL token`_ to apply to this request.
 
-            *node_meta* is an optional meta data used for filtering, a
-            dictionary formatted as {k1:v1, k2:v2}.
+            *node_meta* is an optional meta data used for registering
+            meta data to a node.
 
             This manipulates the health check entry, but does not setup a
             script or TTL to actually update the status. The full documentation
@@ -1152,9 +1152,10 @@ class Consul(object):
                 data['WriteRequest'] = {'Token': token}
                 params.append(('token', token))
             if node_meta:
+                nm = {}
                 for nodemeta_name, nodemeta_value in node_meta.items():
-                    params.append(('node-meta', '{0}:{1}'.
-                                   format(nodemeta_name, nodemeta_value)))
+                    nm[nodemeta_name] = nodemeta_value
+                data['NodeMeta'] = nm
             return self.agent.http.put(
                 CB.bool(),
                 '/v1/catalog/register',

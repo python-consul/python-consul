@@ -820,6 +820,7 @@ class Consul(object):
                     check=None,
                     token=None,
                     meta=None,
+                    weights=None,
                     # *deprecated* use check parameter
                     script=None,
                     interval=None,
@@ -852,6 +853,9 @@ class Consul(object):
                 *meta* specifies arbitrary KV metadata linked to the service
                 formatted as {k1:v1, k2:v2}.
 
+                *weights* specifies weights for the service; default to
+                {"Passing": 1, "Warning": 1}.
+
                 *script*, *interval*, *ttl*, *http*, and *timeout* arguments
                 are deprecated. use *check* instead.
 
@@ -881,6 +885,8 @@ class Consul(object):
                     payload['meta'] = meta
                 if check:
                     payload['check'] = check
+                if weights:
+                    payload['weights'] = weights
 
                 else:
                     payload.update(Check._compat(

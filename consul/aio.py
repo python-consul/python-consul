@@ -36,7 +36,7 @@ class HTTPClient(base.HTTPClient):
             if not self._session.closed:
                 warnings.warn("Unclosed connector in aio.Consul.HTTPClient",
                               ResourceWarning)
-                self.close()
+                self._loop.run_until_complete(self.close())
 
     def get(self, callback, path, params=None):
         uri = self.uri(path, params)
@@ -53,9 +53,9 @@ class HTTPClient(base.HTTPClient):
     def post(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
         return self._request(callback, 'POST', uri, data=data)
-
+    
     def close(self):
-        self._session.close()
+        return self._session.close()
 
 
 class Consul(base.Consul):
@@ -68,6 +68,7 @@ class Consul(base.Consul):
         return HTTPClient(host, port, scheme, loop=self._loop,
                           verify=verify, cert=None)
 
+    @asyncio.coroutine
     def close(self):
         """Close all opened http connections"""
-        self.http.close()
+        yield from self.http.close()

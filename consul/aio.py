@@ -3,6 +3,8 @@ import sys
 import asyncio
 import warnings
 
+from six.moves import urllib
+
 import aiohttp
 from consul import base
 
@@ -17,8 +19,14 @@ class HTTPClient(base.HTTPClient):
     def __init__(self, *args, loop=None, **kwargs):
         super(HTTPClient, self).__init__(*args, **kwargs)
         self._loop = loop or asyncio.get_event_loop()
-        connector = aiohttp.TCPConnector(loop=self._loop,
-                                         verify_ssl=self.verify)
+        if 'unix://' in self.base_uri:
+            pr = urllib.parse.urlparse(self.base_uri)
+            self.base_uri = 'http://consul'
+            connector = aiohttp.UnixConnector(loop=self._loop,
+                                              path=pr.path)
+        else:
+            connector = aiohttp.TCPConnector(loop=self._loop,
+                                             verify_ssl=self.verify)
         self._session = aiohttp.ClientSession(connector=connector)
 
     @asyncio.coroutine
@@ -64,9 +72,9 @@ class Consul(base.Consul):
         self._loop = loop or asyncio.get_event_loop()
         super().__init__(*args, **kwargs)
 
-    def connect(self, host, port, scheme, verify=True, cert=None):
-        return HTTPClient(host, port, scheme, loop=self._loop,
-                          verify=verify, cert=None)
+    def connect(self, base_uri, verify=True, cert=None, auth=None):
+        return HTTPClient(base_uri, loop=self._loop,
+                          verify=verify, cert=cert, auth=auth)
 
     def close(self):
         """Close all opened http connections"""

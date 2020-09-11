@@ -246,14 +246,11 @@ class CB(object):
 
 
 class HTTPClient(six.with_metaclass(abc.ABCMeta, object)):
-    def __init__(self, host='127.0.0.1', port=8500, scheme='http',
-                 verify=True, cert=None):
-        self.host = host
-        self.port = port
-        self.scheme = scheme
+    def __init__(self, base_uri, verify=True, cert=None, auth=None):
+        self.base_uri = base_uri
         self.verify = verify
-        self.base_uri = '%s://%s:%s' % (self.scheme, self.host, self.port)
         self.cert = cert
+        self.auth = auth
 
     def uri(self, path, params=None):
         uri = self.base_uri + urllib.parse.quote(path, safe='/:')
@@ -288,7 +285,9 @@ class Consul(object):
             consistency='default',
             dc=None,
             verify=True,
-            cert=None):
+            cert=None,
+            auth=None,
+            addr=None):
         """
         *token* is an optional `ACL token`_. If supplied it will be used by
         default for all requests made with this client session. It's still
@@ -305,27 +304,19 @@ class Consul(object):
 
         *verify* is whether to verify the SSL certificate for HTTPS requests
 
-        *cert* client side certificates for HTTPS requests
+        *cert* tuple containing client certificate and key for HTTPS requests
+
+        *addr* url to use instead of host, port and scheme.
+            e.g. unix:///var/run/consul/http.sock, http://localhost:8500/
         """
 
         # TODO: Status
 
-        if os.getenv('CONSUL_HTTP_ADDR'):
-            try:
-                host, port = os.getenv('CONSUL_HTTP_ADDR').split(':')
-            except ValueError:
-                raise ConsulException('CONSUL_HTTP_ADDR (%s) invalid, '
-                                      'does not match <host>:<port>'
-                                      % os.getenv('CONSUL_HTTP_ADDR'))
-        use_ssl = os.getenv('CONSUL_HTTP_SSL')
-        if use_ssl is not None:
-            scheme = 'https' if use_ssl == 'true' else 'http'
-        if os.getenv('CONSUL_HTTP_SSL_VERIFY') is not None:
-            verify = os.getenv('CONSUL_HTTP_SSL_VERIFY') == 'true'
+        if not addr:
+            addr = '{0}://{1}:{2}'.format(scheme, host, port)
 
-        self.http = self.connect(host, port, scheme, verify, cert)
-        self.token = os.getenv('CONSUL_HTTP_TOKEN', token)
-        self.scheme = scheme
+        self.http = self.connect(addr, verify=verify, cert=cert, auth=auth)
+        self.token = token
         self.dc = dc
         assert consistency in ('default', 'consistent', 'stale'), \
             'consistency must be either default, consistent or state'
@@ -343,6 +334,62 @@ class Consul(object):
         self.query = Consul.Query(self)
         self.coordinate = Consul.Coordinate(self)
         self.operator = Consul.Operator(self)
+
+    @classmethod
+    def from_env(cls, consistency='default', dc=None):
+        """
+        Return a client configured from environment variables.
+        The environment variables used are the same as those used by the
+        consul command-line client. Refer to the consul documentation [1] for
+        a list of existing environment variables.
+
+        Additionally all supported given keyword arguments are passed on the
+        client constructor.
+
+        [1] https://www.consul.io/docs/commands/index.html#environment-variables # noqa: E501
+        """
+        oe = os.environ
+        kwargs = {
+            'consistency': consistency,
+            'dc': dc,
+            'token': oe.get('CONSUL_HTTP_TOKEN', None),
+        }
+
+        addr = oe.get('CONSUL_HTTP_ADDR', None)
+        if addr:
+            if not addr.startswith('http'):
+                # Ensure addr starts with a scheme.
+                ssl = oe.get('CONSUL_HTTP_SSL', False)
+                if ssl == 'false':
+                    ssl = False
+                elif ssl == 'true':
+                    ssl = True
+
+                if ssl:
+                    scheme = 'https'
+                else:
+                    scheme = 'http'
+                addr = '%s://%s' % (scheme, addr)
+            kwargs['addr'] = addr
+
+        verify = oe.get('CONSUL_CACERT',
+                        oe.get('CONSUL_HTTP_SSL_VERIFY', None))
+        if verify:
+            if verify == 'false':
+                verify = False
+            elif verify == 'true':
+                verify = True
+            kwargs['verify'] = verify
+
+        if 'CONSUL_CLIENT_CERT' in oe \
+                and 'CONSUL_CLIENT_KEY' in oe:
+            kwargs['cert'] = (oe['CONSUL_CLIENT_CERT'],
+                              oe['CONSUL_CLIENT_KEY'])
+
+        if 'CONSUL_HTTP_AUTH' in oe:
+            kwargs['auth'] = oe['CONSUL_HTTP_AUTH'].split(':')
+
+        return cls(**kwargs)
 
     class Event(object):
         """

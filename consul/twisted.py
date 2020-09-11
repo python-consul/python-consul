@@ -34,6 +34,7 @@ class InsecureContextFactory(ClientContextFactory):
 class HTTPClient(base.HTTPClient):
     def __init__(self, contextFactory, *args, **kwargs):
         super(HTTPClient, self).__init__(*args, **kwargs)
+        # TODO: support for unix:// uris
         agent_kwargs = dict(
             reactor=reactor, pool=HTTPConnectionPool(reactor))
         if contextFactory is not None:
@@ -125,13 +126,12 @@ class HTTPClient(base.HTTPClient):
 
 class Consul(base.Consul):
     @staticmethod
-    def connect(host,
-                port,
-                scheme,
+    def connect(base_uri,
                 verify=True,
                 cert=None,
+                auth=None,
                 contextFactory=None,
                 **kwargs):
         return HTTPClient(
-            contextFactory, host, port, scheme, verify=verify, cert=cert,
+            contextFactory, base_uri, verify=verify, cert=cert, auth=auth,
             **kwargs)

@@ -1,2 +1,3 @@
 requests>=2.0
+requests-unixsocket>=0.1.5
 six>=1.4

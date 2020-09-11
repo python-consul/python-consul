@@ -29,6 +29,19 @@ Example
     # in another process
     c.kv.put('foo', 'bar')
 
+
+Alternatively you can create a client from the same `environment variables`_ that
+the consul command line client uses. e.g. CONSUL_HTTP_ADDR, CONSUL_HTTP_TOKEN.
+
+.. code:: python
+
+    import consul
+
+    c = consul.Consul.from_env()
+
+    c.agent.self()
+
+
 Installation
 ------------
 
@@ -45,6 +58,7 @@ Installation
    image:: https://img.shields.io/coveralls/cablehead/python-consul.svg?style=flat-square
    :target: https://coveralls.io/r/cablehead/python-consul?branch=master
 .. _Read the Docs: https://python-consul.readthedocs.io/
+.. _environment variables: https://www.consul.io/docs/commands/index.html#environment-variables
 
 Status
 ------

@@ -328,7 +328,7 @@ class Consul(object):
         self.scheme = scheme
         self.dc = dc
         assert consistency in ('default', 'consistent', 'stale'), \
-            'consistency must be either default, consistent or state'
+            'consistency must be either default, consistent or stale'
         self.consistency = consistency
 
         self.event = Consul.Event(self)

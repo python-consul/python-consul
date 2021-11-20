@@ -13,7 +13,7 @@ Check = consul.Check
 
 def sleep(seconds):
     """
-    An asynchronous sleep function using twsited. Source:
+    An asynchronous sleep function using twisted. Source:
     http://twistedmatrix.com/pipermail/twisted-python/2009-October/020788.html
 
     :type seconds: float

@@ -815,6 +815,7 @@ class Consul(object):
                     name,
                     service_id=None,
                     address=None,
+                    tagged_addresses=None,
                     port=None,
                     tags=None,
                     check=None,
@@ -873,6 +874,8 @@ class Consul(object):
                     payload['id'] = service_id
                 if address:
                     payload['address'] = address
+                if tagged_addresses:
+                    payload['tagged_addresses'] = tagged_addresses
                 if port:
                     payload['port'] = port
                 if tags:

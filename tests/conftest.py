@@ -68,6 +68,8 @@ def start_consul_instance(acl_master_token=None):
     (system, node, release, version, machine, processor) = platform.uname()
     if system == 'Darwin':
         postfix = 'osx'
+    elif machine == 'aarch64':
+        postfix = 'aarch64'
     else:
         postfix = 'linux64'
     bin = os.path.join(os.path.dirname(__file__), 'consul.'+postfix)

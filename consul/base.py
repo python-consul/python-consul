@@ -229,7 +229,7 @@ class CB(object):
             if decode:
                 for item in data:
                     if item.get(decode) is not None:
-                        item[decode] = base64.b64decode(item[decode])
+                        item[decode] = base64.b64decode(item[decode]).decode()
             if is_id:
                 data = data['ID']
             if one:

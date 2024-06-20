@@ -25,7 +25,7 @@ creating server components - but it does serve as a base. It makes use of the
 
     >>> index, data = c.kv.get('foo')
     >>> data['Value']
-    'bar'
+    b'bar'
 
     # this will block until there's an update or a timeout
     >>> index, data = c.kv.get('foo', index=index)

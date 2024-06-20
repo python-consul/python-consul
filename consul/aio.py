@@ -22,8 +22,8 @@ class HTTPClient(base.HTTPClient):
         self._session = aiohttp.ClientSession(connector=connector)
 
     @asyncio.coroutine
-    def _request(self, callback, method, uri, data=None):
-        resp = yield from self._session.request(method, uri, data=data)
+    def _request(self, callback, method, uri, data=None, timeout=None):
+        resp = yield from self._session.request(method, uri, data=data, timeout=timeout)
         body = yield from resp.text(encoding='utf-8')
         if resp.status == 599:
             raise base.Timeout
@@ -38,17 +38,23 @@ class HTTPClient(base.HTTPClient):
                               ResourceWarning)
                 self.close()
 
-    def get(self, callback, path, params=None):
+    def get(self, callback, path, params=None, timeout=None):
         uri = self.uri(path, params)
-        return self._request(callback, 'GET', uri)
+        # TODO: Work out behaviour when timeout is 0 (i.e. disable timeout)
+        timeout = timeout if timeout else self.timeout
+        return self._request(callback, 'GET', uri, timeout=timeout)
 
-    def put(self, callback, path, params=None, data=''):
+    def put(self, callback, path, params=None, data='', timeout=None):
         uri = self.uri(path, params)
-        return self._request(callback, 'PUT', uri, data=data)
+        # TODO: Work out behaviour when timeout is 0 (i.e. disable timeout)
+        timeout = timeout if timeout else self.timeout
+        return self._request(callback, 'PUT', uri, data=data, timeout=timeout)
 
     def delete(self, callback, path, params=None):
         uri = self.uri(path, params)
-        return self._request(callback, 'DELETE', uri)
+        # TODO: Work out behaviour when timeout is 0 (i.e. disable timeout)
+        timeout = timeout if timeout else self.timeout
+        return self._request(callback, 'DELETE', uri, timeout=timeout)
 
     def post(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
@@ -64,9 +70,15 @@ class Consul(base.Consul):
         self._loop = loop or asyncio.get_event_loop()
         super().__init__(*args, **kwargs)
 
-    def connect(self, host, port, scheme, verify=True, cert=None):
+    def connect(self, 
+                host, 
+                port, 
+                scheme, 
+                verify=True, 
+                cert=None, 
+                timeout=None):
         return HTTPClient(host, port, scheme, loop=self._loop,
-                          verify=verify, cert=None)
+                          verify=verify, cert=None, timeout=timeout)
 
     def close(self):
         """Close all opened http connections"""

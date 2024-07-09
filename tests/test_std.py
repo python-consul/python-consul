@@ -170,6 +170,18 @@ class TestConsul(object):
         r = c.txn.put([d])
         assert r["Results"][0]["KV"]["Value"] == value
 
+    def test_transaction_decode(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        value = b'123 qweqwe'
+        enc_value = base64.b64encode(value).decode("utf8")
+        d = {"KV": {"Verb": "set", "Key": "asdf", "Value": enc_value}}
+        r = c.txn.put([d])
+        assert r["Errors"] is None
+
+        d = {"KV": {"Verb": "get", "Key": "asdf"}}
+        r = c.txn.put([d], decode=True)
+        assert r["Results"][0]["KV"]["Value"] == value
+
     def test_event(self, consul_port):
         c = consul.Consul(port=consul_port)
 

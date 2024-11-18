@@ -907,8 +907,11 @@ class Consul(object):
                 take care of deregistering the service with the Catalog. If
                 there is an associated check, that is also deregistered.
                 """
+                params = []
+                if self.agent.token:
+                    params.append(('token', self.agent.token))
                 return self.agent.http.put(
-                    CB.bool(), '/v1/agent/service/deregister/%s' % service_id)
+                    CB.bool(), path='/v1/agent/service/deregister/%s' % service_id, params = params)
 
             def maintenance(self, service_id, enable, reason=None):
                 """

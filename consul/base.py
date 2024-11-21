@@ -806,6 +806,18 @@ class Consul(object):
             return self.agent.http.put(
                 CB.bool(), '/v1/agent/force-leave/%s' % node)
 
+        def metrics(self, token=None):
+            """
+            Returns dump of the metrics for the most recent finished interval
+            """
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            return self.agent.http.get(
+                CB.json(), '/v1/agent/metrics',
+                params=params)
+
         class Service(object):
             def __init__(self, agent):
                 self.agent = agent

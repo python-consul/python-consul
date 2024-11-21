@@ -358,6 +358,7 @@ class Consul(object):
         practice, this means you cannot rely on the order of message delivery.
         An advantage however is that events can still be used even in the
         absence of server nodes or during an outage."""
+
         def __init__(self, agent):
             self.agent = agent
 
@@ -465,6 +466,7 @@ class Consul(object):
         used to store service configurations or other meta data in a simple
         way.
         """
+
         def __init__(self, agent):
             self.agent = agent
 
@@ -662,6 +664,7 @@ class Consul(object):
         The Transactions endpoints manage updates or fetches of multiple keys
         inside a single, atomic transaction.
         """
+
         def __init__(self, agent):
             self.agent = agent
 
@@ -697,6 +700,7 @@ class Consul(object):
         takes on the burden of registering with the Catalog and performing
         anti-entropy to recover from outages.
         """
+
         def __init__(self, agent):
             self.agent = agent
             self.service = Consul.Agent.Service(agent)
@@ -805,6 +809,22 @@ class Consul(object):
 
             return self.agent.http.put(
                 CB.bool(), '/v1/agent/force-leave/%s' % node)
+
+        def leave(self, node):
+            """
+            This endpoint instructs the agent to graceful leave a node.
+            It is used to ensure other nodes see the agent as "left"
+            instead of "failed". Nodes that leave will not attempt to
+            re-join the cluster on restarting with a snapshot. For nodes
+            in server mode, the node is removed from the Raft peer
+            set in a graceful manner. This is critical, as in certain
+            situations a non-graceful leave can affect cluster availability.
+
+            *node* is the node to change state for.
+            """
+
+            return self.agent.http.put(
+                CB.bool(), '/v1/agent/leave/%s' % node)
 
         class Service(object):
             def __init__(self, agent):
@@ -2111,6 +2131,7 @@ class Consul(object):
         The Status endpoints are used to get information about the status
          of the Consul cluster.
         """
+
         def __init__(self, agent):
             self.agent = agent
 

@@ -52,7 +52,7 @@ class Check(object):
     @classmethod
     def script(klass, args, interval):
         """
-        Run the script *args* every *interval* (e.g. "10s") to peform health
+        Run the script *args* every *interval* (e.g. "10s") to perform health
         check
         """
         if isinstance(args, six.string_types) \
@@ -65,11 +65,11 @@ class Check(object):
     @classmethod
     def http(klass, url, interval, timeout=None, deregister=None, header=None):
         """
-        Peform a HTTP GET against *url* every *interval* (e.g. "10s") to peform
+        Perform a HTTP GET against *url* every *interval* (e.g. "10s") to perform
         health check with an optional *timeout* and optional *deregister* after
         which a failing service will be automatically deregistered. Optional
         parameter *header* specifies headers sent in HTTP request. *header*
-        paramater is in form of map of lists of strings,
+        parameter is in form of map of lists of strings,
         e.g. {"x-foo": ["bar", "baz"]}.
         """
         ret = {'http': url, 'interval': interval}
@@ -572,7 +572,7 @@ class Consul(object):
 
             The optional *cas* parameter is used to turn the PUT into a
             Check-And-Set operation. This is very useful as it allows clients
-            to build more complex syncronization primitives on top. If the
+            to build more complex synchronization primitives on top. If the
             index is 0, then Consul will only put the key if it does not
             already exist. If the index is non-zero, then the key is only set
             if the index matches the ModifyIndex of that key.

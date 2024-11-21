@@ -687,8 +687,16 @@ class Consul(object):
                     }
                 }
             """
-            return self.agent.http.put(CB.json(), "/v1/txn",
-                                       data=json.dumps(payload))
+            params = []
+            token = self.agent.token
+            if token:
+                params.append(('token', tokenn))
+            return self.agent.http.put(
+                    CB.json(), 
+                    "/v1/txn", 
+                    params=params,
+                    data=json.dumps(payload)
+            )
 
     class Agent(object):
         """
@@ -1769,6 +1777,9 @@ class Consul(object):
             if ttl:
                 assert 10 <= ttl <= 86400
                 data['ttl'] = '%ss' % ttl
+            token = self.agent.token
+            if token:
+                params.append(('token', token))
             if data:
                 data = json.dumps(data)
             else:
@@ -1790,6 +1801,9 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
+            token = self.agent.token
+            if token:
+                params.append(('token', token))
             return self.agent.http.put(
                 CB.bool(),
                 '/v1/session/destroy/%s' % session_id,
@@ -1838,6 +1852,9 @@ class Consul(object):
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params.append((consistency, '1'))
+            token = self.agent.token
+            if token:
+                params.append(('token', token))
             return self.agent.http.get(
                 CB.json(index=True), '/v1/session/list', params=params)
 
@@ -1868,6 +1885,9 @@ class Consul(object):
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params.append((consistency, '1'))
+            token = self.agent.token
+            if token:
+                params.append(('token', token))
             return self.agent.http.get(
                 CB.json(index=True),
                 '/v1/session/node/%s' % node, params=params)
@@ -1905,6 +1925,9 @@ class Consul(object):
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params.append((consistency, '1'))
+            token = self.agent.token
+            if token:
+                params.append(('token', token))
             return self.agent.http.get(
                 CB.json(index=True, one=True),
                 '/v1/session/info/%s' % session_id,
@@ -1924,6 +1947,9 @@ class Consul(object):
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
+            token = self.agent.token
+            if token:
+                params.append(('token', token))
             return self.agent.http.put(
                 CB.json(one=True, allow_404=False),
                 '/v1/session/renew/%s' % session_id,
@@ -2434,3 +2460,4 @@ class Consul(object):
             """
             return self.agent.http.get(
                 CB.json(), '/v1/operator/raft/configuration')
+
